@@ -1,0 +1,101 @@
+@model IEnumerable<LearnNova.Models.Entities.ApplicationUser>
+@using LearnNova.Models.Enums
+@{
+    string currentUserId = (string?)ViewBag.CurrentUserId ?? "";
+    string roleFilter = (string)ViewBag.RoleFilter;
+    string isActiveFilter = (string)ViewBag.IsActiveFilter;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+    <div class="section-title">👥 المستخدمون</div>
+</div>
+<div class="section-sub">إدارة حسابات الطلاب والمدرسين والمديرين</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger small">@TempData["ErrorMessage"]</div>
+}
+
+<form method="get" class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+    <select name="role" class="form-control-custom" style="max-width:170px">
+        <option value="">كل الأدوار</option>
+        <option value="Admin" selected="@(roleFilter == "Admin")">مدير</option>
+        <option value="Teacher" selected="@(roleFilter == "Teacher")">مدرس</option>
+        <option value="Student" selected="@(roleFilter == "Student")">طالب</option>
+    </select>
+    <select name="isActive" class="form-control-custom" style="max-width:170px">
+        <option value="">كل الحالات</option>
+        <option value="true" selected="@(isActiveFilter == "true")">نشط</option>
+        <option value="false" selected="@(isActiveFilter == "false")">غير نشط</option>
+    </select>
+    <div class="input-group" style="max-width:260px">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input name="term" class="form-control border-start-0" placeholder="ابحث بالاسم أو البريد..." value="@ViewBag.Term" />
+    </div>
+    <button type="submit" class="btn-outline-custom">بحث</button>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="empty-state"><div class="es-ico">🔍</div><div>لا يوجد مستخدمون مطابقون لبحثك</div></div>
+}
+else
+{
+    <div class="card-box p-0" style="overflow-x:auto">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr style="font-size:12.5px;color:var(--gray)">
+                    <th></th>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الدور</th>
+                    <th>تفاصيل إضافية</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الإنشاء</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    var isPending = user.Role == UserRole.Teacher && !user.IsActive;
+                    var badgeClass = user.IsActive ? "badge-ok" : (isPending ? "badge-pending" : "badge-late");
+                    var badgeText = user.IsActive ? "نشط" : (isPending ? "قيد المراجعة" : "موقوف");
+                    var roleLabel = user.Role == UserRole.Admin ? "مدير" : user.Role == UserRole.Teacher ? "مدرس" : "طالب";
+                    var initial = user.FullName.Trim().Length > 0 ? user.FullName.Trim()[0].ToString() : "؟";
+                    <tr style="font-size:13.5px">
+                        <td><div class="user-avatar" style="width:32px;height:32px;font-size:12px">@initial</div></td>
+                        <td class="fw-semibold">@user.FullName</td>
+                        <td style="color:var(--gray)">@user.Email</td>
+                        <td>@roleLabel</td>
+                        <td style="color:var(--gray);font-size:12px">
+                            @(user.Role == UserRole.Student ? user.GradeLabel : user.Role == UserRole.Teacher ? user.Subject : "—")
+                        </td>
+                        <td><span class="badge-status @badgeClass">@badgeText</span></td>
+                        <td style="color:var(--gray);font-size:12px">@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a class="btn btn-sm btn-light" asp-action="UserDetails" asp-route-id="@user.Id">التفاصيل</a>
+                                @if (user.Id != currentUserId)
+                                {
+                                    <form method="post" asp-action="ToggleActive">
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <input type="hidden" name="isActive" value="@(!user.IsActive)" />
+                                        <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
+                                        <button type="submit" class="btn btn-sm @(user.IsActive ? "btn-outline-custom" : "btn-primary-custom")">
+                                            @(user.IsActive ? "إيقاف" : "تفعيل")
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

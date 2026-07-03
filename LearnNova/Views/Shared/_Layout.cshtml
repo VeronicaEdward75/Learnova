@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>@ViewData["Title"] - LearnNova</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/learnnova.css" asp-append-version="true" />
+</head>
+<body>
+@if (User.Identity?.IsAuthenticated == true)
+{
+    var fullName = User.FindFirst("FullName")?.Value ?? User.Identity!.Name ?? "؟";
+    var initial = fullName.Trim().Length > 0 ? fullName.Trim()[0].ToString() : "؟";
+    var roleLabel = User.IsInRole("Admin") ? "مدير النظام" : User.IsInRole("Teacher") ? "مدرس" : "طالب";
+    var activeNav = ViewBag.ActiveNav as string ?? "";
+
+    <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div id="sidebar">
+        <div class="logo-wrap d-flex align-items-center gap-2">
+            <div class="logo-icon">LN</div>
+            <div><div class="logo-text">LearnNova</div><div class="logo-sub">منصة التعليم</div></div>
+        </div>
+        <div class="user-card">
+            <div class="user-avatar">@initial</div>
+            <div><div class="user-name">@fullName</div><div class="user-role">@roleLabel</div></div>
+        </div>
+        <nav id="sb-nav">
+            @if (User.IsInRole("Admin"))
+            {
+                <a class="nav-link-item @(activeNav == "dashboard" ? "active" : "")" asp-controller="Admin" asp-action="Dashboard">
+                    <i class="bi bi-house-fill" style="font-size:17px"></i><span>الرئيسية</span>
+                </a>
+                <a class="nav-link-item @(activeNav == "users" ? "active" : "")" asp-controller="Admin" asp-action="Users">
+                    <i class="bi bi-people-fill" style="font-size:17px"></i><span>المستخدمون</span>
+                </a>
+                <a class="nav-link-item @(activeNav == "create-admin" ? "active" : "")" asp-controller="Admin" asp-action="CreateAdmin">
+                    <i class="bi bi-person-plus-fill" style="font-size:17px"></i><span>إنشاء مدير</span>
+                </a>
+                <a class="nav-link-item @(activeNav == "courses" ? "active" : "")" asp-controller="Admin" asp-action="Courses">
+                    <i class="bi bi-journal-richtext" style="font-size:17px"></i><span>الكورسات</span>
+                </a>
+            }
+            else
+            {
+                @* Teacher/Student pages are owned by the rest of the team; this is a placeholder
+                   nav entry until their controllers/views exist (see Document/04-Next-Steps-Plan.md §8). *@
+                <a class="nav-link-item active" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-house-fill" style="font-size:17px"></i><span>الرئيسية</span>
+                </a>
+            }
+        </nav>
+        <div style="padding:8px">
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="logout-btn"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="mob-topbar">
+        <button class="btn btn-sm btn-light" onclick="openSidebar()"><i class="bi bi-list fs-5"></i></button>
+        <div class="d-flex align-items-center gap-2">
+            <div class="logo-icon" style="width:32px;height:32px;font-size:13px">LN</div>
+            <span class="fw-bold" style="color:var(--slate)">LearnNova</span>
+        </div>
+        <div style="width:32px"></div>
+    </div>
+
+    <div id="main-wrap">
+        <div id="main">
+            <div class="topbar">
+                <h5>@ViewData["Title"]</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="user-avatar" style="width:34px;height:34px;font-size:13px">@initial</div>
+                </div>
+            </div>
+            <div class="page-content">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <nav id="bottomnav">
+        @if (User.IsInRole("Admin"))
+        {
+            <button onclick="location.href='@Url.Action("Dashboard", "Admin")'"><i class="bi bi-house-fill"></i>الرئيسية</button>
+            <button onclick="location.href='@Url.Action("Users", "Admin")'"><i class="bi bi-people-fill"></i>المستخدمون</button>
+            <button onclick="location.href='@Url.Action("Courses", "Admin")'"><i class="bi bi-journal-richtext"></i>الكورسات</button>
+        }
+        else
+        {
+            <button onclick="location.href='@Url.Action("Index", "Home")'"><i class="bi bi-house-fill"></i>الرئيسية</button>
+        }
+    </nav>
+    <div id="modal-root"></div>
+}
+else
+{
+    <div class="p-5 text-center">
+        <p>يجب تسجيل الدخول لعرض هذه الصفحة.</p>
+        <a asp-controller="Account" asp-action="Login" class="btn-primary-custom">تسجيل الدخول</a>
+    </div>
+}
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/learnnova.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

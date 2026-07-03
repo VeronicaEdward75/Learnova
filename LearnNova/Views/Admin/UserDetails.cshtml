@@ -1,0 +1,55 @@
+@model LearnNova.Models.Entities.ApplicationUser
+@using LearnNova.Models.Enums
+@{
+    string currentUserId = (string?)ViewBag.CurrentUserId ?? "";
+    var isPending = Model.Role == UserRole.Teacher && !Model.IsActive;
+    var badgeClass = Model.IsActive ? "badge-ok" : (isPending ? "badge-pending" : "badge-late");
+    var badgeText = Model.IsActive ? "نشط" : (isPending ? "قيد المراجعة" : "موقوف");
+    var roleLabel = Model.Role == UserRole.Admin ? "مدير" : Model.Role == UserRole.Teacher ? "مدرس" : "طالب";
+    var initial = Model.FullName.Trim().Length > 0 ? Model.FullName.Trim()[0].ToString() : "؟";
+}
+
+<a asp-action="Users" class="btn btn-sm btn-light mb-3">→ رجوع للمستخدمين</a>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small">@TempData["SuccessMessage"]</div>
+}
+
+<div class="card-box p-4" style="max-width:520px">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="user-avatar" style="width:60px;height:60px;font-size:22px">@initial</div>
+        <div>
+            <div class="fw-bold" style="font-size:18px">@Model.FullName</div>
+            <div style="color:var(--gray);font-size:13px">@roleLabel</div>
+        </div>
+    </div>
+
+    <div class="mb-2"><span style="color:var(--gray);font-size:12px">البريد الإلكتروني</span><div class="fw-semibold">@Model.Email</div></div>
+    <div class="mb-2"><span style="color:var(--gray);font-size:12px">الحالة</span><div><span class="badge-status @badgeClass">@badgeText</span></div></div>
+    <div class="mb-2"><span style="color:var(--gray);font-size:12px">تاريخ الإنشاء</span><div class="fw-semibold">@Model.CreatedAt.ToString("yyyy-MM-dd")</div></div>
+
+    @if (Model.Role == UserRole.Student)
+    {
+        <div class="mb-2"><span style="color:var(--gray);font-size:12px">المرحلة</span><div class="fw-semibold">@Model.Stage</div></div>
+        <div class="mb-2"><span style="color:var(--gray);font-size:12px">الصف الدراسي</span><div class="fw-semibold">@Model.GradeLabel</div></div>
+        <div class="mb-2"><span style="color:var(--gray);font-size:12px">الفصل</span><div class="fw-semibold">@(Model.Section ?? "—")</div></div>
+    }
+    else if (Model.Role == UserRole.Teacher)
+    {
+        <div class="mb-2"><span style="color:var(--gray);font-size:12px">المادة</span><div class="fw-semibold">@Model.Subject</div></div>
+        <div class="mb-2"><span style="color:var(--gray);font-size:12px">المرحلة التي يُدرّس لها</span><div class="fw-semibold">@Model.TeachStage</div></div>
+    }
+
+    @if (Model.Id != currentUserId)
+    {
+        <form method="post" asp-action="ToggleActive" class="mt-3">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <input type="hidden" name="isActive" value="@(!Model.IsActive)" />
+            <input type="hidden" name="returnUrl" value="@Url.Action("UserDetails", new { id = Model.Id })" />
+            <button type="submit" class="@(Model.IsActive ? "btn-outline-custom" : "btn-primary-custom")">
+                @(Model.IsActive ? "إيقاف الحساب" : "تفعيل الحساب")
+            </button>
+        </form>
+    }
+</div>

@@ -1,0 +1,77 @@
+@model LearnNova.Models.ViewModels.AdminDashboardViewModel
+
+<div class="rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background:linear-gradient(135deg,#4A2C22,#6F4E37)">
+    <div class="position-relative">
+        <h3 class="fw-bold mt-1 mb-1">مرحباً بك في لوحة تحكم المدير 👋</h3>
+        <p style="opacity:.7;font-size:13px;margin:0">نظرة عامة على المنصة</p>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small">@TempData["SuccessMessage"]</div>
+}
+
+@* Colors match script.js's existing stat-card gradients exactly — see Document/04-Next-Steps-Plan.md §3.1 *@
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-4">
+        <a asp-action="Users" asp-route-role="Student" style="text-decoration:none;display:block">
+            <div class="stat-card clickable" style="--from:#0F766E;--to:#0D9488">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><div class="stat-lbl">إجمالي الطلاب</div><div class="stat-val mt-1">@Model.TotalStudents</div></div>
+                    <i class="bi bi-mortarboard-fill stat-ico"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-4">
+        <a asp-action="Users" asp-route-role="Teacher" style="text-decoration:none;display:block">
+            <div class="stat-card clickable" style="--from:#7C3AED;--to:#6D28D9">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><div class="stat-lbl">إجمالي المدرسين</div><div class="stat-val mt-1">@Model.TotalTeachers</div></div>
+                    <i class="bi bi-person-workspace stat-ico"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-4">
+        <a asp-action="Users" asp-route-role="Admin" style="text-decoration:none;display:block">
+            <div class="stat-card clickable" style="--from:#6F4E37;--to:#8D6E63">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><div class="stat-lbl">المديرون</div><div class="stat-val mt-1">@Model.TotalAdmins</div></div>
+                    <i class="bi bi-shield-fill-check stat-ico"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-4">
+        <a asp-action="Users" asp-route-role="Teacher" asp-route-isActive="false" style="text-decoration:none;display:block">
+            <div class="stat-card clickable" style="--from:#BE123C;--to:#E11D48">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><div class="stat-lbl">مدرسون قيد المراجعة</div><div class="stat-val mt-1">@Model.PendingTeachersCount</div></div>
+                    <i class="bi bi-hourglass-split stat-ico"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-4">
+        <a asp-action="Courses" style="text-decoration:none;display:block">
+            <div class="stat-card clickable" style="--from:#0369A1;--to:#0284C7">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><div class="stat-lbl">إجمالي الكورسات</div><div class="stat-val mt-1">@Model.TotalCourses</div></div>
+                    <i class="bi bi-journal-richtext stat-ico"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-4">
+        <a asp-action="Courses" asp-route-isPublished="true" style="text-decoration:none;display:block">
+            <div class="stat-card clickable" style="--from:#B45309;--to:#D97706">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><div class="stat-lbl">كورسات منشورة</div><div class="stat-val mt-1">@Model.PublishedCoursesCount</div></div>
+                    <i class="bi bi-check-circle-fill stat-ico"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>

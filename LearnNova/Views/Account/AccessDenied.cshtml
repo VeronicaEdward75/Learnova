@@ -1,0 +1,12 @@
+@{
+    // Uses the normal _Layout (not _AuthLayout) — a user who lands here is still logged in and
+    // still has a valid role-appropriate sidebar to sit inside (doc 4 §2.3).
+    ViewData["Title"] = "غير مصرح بالوصول";
+}
+
+<div class="text-center py-5">
+    <div style="font-size:64px">🚫</div>
+    <h3 class="fw-bold mt-3">غير مصرح لك بالوصول لهذه الصفحة</h3>
+    <p style="color:var(--gray)">ليس لديك الصلاحية الكافية لعرض هذا المحتوى.</p>
+    <a asp-controller="Home" asp-action="Index" class="btn-primary-custom">العودة للرئيسية</a>
+</div>

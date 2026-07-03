@@ -1,0 +1,123 @@
+@model LearnNova.Models.ViewModels.RegisterViewModel
+@using LearnNova.Models.Lookups
+@using System.Text.Json
+@{
+    Layout = "_AuthLayout";
+    var stageGradesJson = JsonSerializer.Serialize(CurriculumLookup.StageGrades);
+}
+
+<div class="login-card">
+    <div class="login-logo">LN</div>
+    <h2 class="text-center fw-bold mb-1" style="color:var(--slate)">LearnNova</h2>
+    <p class="text-center mb-4" style="color:var(--gray);font-size:13px">منصة التعليم الذكية ☕</p>
+
+    <div class="auth-tabs">
+        <a asp-action="Login" class="auth-tab-btn">تسجيل الدخول</a>
+        <a asp-action="Register" class="auth-tab-btn active">حساب جديد</a>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+    <form asp-action="Register" method="post" id="register-form">
+        <input type="hidden" asp-for="Role" id="role-input" />
+
+        <div class="role-toggle mb-3">
+            <button type="button" class="role-btn active" id="btn-role-student" onclick="setRole('Student')">
+                <i class="bi bi-mortarboard-fill me-1"></i> طالب
+            </button>
+            <button type="button" class="role-btn" id="btn-role-teacher" onclick="setRole('Teacher')">
+                <i class="bi bi-person-workspace me-1"></i> مدرس
+            </button>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FullName" class="form-label fw-semibold" style="font-size:13px"></label>
+            <input asp-for="FullName" class="form-control-custom" placeholder="اكتب اسمك" />
+            <span asp-validation-for="FullName" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label fw-semibold" style="font-size:13px"></label>
+            <input asp-for="Email" class="form-control-custom" placeholder="you@example.com" />
+            <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label fw-semibold" style="font-size:13px"></label>
+            <input asp-for="Password" class="form-control-custom" placeholder="••••••••" />
+            <span asp-validation-for="Password" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="ConfirmPassword" class="form-label fw-semibold" style="font-size:13px"></label>
+            <input asp-for="ConfirmPassword" class="form-control-custom" placeholder="••••••••" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+        </div>
+
+        <div id="student-fields">
+            <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:13px">المرحلة الدراسية</label>
+                <select asp-for="Stage" class="form-control-custom" id="stage-select" onchange="populateGrades()">
+                    <option value="ابتدائي">ابتدائي</option>
+                    <option value="اعدادي">إعدادي</option>
+                    <option value="ثانوي" selected>ثانوي</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:13px">الصف الدراسي</label>
+                <select asp-for="GradeNum" class="form-control-custom" id="grade-select"></select>
+            </div>
+        </div>
+
+        <div id="teacher-fields" style="display:none">
+            <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:13px">المادة التي تُدرّسها</label>
+                <select asp-for="Subject" class="form-control-custom" id="subject-select">
+                    @foreach (var subject in CurriculumLookup.Subjects)
+                    {
+                        <option value="@subject.Key">@subject.Value</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:13px">المرحلة التي تُدرّس لها</label>
+                <input type="hidden" asp-for="TeachStage" id="teach-stage-input" value="ثانوي" />
+                <div class="chip-select" id="teach-stage-chips">
+                    @foreach (var stage in CurriculumLookup.Stages)
+                    {
+                        <span class="chip-opt @(stage == "ثانوي" ? "sel" : "")" data-stage="@stage" onclick="pickTeachStage(this)">@stage</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-login">إنشاء الحساب &nbsp; <i class="bi bi-arrow-left-short"></i></button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const STAGE_GRADES = @Html.Raw(stageGradesJson);
+
+        function setRole(role) {
+            document.getElementById('role-input').value = role;
+            document.getElementById('btn-role-student').classList.toggle('active', role === 'Student');
+            document.getElementById('btn-role-teacher').classList.toggle('active', role === 'Teacher');
+            document.getElementById('student-fields').style.display = role === 'Student' ? 'block' : 'none';
+            document.getElementById('teacher-fields').style.display = role === 'Teacher' ? 'block' : 'none';
+        }
+
+        function populateGrades() {
+            const stage = document.getElementById('stage-select').value;
+            const grades = STAGE_GRADES[stage] || [];
+            document.getElementById('grade-select').innerHTML =
+                grades.map(g => `<option value="${g.Num}">${g.Label}</option>`).join('');
+        }
+
+        function pickTeachStage(el) {
+            document.querySelectorAll('#teach-stage-chips .chip-opt').forEach(c => c.classList.remove('sel'));
+            el.classList.add('sel');
+            document.getElementById('teach-stage-input').value = el.dataset.stage;
+        }
+
+        populateGrades();
+    </script>
+}

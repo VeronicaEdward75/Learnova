@@ -1,0 +1,45 @@
+@model LearnNova.Models.ViewModels.LoginViewModel
+@{
+    // Overrides _ViewStart.cshtml's default "_Layout" — Login has no sidebar/role yet, so it
+    // must render under the sidebar-less gradient shell instead (doc 4 §2.3).
+    Layout = "_AuthLayout";
+}
+
+<div class="login-card">
+    <div class="login-logo">LN</div>
+    <h2 class="text-center fw-bold mb-1" style="color:var(--slate)">LearnNova</h2>
+    <p class="text-center mb-4" style="color:var(--gray);font-size:13px">منصة التعليم الذكية ☕</p>
+
+    <div class="auth-tabs">
+        <a asp-action="Login" class="auth-tab-btn active">تسجيل الدخول</a>
+        <a asp-action="Register" class="auth-tab-btn">حساب جديد</a>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+    <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label fw-semibold" style="font-size:13px"></label>
+            <input asp-for="Email" class="form-control-custom" placeholder="you@example.com" />
+            <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label fw-semibold" style="font-size:13px"></label>
+            <input asp-for="Password" class="form-control-custom" placeholder="••••••••" />
+            <span asp-validation-for="Password" class="text-danger small"></span>
+        </div>
+        <div class="form-check mb-2">
+            <input asp-for="RememberMe" class="form-check-input" />
+            <label asp-for="RememberMe" class="form-check-label" style="font-size:13px"></label>
+        </div>
+        <button type="submit" class="btn-login">تسجيل الدخول &nbsp; <i class="bi bi-arrow-left-short"></i></button>
+    </form>
+
+    <div class="text-center mt-3" style="font-size:11.5px;color:var(--gray)">
+        ليس لديك حساب؟ أنشئ حساب طالب أو مدرس من تبويب "حساب جديد"
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,12 @@
+@{
+    ViewData["Title"] = "الرئيسية";
+}
+
+<div class="rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background:linear-gradient(135deg,#4A2C22,#6F4E37)">
+    <div class="position-relative">
+        <h3 class="fw-bold mt-1 mb-1">مرحباً، @(User.FindFirst("FullName")?.Value ?? User.Identity!.Name) 👋</h3>
+        <p style="opacity:.85;font-size:13px;margin:0">
+            هذه صفحة رئيسية مؤقتة حتى يتم بناء لوحة @(User.IsInRole("Teacher") ? "المدرس" : "الطالب") الكاملة من باقي الفريق.
+        </p>
+    </div>
+</div>
