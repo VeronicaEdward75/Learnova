@@ -1,0 +1,139 @@
+@model LearnNova.Models.ViewModels.Student.StudentQuizHistoryViewModel
+@{
+    ViewData["Title"] = "سجل الاختبارات";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" asp-route-courseId="@Model.CourseId" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى الاختبارات
+    </a>
+</div>
+
+<div class="d-flex align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">سجل المحاولات</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">اختبار: @Model.QuizTitle</p>
+    </div>
+</div>
+
+@if (!Model.Attempts.Any())
+{
+    <div class="card-box p-5 text-center my-4" style="background:var(--color-surface-muted); box-shadow:none; border:1px dashed var(--color-border);">
+        <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:80px; height:80px; background:white; color:var(--color-text-secondary); border-radius:var(--radius-xl); box-shadow:var(--shadow-sm);">
+            <i class="bi bi-clock-history" style="font-size:36px;"></i>
+        </div>
+        <h5 class="fw-bold mb-2">لا توجد محاولات سابقة</h5>
+        <p class="text-muted mb-0" style="font-size:14px;">لم تقم بإجراء هذا الاختبار بعد.</p>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var attempt in Model.Attempts)
+        {
+            <div class="col-12">
+                <div class="card-box p-0 mb-3" style="overflow:hidden; border:1px solid @(attempt.Passed ? "rgba(16,185,129,0.3)" : "rgba(225,29,72,0.3)"); box-shadow:var(--shadow-sm);">
+                    <div class="p-4 border-bottom d-flex justify-content-between align-items-start flex-wrap gap-3" style="background:@(attempt.Passed ? "var(--color-success-light)" : "var(--color-danger-light)");">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width:48px; height:48px; border-radius:var(--radius-md); background:white; color:@(attempt.Passed ? "var(--color-success)" : "var(--color-danger)"); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-xs);">
+                                <i class="bi @(attempt.Passed ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size:24px;"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1" style="color:var(--color-text-primary); font-size:16px;">محاولة رقم @attempt.AttemptNumber</h5>
+                                <div class="text-muted" style="font-size:13px; font-weight:600;">
+                                    <i class="bi bi-calendar me-1"></i> @DateTimeService.ToLocal(attempt.SubmittedAt).ToString("yyyy-MM-dd hh:mm tt")
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            @if (attempt.Passed)
+                            {
+                                <span class="badge" style="background:var(--color-success); color:white; padding:8px 16px; font-weight:bold; font-size:14px; border-radius:var(--radius-md); box-shadow:0 2px 8px rgba(16,185,129,0.2);">ناجح</span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:var(--color-danger); color:white; padding:8px 16px; font-weight:bold; font-size:14px; border-radius:var(--radius-md); box-shadow:0 2px 8px rgba(225,29,72,0.2);">راسب</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-white">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-4">
+                                <div class="p-3 rounded h-100 d-flex flex-column justify-content-center" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                                    <div class="text-muted mb-2 fw-semibold" style="font-size:12px;"><i class="bi bi-bullseye me-1"></i> الدرجة</div>
+                                    <div class="fw-bold" style="font-size:24px; color:var(--color-primary);">@attempt.Score <span class="text-muted" style="font-size:14px;">/ @attempt.TotalPoints</span></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 rounded h-100 d-flex flex-column justify-content-center" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                                    <div class="text-muted mb-2 fw-semibold" style="font-size:12px;"><i class="bi bi-percent me-1"></i> النسبة المئوية</div>
+                                    <div class="fw-bold" style="font-size:24px; color:var(--color-text-primary);">@attempt.Percentage%</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 rounded h-100 d-flex flex-column justify-content-center" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                                    <div class="text-muted mb-2 fw-semibold" style="font-size:12px;"><i class="bi bi-stopwatch me-1"></i> وقت الاختبار</div>
+                                    <div class="fw-bold" style="font-size:18px; color:var(--color-text-primary);">
+                                        @(attempt.DurationSeconds / 60) دقيقة و @(attempt.DurationSeconds % 60) ثانية
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.ShowAnswers)
+                        {
+                            <div class="mt-4 pt-4 border-top">
+                                <h6 class="fw-bold mb-4 d-flex align-items-center" style="color:var(--color-text-primary); font-size:15px;">
+                                    <i class="bi bi-list-check me-2 text-primary"></i> مراجعة الإجابات
+                                </h6>
+                                <div class="table-responsive">
+                                    <table class="table mb-0" style="font-size:14px;">
+                                        <thead>
+                                            <tr style="background:var(--color-surface-muted); color:var(--color-text-secondary);">
+                                                <th class="border-0 rounded-start" style="font-weight:600; padding:12px 16px;">السؤال</th>
+                                                <th class="text-center border-0" style="font-weight:600; padding:12px 16px;">إجابتك</th>
+                                                <th class="text-center border-0" style="font-weight:600; padding:12px 16px;">الإجابة الصحيحة</th>
+                                                <th class="text-center border-0 rounded-end" style="font-weight:600; padding:12px 16px;">الدرجة</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var answer in attempt.AnswersBreakdown)
+                                            {
+                                                <tr style="border-bottom:1px solid var(--color-border-light);">
+                                                    <td class="align-middle py-3 px-3 fw-medium" style="color:var(--color-text-primary);">@answer.QuestionText</td>
+                                                    <td class="text-center align-middle py-3">
+                                                        @if (answer.IsCorrect)
+                                                        {
+                                                            <span class="badge" style="background:var(--color-success-light); color:var(--color-success-dark); border:1px solid rgba(16,185,129,0.3); padding:6px 12px; font-weight:600;">@answer.StudentAnswer <i class="bi bi-check2"></i></span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge" style="background:var(--color-danger-light); color:var(--color-danger-dark); border:1px solid rgba(225,29,72,0.3); padding:6px 12px; font-weight:600;">@answer.StudentAnswer <i class="bi bi-x-lg"></i></span>
+                                                        }
+                                                    </td>
+                                                    <td class="text-center align-middle py-3 fw-bold text-success">
+                                                        @answer.CorrectAnswer
+                                                    </td>
+                                                    <td class="text-center align-middle py-3">
+                                                        <span class="badge" style="background:var(--color-surface-muted); color:var(--color-text-secondary); border:1px solid var(--color-border);">@answer.Points / @answer.MaxPoints</span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-secondary mt-2 mb-0 text-center d-flex align-items-center justify-content-center gap-2" style="border:1px dashed var(--color-border); background:var(--color-surface-muted);">
+                                <i class="bi bi-info-circle-fill text-muted"></i> <span class="fw-semibold text-muted">إظهار الإجابات الصحيحة غير مفعل لهذا الاختبار.</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

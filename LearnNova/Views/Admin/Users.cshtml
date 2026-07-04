@@ -4,89 +4,126 @@
     string currentUserId = (string?)ViewBag.CurrentUserId ?? "";
     string roleFilter = (string)ViewBag.RoleFilter;
     string isActiveFilter = (string)ViewBag.IsActiveFilter;
+    ViewData["Title"] = "المستخدمون";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
-    <div class="section-title">👥 المستخدمون</div>
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">إدارة المستخدمين</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">إدارة حسابات الطلاب، المدرسين، والمديرين في المنصة.</p>
+    </div>
+    <a asp-action="CreateAdmin" class="btn-primary-custom" style="height:40px;">
+        <i class="bi bi-person-plus me-1"></i> إضافة مدير
+    </a>
 </div>
-<div class="section-sub">إدارة حسابات الطلاب والمدرسين والمديرين</div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success small">@TempData["SuccessMessage"]</div>
+    <div class="alert alert-success small mb-4">
+        <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+    </div>
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger small">@TempData["ErrorMessage"]</div>
+    <div class="alert alert-danger small mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+    </div>
 }
 
-<form method="get" class="d-flex gap-2 mb-3 flex-wrap align-items-center">
-    <select name="role" class="form-control-custom" style="max-width:170px">
-        <option value="">كل الأدوار</option>
-        <option value="Admin" selected="@(roleFilter == "Admin")">مدير</option>
-        <option value="Teacher" selected="@(roleFilter == "Teacher")">مدرس</option>
-        <option value="Student" selected="@(roleFilter == "Student")">طالب</option>
-    </select>
-    <select name="isActive" class="form-control-custom" style="max-width:170px">
-        <option value="">كل الحالات</option>
-        <option value="true" selected="@(isActiveFilter == "true")">نشط</option>
-        <option value="false" selected="@(isActiveFilter == "false")">غير نشط</option>
-    </select>
-    <div class="input-group" style="max-width:260px">
-        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-        <input name="term" class="form-control border-start-0" placeholder="ابحث بالاسم أو البريد..." value="@ViewBag.Term" />
-    </div>
-    <button type="submit" class="btn-outline-custom">بحث</button>
-</form>
+<div class="card-box p-4 mb-4">
+    <form method="get" class="d-flex flex-wrap gap-3 align-items-center">
+        <div class="flex-grow-1" style="min-width: 280px; max-width:400px;">
+            <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                <span class="input-group-text bg-white border-0 text-muted px-3"><i class="bi bi-search"></i></span>
+                <input name="term" class="form-control border-0 shadow-none bg-white" style="height:44px; font-size:14px;" placeholder="ابحث بالاسم أو البريد الإلكتروني..." value="@ViewBag.Term" />
+            </div>
+        </div>
+        <select name="role" class="form-control-custom bg-white" style="width:160px; height:44px; box-shadow:var(--shadow-xs);">
+            <option value="">كل الأدوار</option>
+            <option value="Admin" selected="@(roleFilter == "Admin")">مدير</option>
+            <option value="Teacher" selected="@(roleFilter == "Teacher")">مدرس</option>
+            <option value="Student" selected="@(roleFilter == "Student")">طالب</option>
+        </select>
+        <select name="isActive" class="form-control-custom bg-white" style="width:160px; height:44px; box-shadow:var(--shadow-xs);">
+            <option value="">كل الحالات</option>
+            <option value="true" selected="@(isActiveFilter == "true")">نشط</option>
+            <option value="false" selected="@(isActiveFilter == "false")">غير نشط</option>
+        </select>
+        <button type="submit" class="btn-outline-custom" style="height:44px;">تصفية</button>
+    </form>
+</div>
 
 @if (!Model.Any())
 {
-    <div class="empty-state"><div class="es-ico">🔍</div><div>لا يوجد مستخدمون مطابقون لبحثك</div></div>
+    <div class="card-box p-5 text-center mt-4">
+        <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:64px; height:64px; background:var(--color-surface-muted); color:var(--color-text-secondary); border-radius:var(--radius-xl);">
+            <i class="bi bi-search" style="font-size:28px;"></i>
+        </div>
+        <h5 class="fw-bold mb-2">لا يوجد مستخدمون</h5>
+        <p class="text-muted" style="font-size:14px;">لم يتم العثور على أي مستخدم يطابق معايير البحث الخاصة بك.</p>
+    </div>
 }
 else
 {
-    <div class="card-box p-0" style="overflow-x:auto">
+    <div class="card-box p-0" style="overflow-x:auto;">
         <table class="table align-middle mb-0">
             <thead>
-                <tr style="font-size:12.5px;color:var(--gray)">
-                    <th></th>
+                <tr>
+                    <th style="padding-right:var(--space-5); width:50px;"></th>
                     <th>الاسم</th>
                     <th>البريد الإلكتروني</th>
                     <th>الدور</th>
-                    <th>تفاصيل إضافية</th>
+                    <th>تفاصيل</th>
+                    <th>تاريخ الانضمام</th>
                     <th>الحالة</th>
-                    <th>تاريخ الإنشاء</th>
-                    <th>إجراءات</th>
+                    <th class="text-start" style="padding-left:var(--space-5);">إجراءات</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var user in Model)
                 {
                     var isPending = user.Role == UserRole.Teacher && !user.IsActive;
-                    var badgeClass = user.IsActive ? "badge-ok" : (isPending ? "badge-pending" : "badge-late");
+                    var badgeClass = user.IsActive ? "badge-success" : (isPending ? "badge-warning" : "badge-danger");
                     var badgeText = user.IsActive ? "نشط" : (isPending ? "قيد المراجعة" : "موقوف");
+                    
+                    var roleColor = user.Role == UserRole.Admin ? "var(--color-danger)" : user.Role == UserRole.Teacher ? "var(--color-indigo)" : "var(--color-teal)";
                     var roleLabel = user.Role == UserRole.Admin ? "مدير" : user.Role == UserRole.Teacher ? "مدرس" : "طالب";
                     var initial = user.FullName.Trim().Length > 0 ? user.FullName.Trim()[0].ToString() : "؟";
-                    <tr style="font-size:13.5px">
-                        <td><div class="user-avatar" style="width:32px;height:32px;font-size:12px">@initial</div></td>
-                        <td class="fw-semibold">@user.FullName</td>
-                        <td style="color:var(--gray)">@user.Email</td>
-                        <td>@roleLabel</td>
-                        <td style="color:var(--gray);font-size:12px">
+
+                    <tr>
+                        <td style="padding-right:var(--space-5);">
+                            <div class="d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--color-surface-muted);color:var(--color-primary);font-size:14px;">
+                                @initial
+                            </div>
+                        </td>
+                        <td class="fw-semibold">
+                            <a asp-action="UserDetails" asp-route-id="@user.Id" class="text-decoration-none" style="color:var(--color-text-primary);">@user.FullName</a>
+                        </td>
+                        <td class="text-muted" style="font-size:13px;">@user.Email</td>
+                        <td>
+                            <span style="font-size:12px; font-weight:600; color:@roleColor; background:rgba(0,0,0,0.04); padding:4px 8px; border-radius:var(--radius-sm);">
+                                @roleLabel
+                            </span>
+                        </td>
+                        <td class="text-muted" style="font-size:13px;">
                             @(user.Role == UserRole.Student ? user.GradeLabel : user.Role == UserRole.Teacher ? user.Subject : "—")
                         </td>
-                        <td><span class="badge-status @badgeClass">@badgeText</span></td>
-                        <td style="color:var(--gray);font-size:12px">@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td class="text-muted" style="font-size:13px;">@DateTimeService.ToLocal(user.CreatedAt).ToString("yyyy-MM-dd")</td>
                         <td>
-                            <div class="d-flex gap-1">
-                                <a class="btn btn-sm btn-light" asp-action="UserDetails" asp-route-id="@user.Id">التفاصيل</a>
+                            <span class="badge @badgeClass" style="font-weight:600; font-size:11px; padding:6px 10px; border-radius:var(--radius-full);">@badgeText</span>
+                        </td>
+                        <td class="text-start" style="padding-left:var(--space-5);">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a asp-action="UserDetails" asp-route-id="@user.Id" class="btn btn-sm btn-light" style="font-size:12px; font-weight:600; border:1px solid var(--color-border); background:white;">
+                                    عرض
+                                </a>
                                 @if (user.Id != currentUserId)
                                 {
                                     <form method="post" asp-action="ToggleActive">
                                         <input type="hidden" name="id" value="@user.Id" />
-                                        <input type="hidden" name="isActive" value="@(!user.IsActive)" />
+                                        <input type="hidden" name="targetStatus" value="@(user.IsActive ? "false" : "true")" />
                                         <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
-                                        <button type="submit" class="btn btn-sm @(user.IsActive ? "btn-outline-custom" : "btn-primary-custom")">
+                                        <button type="submit" class="btn btn-sm @(user.IsActive ? "btn-outline-danger" : "btn-success-custom")" style="font-size:12px; font-weight:600; height:auto; padding:4px 12px; @(user.IsActive ? "" : "box-shadow:none;")">
                                             @(user.IsActive ? "إيقاف" : "تفعيل")
                                         </button>
                                     </form>

@@ -1,0 +1,131 @@
+@model IEnumerable<LearnNova.Models.Entities.QuizQuestion>
+@{
+    ViewData["Title"] = "إدارة الأسئلة - " + ViewBag.QuizTitle;
+}
+
+<div class="mb-4">
+    <a asp-controller="Quiz" asp-action="Index" asp-route-courseId="@ViewBag.CourseId" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى الاختبارات
+    </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">الأسئلة: @ViewBag.QuizTitle</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">أضف أنواعاً مختلفة من الأسئلة وقم بترتيبها للاختبار.</p>
+    </div>
+    <a asp-action="Create" asp-route-quizId="@ViewBag.QuizId" class="btn-primary-custom" style="height:40px;">
+        <i class="bi bi-plus-circle me-1"></i> إضافة سؤال جديد
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small mb-4">
+        <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger small mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="card-box p-5 text-center my-4" style="background:var(--color-surface-muted); box-shadow:none; border:1px dashed var(--color-border);">
+        <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:64px; height:64px; background:white; color:var(--color-text-secondary); border-radius:var(--radius-xl); box-shadow:var(--shadow-sm);">
+            <i class="bi bi-question-circle" style="font-size:28px;"></i>
+        </div>
+        <h5 class="fw-bold mb-2">لا توجد أسئلة حالياً</h5>
+        <p class="text-muted mb-4" style="font-size:14px;">قم بإضافة أسئلة للاختبار لتمكين الطلاب من تقييم مستواهم.</p>
+        <a asp-action="Create" asp-route-quizId="@ViewBag.QuizId" class="btn-primary-custom mx-auto" style="height:40px; padding:0 var(--space-5);">
+            <i class="bi bi-plus-circle me-2"></i> إضافة السؤال الأول
+        </a>
+    </div>
+}
+else
+{
+    <div class="card-box p-0" style="overflow:hidden;">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 custom-table" style="font-size:14px">
+                <thead style="background:var(--color-surface-muted);">
+                    <tr>
+                        <th class="py-3 px-4 text-center" style="width:60px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">#</th>
+                        <th class="py-3 px-4" style="font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">نص السؤال</th>
+                        <th class="py-3 px-4" style="width:180px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">النوع</th>
+                        <th class="py-3 px-4 text-center" style="width:100px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">النقاط</th>
+                        <th class="py-3 px-4 text-end" style="width:200px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var question in Model)
+                    {
+                        <tr style="border-bottom:1px solid var(--color-border-light); transition:background 0.2s;">
+                            <td class="py-3 px-4 text-center align-middle">
+                                <div class="d-flex align-items-center justify-content-center fw-bold" style="width:28px; height:28px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); font-size:13px; margin:auto;">
+                                    @question.OrderIndex
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 align-middle" style="color:var(--color-text-primary);">
+                                @(question.Text.Length > 80 ? question.Text[..80] + "..." : question.Text)
+                            </td>
+                            <td class="py-3 px-4 align-middle">
+                                @if (question.Type == LearnNova.Models.Enums.QuestionType.MultipleChoice)
+                                {
+                                    <span class="badge" style="background:var(--color-indigo-light); color:var(--color-indigo-dark); border:none; padding:6px 10px; font-size:12px; border-radius:var(--radius-full);">
+                                        <i class="bi bi-ui-radios me-1"></i> اختيار من متعدد
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge" style="background:var(--color-warning-light); color:var(--color-warning-dark); border:none; padding:6px 10px; font-size:12px; border-radius:var(--radius-full);">
+                                        <i class="bi bi-check2-circle me-1"></i> صح / خطأ
+                                    </span>
+                                }
+                            </td>
+                            <td class="py-3 px-4 text-center align-middle">
+                                <span class="fw-bold" style="color:var(--color-text-primary);">@question.Points</span>
+                            </td>
+                            <td class="py-3 px-4 text-end align-middle">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <form asp-action="MoveUp" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@question.Id" />
+                                        <input type="hidden" name="quizId" value="@ViewBag.QuizId" />
+                                        <button type="submit" class="btn btn-sm btn-light" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:1px solid var(--color-border); background:white; color:var(--color-text-secondary);" title="تحريك لأعلى" @(question.OrderIndex == 1 ? "disabled" : "")>
+                                            <i class="bi bi-arrow-up"></i>
+                                        </button>
+                                    </form>
+
+                                    <form asp-action="MoveDown" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@question.Id" />
+                                        <input type="hidden" name="quizId" value="@ViewBag.QuizId" />
+                                        <button type="submit" class="btn btn-sm btn-light" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:1px solid var(--color-border); background:white; color:var(--color-text-secondary);" title="تحريك لأسفل" @(question.OrderIndex == Model.Count() ? "disabled" : "")>
+                                            <i class="bi bi-arrow-down"></i>
+                                        </button>
+                                    </form>
+
+                                    <a asp-action="Edit" asp-route-id="@question.Id" class="btn btn-sm btn-light text-primary" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:1px solid var(--color-border); background:white;" title="تعديل">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <form asp-action="Delete" method="post" class="m-0" onsubmit="return confirm('هل أنت متأكد من حذف هذا السؤال؟')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@question.Id" />
+                                        <input type="hidden" name="quizId" value="@ViewBag.QuizId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:none; background:var(--color-danger-light); color:var(--color-danger-dark);" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

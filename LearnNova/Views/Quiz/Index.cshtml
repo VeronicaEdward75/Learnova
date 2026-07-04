@@ -1,0 +1,129 @@
+@model IEnumerable<LearnNova.Models.Entities.Quiz>
+@{
+    ViewData["Title"] = "الاختبارات - " + ViewBag.CourseTitle;
+}
+
+<div class="mb-4">
+    <a asp-controller="Teacher" asp-action="MyCourses" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى كورساتي
+    </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">الاختبارات: @ViewBag.CourseTitle</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">إدارة الاختبارات والأسئلة وتقييم فهم الطلاب للمحتوى.</p>
+    </div>
+    <a asp-action="Create" asp-route-courseId="@ViewBag.CourseId" class="btn-primary-custom" style="height:40px;">
+        <i class="bi bi-plus-circle me-1"></i> إضافة اختبار جديد
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small mb-4">
+        <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger small mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="card-box p-5 text-center my-4" style="background:var(--color-surface-muted); box-shadow:none; border:1px dashed var(--color-border);">
+        <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:64px; height:64px; background:white; color:var(--color-text-secondary); border-radius:var(--radius-xl); box-shadow:var(--shadow-sm);">
+            <i class="bi bi-journal-check" style="font-size:28px;"></i>
+        </div>
+        <h5 class="fw-bold mb-2">لا توجد اختبارات حالياً</h5>
+        <p class="text-muted mb-4" style="font-size:14px;">قم بإنشاء اختبارات لتقييم مدى استيعاب الطلاب للمادة العلمية.</p>
+        <a asp-action="Create" asp-route-courseId="@ViewBag.CourseId" class="btn-primary-custom mx-auto" style="height:40px; padding:0 var(--space-5);">
+            <i class="bi bi-plus-circle me-2"></i> إنشاء أول اختبار
+        </a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var quiz in Model)
+        {
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card-box h-100 d-flex flex-column hover-shadow-sm p-4" style="border:1px solid var(--color-border); transition:all 0.2s ease;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center justify-content-center" style="width:40px; height:40px; border-radius:var(--radius-md); background:var(--color-surface-muted); color:var(--color-primary);">
+                            <i class="bi bi-pencil-square fs-5"></i>
+                        </div>
+                        
+                        @if (quiz.IsPublished)
+                        {
+                            <span class="badge" style="background:var(--color-success-light); color:var(--color-success-dark); border:none; padding:6px 12px; font-size:12px; border-radius:var(--radius-full);">منشور</span>
+                        }
+                        else
+                        {
+                            <span class="badge" style="background:var(--color-surface-muted); color:var(--color-text-secondary); border:1px solid var(--color-border); padding:6px 12px; font-size:12px; border-radius:var(--radius-full);">مسودة</span>
+                        }
+                    </div>
+
+                    <h5 class="fw-bold mb-2" style="color:var(--color-text-primary); font-size:16px;">@quiz.Title</h5>
+
+                    <p class="text-muted mb-4" style="font-size:13px; line-height:1.6; flex:1;">
+                        @(quiz.Description.Length > 90 ? quiz.Description[..90] + "..." : quiz.Description)
+                    </p>
+
+                    <div class="mb-4 d-flex flex-wrap gap-2" style="font-size:12px;color:var(--color-text-secondary); font-weight:600;">
+                        <span class="d-inline-flex align-items-center bg-light rounded px-2 py-1"><i class="bi bi-clock me-1 text-primary"></i> @quiz.TimeLimitMinutes دقيقة</span>
+                        <span class="d-inline-flex align-items-center bg-light rounded px-2 py-1"><i class="bi bi-check-circle me-1 text-success"></i> @quiz.PassingScore نجاح</span>
+                        <span class="d-inline-flex align-items-center bg-light rounded px-2 py-1"><i class="bi bi-arrow-repeat me-1 text-indigo"></i> @quiz.MaxAttempts محاولات</span>
+                    </div>
+                    
+                    @{
+                        var statsDict = ViewBag.Stats as Dictionary<int, (int TotalAttempts, double AverageScore, double PassRate)>;
+                        if (statsDict != null && statsDict.TryGetValue(quiz.Id, out var stats))
+                        {
+                            <div class="mb-4 pt-3 d-flex justify-content-between text-center" style="font-size:12px; color:var(--color-text-primary); border-top:1px solid var(--color-border-light);">
+                                <div><div class="text-muted mb-1" style="font-weight:600;">المحاولات</div><div class="fw-bold fs-6">@stats.TotalAttempts</div></div>
+                                <div><div class="text-muted mb-1" style="font-weight:600;">المتوسط</div><div class="fw-bold fs-6" style="color:var(--color-indigo);">@stats.AverageScore%</div></div>
+                                <div><div class="text-muted mb-1" style="font-weight:600;">النجاح</div><div class="fw-bold fs-6" style="color:var(--color-success);">@stats.PassRate%</div></div>
+                            </div>
+                        }
+                    }
+
+                    <div class="d-flex gap-2 mt-auto flex-wrap">
+                        <form asp-action="TogglePublish" method="post" class="m-0" style="flex:1;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@quiz.Id" />
+                            <input type="hidden" name="courseId" value="@ViewBag.CourseId" />
+                            <button type="submit" class="btn btn-sm w-100 d-flex align-items-center justify-content-center fw-bold" style="height:36px; @(quiz.IsPublished ? "background:white; color:var(--color-danger); border:1px solid var(--color-danger);" : "background:var(--color-success-light); color:var(--color-success-dark); border:none;")">
+                                <i class="bi @(quiz.IsPublished ? "bi-eye-slash" : "bi-eye") me-1"></i> @(quiz.IsPublished ? "إلغاء النشر" : "نشر")
+                            </button>
+                        </form>
+
+                        <a asp-controller="QuizQuestion" asp-action="Index" asp-route-quizId="@quiz.Id" class="btn btn-sm d-flex align-items-center justify-content-center" style="width:36px; height:36px; background:var(--color-primary-light); color:var(--color-primary-dark); border:none;" title="الأسئلة">
+                            <i class="bi bi-list-ol"></i>
+                        </a>
+                        
+                        <a asp-action="Analytics" asp-route-id="@quiz.Id" class="btn btn-sm d-flex align-items-center justify-content-center" style="width:36px; height:36px; background:var(--color-indigo-light); color:var(--color-indigo-dark); border:none;" title="التحليلات">
+                            <i class="bi bi-bar-chart-fill"></i>
+                        </a>
+
+                        <a asp-action="Edit" asp-route-id="@quiz.Id" class="btn btn-sm btn-light d-flex align-items-center justify-content-center" style="width:36px; height:36px; border:1px solid var(--color-border); background:white;" title="تعديل">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        
+                        <form asp-action="Delete" method="post" class="m-0" onsubmit="return confirm('هل أنت متأكد من حذف هذا الاختبار؟ سيتم حذف جميع الأسئلة ونتائج الطلاب المرتبطة به.')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@quiz.Id" />
+                            <input type="hidden" name="courseId" value="@ViewBag.CourseId" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center" style="width:36px; height:36px; border:none; background:var(--color-danger-light); color:var(--color-danger-dark);" title="حذف">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

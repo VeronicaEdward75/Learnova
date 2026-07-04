@@ -1,0 +1,233 @@
+@model IEnumerable<LearnNova.Models.Entities.CourseContent>
+@{
+    ViewData["Title"] = "إدارة المحتوى";
+}
+
+<div class="mb-4">
+    <a asp-controller="Teacher" asp-action="MyCourses" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى كورساتي
+    </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">محتوى الكورس: @ViewBag.CourseTitle</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">إدارة الدروس والمحتوى التعليمي الخاص بالكورس.</p>
+    </div>
+    <a asp-action="Create" asp-route-courseId="@ViewBag.CourseId" class="btn-primary-custom" style="height:40px;">
+        <i class="bi bi-plus-circle me-1"></i> إضافة محتوى
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small mb-4">
+        <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger small mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="card-box p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom:1px solid var(--color-border);">
+        <div>
+            <h5 class="fw-bold mb-1" style="color:var(--color-text-primary);">المحتوى التعليمي</h5>
+            <div style="font-size:13px;color:var(--color-text-secondary);">يمكنك سحب وإفلات العناصر لإعادة ترتيبها</div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card-box p-5 text-center my-4" style="background:var(--color-surface-muted); box-shadow:none; border:1px dashed var(--color-border);">
+            <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:64px; height:64px; background:white; color:var(--color-text-secondary); border-radius:var(--radius-xl); box-shadow:var(--shadow-sm);">
+                <i class="bi bi-collection-play" style="font-size:28px;"></i>
+            </div>
+            <h5 class="fw-bold mb-2">لا يوجد محتوى بعد</h5>
+            <p class="text-muted mb-4" style="font-size:14px;">ابدأ بإضافة أول فيديو أو ملف PDF أو نص مقالي للكورس.</p>
+            <a asp-action="Create" asp-route-courseId="@ViewBag.CourseId" class="btn-primary-custom mx-auto" style="height:40px; padding:0 var(--space-5);">
+                <i class="bi bi-plus-circle me-2"></i> إضافة أول محتوى
+            </a>
+        </div>
+    }
+    else
+    {
+        <div id="sortable-list" class="d-flex flex-column gap-3">
+            @foreach (var item in Model)
+            {
+                <div class="content-item card-box p-3 d-flex align-items-center gap-3 hover-shadow-sm" data-id="@item.Id" draggable="true" style="cursor: grab; border: 1px solid var(--color-border); transition: all 0.2s ease;">
+                    <div class="drag-handle d-flex align-items-center justify-content-center" style="width:24px; color:var(--color-border-hover);">
+                        <i class="bi bi-grip-vertical fs-5"></i>
+                    </div>
+                    
+                    @{
+                        var icon = item.Type == LearnNova.Models.Enums.ContentType.Video
+                            ? "bi-play-circle-fill"
+                            : item.Type == LearnNova.Models.Enums.ContentType.Pdf
+                                ? "bi-file-earmark-pdf-fill"
+                                : "bi-file-earmark-text-fill";
+                        var iconColor = item.Type == LearnNova.Models.Enums.ContentType.Video
+                            ? "var(--color-primary)" : item.Type == LearnNova.Models.Enums.ContentType.Pdf ? "var(--color-danger)" : "var(--color-indigo)";
+                        var iconBg = item.Type == LearnNova.Models.Enums.ContentType.Video
+                            ? "rgba(201,166,107,0.1)" : item.Type == LearnNova.Models.Enums.ContentType.Pdf ? "rgba(239,68,68,0.1)" : "rgba(99,102,241,0.1)";
+                    }
+                    <div class="d-flex align-items-center justify-content-center" style="width:40px; height:40px; border-radius:var(--radius-md); background:@iconBg; color:@iconColor; flex-shrink:0;">
+                        <i class="bi @icon" style="font-size:20px;"></i>
+                    </div>
+                    
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold mb-1" style="font-size:15px;color:var(--color-text-primary);">@item.Title</div>
+                        <div class="d-flex gap-3 text-muted" style="font-size:12px; font-weight:600;">
+                            <span><i class="bi bi-bookmark me-1"></i>@(item.Type == LearnNova.Models.Enums.ContentType.Video ? "فيديو" : item.Type == LearnNova.Models.Enums.ContentType.Pdf ? "ملف PDF" : "مقال نصي")</span>
+                            @if (item.DurationSec.HasValue && item.Type == LearnNova.Models.Enums.ContentType.Video)
+                            {
+                                <span><i class="bi bi-clock me-1"></i>@(item.DurationSec / 60) دقيقة</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:1px solid var(--color-border); background:white;">
+                            <i class="bi bi-pencil" style="font-size:13px;"></i>
+                        </a>
+                        <form asp-action="Delete" method="post" class="m-0" onsubmit="return confirm('هل أنت متأكد من حذف هذا المحتوى؟');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <input type="hidden" name="courseId" value="@item.CourseId" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:none; background:var(--color-danger-light); color:var(--color-danger-dark);">
+                                <i class="bi bi-trash" style="font-size:13px;"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <form id="reorderForm" asp-action="Reorder" method="post" class="mt-4 p-4 card-box shadow-sm" style="display:none; background:var(--color-surface-muted); border:1px dashed var(--color-primary);">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="courseId" value="@ViewBag.CourseId" />
+            <div id="orderedIdsContainer"></div>
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2 text-primary fw-bold" style="font-size:14px;">
+                    <i class="bi bi-info-circle-fill"></i>
+                    تم تغيير ترتيب المحتوى. هل تريد حفظ الترتيب الجديد؟
+                </div>
+                <button type="button" id="saveOrderBtn" class="btn-primary-custom" style="height:36px; padding:0 20px;">
+                    <i class="bi bi-check-lg me-1"></i> حفظ الترتيب
+                </button>
+            </div>
+        </form>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        const list = document.getElementById('sortable-list');
+        if (list) {
+            let draggedItem = null;
+
+            list.addEventListener('dragstart', (e) => {
+                draggedItem = e.target.closest('.content-item');
+                if (draggedItem) {
+                    setTimeout(() => draggedItem.style.opacity = '0.5', 0);
+                }
+            });
+
+            list.addEventListener('dragend', (e) => {
+                if (draggedItem) {
+                    draggedItem.style.opacity = '1';
+                    draggedItem = null;
+                    checkOrderChanged();
+                }
+            });
+
+            list.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(list, e.clientY);
+                if (draggedItem) {
+                    if (afterElement == null) {
+                        list.appendChild(draggedItem);
+                    } else {
+                        list.insertBefore(draggedItem, afterElement);
+                    }
+                }
+            });
+
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.content-item:not([style*="opacity: 0.5"])')];
+                
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            let initialOrder = getOrder();
+
+            function getOrder() {
+                return [...list.querySelectorAll('.content-item')].map(item => item.dataset.id);
+            }
+
+            function checkOrderChanged() {
+                const currentOrder = getOrder();
+                if (JSON.stringify(currentOrder) !== JSON.stringify(initialOrder)) {
+                    document.getElementById('reorderForm').style.display = 'block';
+                    
+                    const container = document.getElementById('orderedIdsContainer');
+                    container.innerHTML = '';
+                    currentOrder.forEach((id, index) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `orderedIds[${index}]`;
+                        input.value = id;
+                        container.appendChild(input);
+                    });
+                } else {
+                    document.getElementById('reorderForm').style.display = 'none';
+                }
+            }
+
+            document.getElementById('saveOrderBtn')?.addEventListener('click', function() {
+                const form = document.getElementById('reorderForm');
+                const formData = new FormData(form);
+                const courseId = formData.get('courseId');
+                const token = formData.get('__RequestVerificationToken');
+                const currentOrder = getOrder();
+                
+                // Submit via AJAX
+                fetch(`@Url.Action("Reorder")?courseId=${courseId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(currentOrder.map(Number))
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        initialOrder = currentOrder;
+                        form.style.display = 'none';
+                        alert('تم حفظ الترتيب بنجاح');
+                    } else {
+                        alert('حدث خطأ: ' + res.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('حدث خطأ أثناء الاتصال بالخادم');
+                });
+            });
+            
+            // Allow clicking saveOrderBtn if not AJAX
+        }
+    </script>
+}

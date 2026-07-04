@@ -1,0 +1,197 @@
+@model LearnNova.Models.ViewModels.Student.QuizEngineViewModel
+@{
+    ViewData["Title"] = "الاختبار: " + Model.Title;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+            <div>
+                <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">@Model.Title</h3>
+                <p class="text-muted mb-0" style="font-size:14px;">@Model.Description</p>
+            </div>
+            
+            <div class="card-box px-4 py-3 d-flex align-items-center gap-3" style="background:var(--color-danger-light); border:1px solid rgba(225,29,72,0.2); box-shadow:var(--shadow-sm);">
+                <div style="width:40px; height:40px; border-radius:50%; background:white; color:var(--color-danger); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-xs);">
+                    <i class="bi bi-hourglass-split fs-5"></i>
+                </div>
+                <div>
+                    <div style="font-size:12px; color:var(--color-danger-dark); font-weight:600; margin-bottom:2px;">الوقت المتبقي</div>
+                    <div id="timerDisplay" class="fw-bold" style="font-size:24px; color:var(--color-danger); letter-spacing:1px; line-height:1;">--:--</div>
+                </div>
+            </div>
+        </div>
+
+        <form asp-action="SubmitQuiz" method="post" id="quizForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="QuizId" value="@Model.QuizId" />
+            <input type="hidden" name="AttemptId" value="@Model.AttemptId" />
+
+            @{
+                var questionsList = Model.Questions.OrderBy(x => x.OrderIndex).ToList();
+                int totalQuestions = questionsList.Count;
+            }
+            @for (int i = 0; i < totalQuestions; i++)
+            {
+                var q = questionsList[i];
+                <div class="card-box p-0 mb-4 question-container" id="question_@(i)" style="overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-sm); @(i == 0 ? "" : "display:none;")">
+                    <div class="p-4 border-bottom d-flex justify-content-between align-items-start" style="background:var(--color-surface-muted);">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width:40px; height:40px; border-radius:var(--radius-md); background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:18px; box-shadow:var(--shadow-xs);">
+                                @q.OrderIndex
+                            </div>
+                            <span class="text-muted" style="font-size:13px; font-weight:600;">من أصل @totalQuestions أسئلة</span>
+                        </div>
+                        <span class="badge" style="background:var(--color-warning-light); color:var(--color-warning-dark); border:1px solid rgba(245,158,11,0.2); padding:6px 12px; font-weight:600; font-size:12px;">
+                            <i class="bi bi-star-fill me-1"></i> @q.Points نقطة
+                        </span>
+                    </div>
+
+                    <div class="p-5">
+                        <h5 class="fw-bold mb-4 pb-3 border-bottom" style="color:var(--color-text-primary); line-height:1.6;">@q.Text</h5>
+
+                        <div class="d-flex flex-column gap-3">
+                            @if (q.Type == LearnNova.Models.Enums.QuestionType.MultipleChoice)
+                            {
+                                <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='var(--color-surface-muted)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
+                                    <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_A" value="أ" required onchange="updateRadioStyles(this)">
+                                    <span class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@q.OptionA</span>
+                                </label>
+                                <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='var(--color-surface-muted)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
+                                    <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_B" value="ب" required onchange="updateRadioStyles(this)">
+                                    <span class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@q.OptionB</span>
+                                </label>
+                                @if (!string.IsNullOrWhiteSpace(q.OptionC))
+                                {
+                                    <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='var(--color-surface-muted)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
+                                        <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_C" value="ج" required onchange="updateRadioStyles(this)">
+                                        <span class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@q.OptionC</span>
+                                    </label>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(q.OptionD))
+                                {
+                                    <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='var(--color-surface-muted)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
+                                        <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_D" value="د" required onchange="updateRadioStyles(this)">
+                                        <span class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@q.OptionD</span>
+                                    </label>
+                                }
+                            }
+                            else
+                            {
+                                <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-success)'; this.style.background='var(--color-success-light)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
+                                    <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_True" value="صح" required onchange="updateRadioStyles(this, 'success')">
+                                    <span class="fw-bold text-success" style="font-size:15px;"><i class="bi bi-check-lg me-2"></i> صح</span>
+                                </label>
+                                <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-danger)'; this.style.background='var(--color-danger-light)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
+                                    <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_False" value="خطأ" required onchange="updateRadioStyles(this, 'danger')">
+                                    <span class="fw-bold text-danger" style="font-size:15px;"><i class="bi bi-x-lg me-2"></i> خطأ</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+                <div class="d-flex justify-content-between align-items-center mt-5 mb-5 pt-4" style="border-top:1px solid var(--color-border-light);">
+                    <button type="button" class="btn btn-light px-4" id="btnPrev" onclick="navigate(-1)" style="display:none; height:48px; border:1px solid var(--color-border); font-weight:600;">
+                        <i class="bi bi-arrow-right me-2"></i> السؤال السابق
+                    </button>
+                    
+                    <button type="button" class="btn-primary-custom px-5 ms-auto" id="btnNext" onclick="navigate(1)" style="@(totalQuestions > 1 ? "" : "display:none;"); height:48px; font-weight:600;">
+                        السؤال التالي <i class="bi bi-arrow-left ms-2"></i>
+                    </button>
+
+                    <button type="button" class="btn btn-success px-5 ms-auto" id="btnSubmit" onclick="confirmSubmit()" style="@(totalQuestions == 1 ? "" : "display:none;"); height:48px; font-weight:600; box-shadow:0 4px 12px rgba(16,185,129,0.2);">
+                        <i class="bi bi-check2-all me-2 fs-5"></i> إنهاء وتسليم الاختبار
+                    </button>
+                </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateRadioStyles(radio, type = 'primary') {
+            const container = radio.closest('.d-flex.flex-column');
+            const labels = container.querySelectorAll('label');
+            
+            labels.forEach(lbl => {
+                lbl.style.borderColor = 'var(--color-border)';
+                lbl.style.background = 'var(--color-surface)';
+            });
+
+            const parentLabel = radio.closest('label');
+            if(type === 'primary') {
+                parentLabel.style.borderColor = 'var(--color-primary)';
+                parentLabel.style.background = 'var(--color-surface-muted)';
+            } else if (type === 'success') {
+                parentLabel.style.borderColor = 'var(--color-success)';
+                parentLabel.style.background = 'var(--color-success-light)';
+            } else if (type === 'danger') {
+                parentLabel.style.borderColor = 'var(--color-danger)';
+                parentLabel.style.background = 'var(--color-danger-light)';
+            }
+        }
+
+        let timeLeft = @(Model.TimeLimitMinutes * 60);
+        const timerDisplay = document.getElementById('timerDisplay');
+        const form = document.getElementById('quizForm');
+
+        function updateTimer() {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerDisplay.innerHTML = "00:00";
+                alert('انتهى الوقت! سيتم تسليم إجاباتك تلقائياً.');
+                
+                // Remove required attributes before auto-submit to prevent HTML5 blocking
+                const inputs = form.querySelectorAll('input[required]');
+                inputs.forEach(i => i.removeAttribute('required'));
+                
+                form.submit();
+                return;
+            }
+
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            
+            m = m < 10 ? '0' + m : m;
+            s = s < 10 ? '0' + s : s;
+            
+            timerDisplay.innerHTML = m + ":" + s;
+            timeLeft--;
+        }
+
+        const timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+
+        let currentQuestion = 0;
+        const totalQuestions = @(Model.Questions.Count);
+
+        function navigate(direction) {
+            document.getElementById('question_' + currentQuestion).style.display = 'none';
+            currentQuestion += direction;
+            document.getElementById('question_' + currentQuestion).style.display = 'block';
+
+            // Update buttons
+            document.getElementById('btnPrev').style.display = currentQuestion > 0 ? 'inline-block' : 'none';
+            
+            if (currentQuestion === totalQuestions - 1) {
+                document.getElementById('btnNext').style.display = 'none';
+                document.getElementById('btnSubmit').style.display = 'inline-block';
+            } else {
+                document.getElementById('btnNext').style.display = 'inline-block';
+                document.getElementById('btnSubmit').style.display = 'none';
+            }
+        }
+
+        function confirmSubmit() {
+            if (form.checkValidity()) {
+                if (confirm('هل أنت متأكد من تسليم الإجابات؟ لا يمكنك التراجع بعد التسليم.')) {
+                    form.submit();
+                }
+            } else {
+                form.reportValidity();
+            }
+        }
+    </script>
+}

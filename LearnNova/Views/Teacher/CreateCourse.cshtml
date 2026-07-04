@@ -1,0 +1,131 @@
+@model LearnNova.Models.ViewModels.Teacher.CourseFormViewModel
+@{
+    ViewData["Title"] = "إنشاء كورس جديد";
+}
+
+<div class="mb-4">
+    <a asp-action="MyCourses" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى كورساتي
+    </a>
+</div>
+
+<div class="d-flex align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">إنشاء كورس جديد</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">أدخل تفاصيل الكورس للبدء في إضافة المحتوى والمهام.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-box p-5">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-4"></div>
+
+            <form asp-action="CreateCourse" method="post" id="courseForm">
+                @Html.AntiForgeryToken()
+
+                <h5 class="fw-bold mb-4" style="color:var(--color-text-primary); border-bottom:1px solid var(--color-border); padding-bottom:12px;">المعلومات الأساسية</h5>
+
+                <div class="mb-4">
+                    <label asp-for="Title" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                    <input asp-for="Title" class="form-control-custom" style="height:48px;" placeholder="مثال: منهج الرياضيات للصف الأول الثانوي" />
+                    <span asp-validation-for="Title" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                    <textarea asp-for="Description" class="form-control-custom" rows="5"
+                              placeholder="وصف مختصر للكورس وما سيتعلمه الطالب، سيظهر للطلاب قبل الاشتراك..."
+                              style="resize:vertical"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <h5 class="fw-bold mb-4 mt-5" style="color:var(--color-text-primary); border-bottom:1px solid var(--color-border); padding-bottom:12px;">التصنيف والسعر</h5>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Subject" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <select asp-for="Subject" asp-items="Model.SubjectOptions" class="form-control-custom" style="height:48px;">
+                            <option value="">-- اختر المادة --</option>
+                        </select>
+                        <span asp-validation-for="Subject" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Price" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                            <input asp-for="Price" type="number" min="0" step="0.01" class="form-control border-0 shadow-none bg-white" style="height:46px;" placeholder="0" />
+                            <span class="input-group-text bg-white border-0 text-muted" style="font-size:13px; font-weight:600;">ج.م</span>
+                        </div>
+                        <span asp-validation-for="Price" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <label asp-for="Stage" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <select asp-for="Stage" asp-items="Model.StageOptions" class="form-control-custom" style="height:48px;" id="stageSelect">
+                            <option value="">-- اختر المرحلة --</option>
+                        </select>
+                        <span asp-validation-for="Stage" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="GradeLevel" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <select asp-for="GradeLevel" asp-items="Model.GradeOptions" class="form-control-custom" style="height:48px;" id="gradeSelect">
+                            <option value="">-- اختر الصف --</option>
+                        </select>
+                        <span asp-validation-for="GradeLevel" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 pt-3" style="border-top:1px solid var(--color-border);">
+                    <button type="submit" class="btn-primary-custom" style="height:48px; padding:0 var(--space-6);">
+                        <i class="bi bi-check-lg me-1"></i> حفظ الكورس
+                    </button>
+                    <a asp-action="MyCourses" class="btn btn-light" style="height:48px; padding:0 var(--space-6); display:flex; align-items:center; font-weight:600; border:1px solid var(--color-border); background:white;">
+                        إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 d-none d-lg-block">
+        <div class="card-box p-4" style="background:var(--color-surface-muted);">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-lightbulb text-warning" style="font-size:20px;"></i>
+                <h6 class="fw-bold mb-0">نصائح لإنشاء كورس مميز</h6>
+            </div>
+            <ul class="text-muted ps-3 mb-0" style="font-size:13px; line-height:1.7;">
+                <li class="mb-2">استخدم عنواناً واضحاً وجذاباً يعكس محتوى الكورس بدقة.</li>
+                <li class="mb-2">اكتب وصفاً مفصلاً يوضح ما سيتعلمه الطالب والمهارات المكتسبة.</li>
+                <li class="mb-2">حدد المرحلة والصف الدراسي بدقة لتسهيل وصول الطلاب للكورس.</li>
+                <li class="mb-0">بعد حفظ الكورس، ستتمكن من إضافة الدروس، المهام، والاختبارات في صفحة تفاصيل الكورس. الكورس سيكون محفوظاً كمسودة ولن يظهر للطلاب حتى تقوم بنشره.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Cascading grade dropdown based on selected stage (AJAX)
+        document.getElementById('stageSelect').addEventListener('change', function () {
+            const stage = this.value;
+            const gradeSelect = document.getElementById('gradeSelect');
+            gradeSelect.innerHTML = '<option value="">-- اختر الصف --</option>';
+
+            if (!stage) return;
+
+            fetch(`/Teacher/GetGradesByStage?stage=${encodeURIComponent(stage)}`)
+                .then(r => r.json())
+                .then(grades => {
+                    grades.forEach(g => {
+                        const opt = document.createElement('option');
+                        opt.value = g.num;
+                        opt.textContent = g.label;
+                        gradeSelect.appendChild(opt);
+                    });
+                });
+        });
+    </script>
+}

@@ -1,12 +1,31 @@
 @{
     ViewData["Title"] = "الرئيسية";
+    var fullName = User.FindFirst("FullName")?.Value ?? User.Identity!.Name;
+    var firstName = fullName?.Split(' ').FirstOrDefault() ?? "صديقي";
 }
 
-<div class="rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" style="background:linear-gradient(135deg,#4A2C22,#6F4E37)">
-    <div class="position-relative">
-        <h3 class="fw-bold mt-1 mb-1">مرحباً، @(User.FindFirst("FullName")?.Value ?? User.Identity!.Name) 👋</h3>
-        <p style="opacity:.85;font-size:13px;margin:0">
-            هذه صفحة رئيسية مؤقتة حتى يتم بناء لوحة @(User.IsInRole("Teacher") ? "المدرس" : "الطالب") الكاملة من باقي الفريق.
-        </p>
+<div class="hero-banner hero-student">
+    <div class="hero-banner-content">
+        <h3>مرحباً، @firstName 👋</h3>
+        <p>@(User.IsInRole("Teacher") ? "قم بإدارة كورساتك ومحتواك التعليمي من لوحة التحكم." : "واصل رحلتك التعليمية واستكشف كورسات جديدة اليوم.")</p>
     </div>
+</div>
+
+<div class="card-box p-5 mt-4 text-center" style="border:1px dashed var(--color-border-strong); background:transparent;">
+    <i class="bi bi-rocket-takeoff" style="font-size:48px; color:var(--color-primary); opacity:0.8;"></i>
+    <h5 class="mt-4 fw-bold" style="color:var(--color-text-primary)">مستعد للبدء؟</h5>
+    <p class="text-muted" style="max-width:400px; margin:0 auto 24px;">استعرض الكورسات المتاحة وابدأ في تطوير مهاراتك مع أفضل المدرسين.</p>
+    
+    @if (User.IsInRole("Teacher"))
+    {
+        <a asp-controller="Teacher" asp-action="Dashboard" class="btn-primary-custom" style="padding:0 var(--space-8); height:48px; font-size:14px; border-radius:var(--radius-lg)">
+            الذهاب إلى لوحة المدرس <i class="bi bi-arrow-left ms-2"></i>
+        </a>
+    }
+    else
+    {
+        <a asp-controller="Course" asp-action="Catalog" class="btn-primary-custom" style="padding:0 var(--space-8); height:48px; font-size:14px; border-radius:var(--radius-lg)">
+            تصفح الكورسات <i class="bi bi-arrow-left ms-2"></i>
+        </a>
+    }
 </div>

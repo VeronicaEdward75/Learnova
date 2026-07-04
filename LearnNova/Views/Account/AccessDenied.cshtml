@@ -1,12 +1,17 @@
 @{
-    // Uses the normal _Layout (not _AuthLayout) — a user who lands here is still logged in and
-    // still has a valid role-appropriate sidebar to sit inside (doc 4 §2.3).
     ViewData["Title"] = "غير مصرح بالوصول";
 }
 
-<div class="text-center py-5">
-    <div style="font-size:64px">🚫</div>
-    <h3 class="fw-bold mt-3">غير مصرح لك بالوصول لهذه الصفحة</h3>
-    <p style="color:var(--gray)">ليس لديك الصلاحية الكافية لعرض هذا المحتوى.</p>
-    <a asp-controller="Home" asp-action="Index" class="btn-primary-custom">العودة للرئيسية</a>
+<div class="card-box p-5 text-center mx-auto" style="max-width:500px; margin-top:10vh;">
+    <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:80px; height:80px; background:var(--color-danger-light); color:var(--color-danger); border-radius:var(--radius-xl);">
+        <i class="bi bi-shield-lock-fill" style="font-size:36px;"></i>
+    </div>
+    <h3 class="fw-bold mb-3" style="color:var(--color-text-primary); letter-spacing:-0.5px;">الوصول مرفوض</h3>
+    <p class="mb-4" style="color:var(--color-text-secondary); font-size:15px; line-height:1.6;">
+        عذراً، لا تملك الصلاحيات الكافية للوصول إلى هذه الصفحة. 
+        تأكد من تسجيل الدخول بحساب يمتلك الصلاحيات المطلوبة.
+    </p>
+    <a asp-controller="Home" asp-action="Index" class="btn-primary-custom" style="padding:0 var(--space-6); height:44px;">
+        <i class="bi bi-house-door me-2"></i> العودة للرئيسية
+    </a>
 </div>

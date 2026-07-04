@@ -1,0 +1,148 @@
+@model IEnumerable<LearnNova.Models.Entities.AssignmentSubmission>
+@{
+    ViewData["Title"] = "تسليمات الطلاب - " + ViewBag.AssignmentTitle;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" asp-route-courseId="@ViewBag.CourseId" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى المهام
+    </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">تسليمات الطلاب: @ViewBag.AssignmentTitle</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">مراجعة وتقييم إجابات الطلاب على هذه المهمة.</p>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small mb-4">
+        <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger small mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="card-box p-0" style="overflow-x:auto;">
+    <table class="table align-middle mb-0 custom-table">
+        <thead style="background:var(--color-surface-muted);">
+            <tr>
+                <th style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">الطالب</th>
+                <th style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">تاريخ التسليم</th>
+                <th style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">الحالة</th>
+                <th style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">الإجابة المرفقة</th>
+                <th style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border); min-width:320px;">التقييم</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="5" class="text-center py-5" style="border-bottom:none;">
+                        <div class="text-muted" style="font-size:14px;">
+                            <i class="bi bi-inbox fs-4 d-block mb-2 text-secondary"></i>
+                            لم يقم أي طالب بتسليم هذه المهمة حتى الآن.
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                foreach (var submission in Model)
+                {
+                    <tr style="border-bottom:1px solid var(--color-border-light);">
+                        <td style="padding:16px 24px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-placeholder" style="width:36px; height:36px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px;">
+                                    @submission.Student.FullName.Substring(0, 1)
+                                </div>
+                                <span class="fw-semibold text-dark" style="font-size:14px;">@submission.Student.FullName</span>
+                            </div>
+                        </td>
+                        <td style="padding:16px 24px; color:var(--color-text-secondary); font-size:13px;">
+                            @DateTimeService.ToLocal(submission.SubmittedAt).ToString("yyyy-MM-dd hh:mm tt")
+                        </td>
+                        <td style="padding:16px 24px;">
+                            @if (submission.Status == LearnNova.Models.Enums.SubmitStatus.Graded)
+                            {
+                                <span class="badge" style="background:var(--color-success-light); color:var(--color-success-dark); border:none; padding:6px 12px; font-size:12px; border-radius:var(--radius-full);">تم التقييم</span>
+                            }
+                            else if (submission.Status == LearnNova.Models.Enums.SubmitStatus.Late)
+                            {
+                                <span class="badge" style="background:var(--color-warning-light); color:var(--color-warning-dark); border:none; padding:6px 12px; font-size:12px; border-radius:var(--radius-full);">متأخر</span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:var(--color-indigo-light); color:var(--color-indigo-dark); border:none; padding:6px 12px; font-size:12px; border-radius:var(--radius-full);">بانتظار التقييم</span>
+                            }
+                        </td>
+                        <td style="padding:16px 24px;">
+                            <div class="d-flex flex-column gap-2">
+                                @if (!string.IsNullOrEmpty(submission.FileUrl))
+                                {
+                                    <a href="@submission.FileUrl" target="_blank" class="btn btn-sm btn-light d-inline-flex align-items-center" style="font-size:12px; font-weight:600; width:fit-content; border:1px solid var(--color-border);">
+                                        <i class="bi bi-download me-1 text-primary"></i> تحميل الملف
+                                    </a>
+                                }
+                                @if (!string.IsNullOrEmpty(submission.TextAnswer))
+                                {
+                                    <button type="button" class="btn btn-sm btn-light d-inline-flex align-items-center" style="font-size:12px; font-weight:600; width:fit-content; border:1px solid var(--color-border);"
+                                            data-bs-toggle="modal" data-bs-target="#textModal-@submission.Id">
+                                        <i class="bi bi-card-text me-1 text-indigo"></i> عرض النص
+                                    </button>
+
+                                    <!-- Text Modal -->
+                                    <div class="modal fade" id="textModal-@submission.Id" tabindex="-1">
+                                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                                            <div class="modal-content border-0 shadow-lg" style="border-radius:var(--radius-lg); overflow:hidden;">
+                                                <div class="modal-header border-bottom-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h5 class="modal-title fw-bold" style="color:var(--color-text-primary);">إجابة الطالب: @submission.Student.FullName</h5>
+                                                        <p class="text-muted mb-0" style="font-size:13px;">تاريخ التسليم: @DateTimeService.ToLocal(submission.SubmittedAt).ToString("yyyy-MM-dd hh:mm tt")</p>
+                                                    </div>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body p-4 pt-3">
+                                                    <div class="p-4 rounded" style="background:var(--color-surface-muted); font-size:14.5px; color:var(--color-text-primary); line-height:1.7; white-space:pre-wrap; border:1px solid var(--color-border);">@submission.TextAnswer</div>
+                                                </div>
+                                                <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
+                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="font-weight:600;">إغلاق</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                @if (string.IsNullOrEmpty(submission.FileUrl) && string.IsNullOrEmpty(submission.TextAnswer))
+                                {
+                                    <span class="text-muted" style="font-size:12px; font-style:italic;">لا توجد إجابة مرفقة</span>
+                                }
+                            </div>
+                        </td>
+                        <td style="padding:16px 24px;">
+                            <form asp-action="Grade" method="post" class="d-flex align-items-center gap-2 m-0 p-2 rounded" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="SubmissionId" value="@submission.Id" />
+                                <input type="hidden" name="AssignmentId" value="@submission.AssignmentId" />
+
+                                <div class="d-flex align-items-center gap-1" style="background:white; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:0 8px;">
+                                    <input type="number" name="Grade" value="@(submission.Grade)" class="form-control border-0 shadow-none text-center p-0" style="width:40px; height:32px; font-size:13px; font-weight:bold;" placeholder="0" min="0" max="@ViewBag.MaxGrade" required />
+                                    <span class="text-muted" style="font-size:12px; font-weight:600; padding-left:4px; border-left:1px solid var(--color-border-light);">/ @ViewBag.MaxGrade</span>
+                                </div>
+
+                                <input type="text" name="TeacherComment" value="@submission.TeacherComment" class="form-control border-0 shadow-none" style="height:34px; font-size:12px; border-radius:var(--radius-md); flex:1;" placeholder="ملاحظات (اختياري)..." />
+                                
+                                <button type="submit" class="btn btn-sm btn-primary" style="height:34px; font-weight:600; padding:0 12px; border-radius:var(--radius-md);">حفظ</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,74 @@
+@model LearnNova.Models.ViewModels.Teacher.AssignmentFormViewModel
+@{
+    ViewData["Title"] = "إضافة مهمة - " + ViewBag.CourseTitle;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" asp-route-courseId="@Model.CourseId" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى المهام
+    </a>
+</div>
+
+<div class="d-flex align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">إضافة مهمة جديدة</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">للكورس: @ViewBag.CourseTitle</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-box p-5">
+            <h5 class="fw-bold mb-4" style="color:var(--color-text-primary); border-bottom:1px solid var(--color-border); padding-bottom:12px;">تفاصيل المهمة</h5>
+
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="CourseId" />
+
+                <div class="mb-4">
+                    <label asp-for="Title" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                    <input asp-for="Title" class="form-control-custom" style="height:48px;" placeholder="مثال: الواجب الأول - أساسيات البرمجة" />
+                    <span asp-validation-for="Title" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                    <textarea asp-for="Description" class="form-control-custom" rows="5" placeholder="اكتب وصف المهمة بالتفصيل، ما المطلوب من الطالب وكيفية التسليم..." style="resize:vertical;"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <label asp-for="DueDate" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                            <span class="input-group-text bg-white border-0 text-muted px-3"><i class="bi bi-calendar-event"></i></span>
+                            <input asp-for="DueDate" type="datetime-local" class="form-control border-0 shadow-none bg-white" style="height:46px;" />
+                        </div>
+                        <span asp-validation-for="DueDate" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="MaxGrade" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                            <span class="input-group-text bg-white border-0 text-muted px-3"><i class="bi bi-award"></i></span>
+                            <input asp-for="MaxGrade" type="number" class="form-control border-0 shadow-none bg-white" style="height:46px;" />
+                        </div>
+                        <span asp-validation-for="MaxGrade" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 pt-3" style="border-top:1px solid var(--color-border);">
+                    <button type="submit" class="btn-primary-custom" style="height:48px; padding:0 var(--space-6);">
+                        <i class="bi bi-check-lg me-1"></i> حفظ المهمة
+                    </button>
+                    <a asp-action="Index" asp-route-courseId="@Model.CourseId" class="btn btn-light" style="height:48px; padding:0 var(--space-6); display:flex; align-items:center; font-weight:600; border:1px solid var(--color-border); background:white;">
+                        إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

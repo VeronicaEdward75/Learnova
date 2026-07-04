@@ -1,0 +1,153 @@
+@model LearnNova.Models.ViewModels.Student.AssignmentSubmitViewModel
+@{
+    ViewData["Title"] = "تفاصيل المهمة - " + Model.Assignment.Title;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" asp-route-courseId="@Model.Assignment.CourseId" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى المهام
+    </a>
+</div>
+
+<div class="d-flex align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">تفاصيل المهمة</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">مهمة: @Model.Assignment.Title</p>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small mb-4 d-flex align-items-center">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i> @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger small mb-4 d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card-box p-5 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-4 pb-4" style="border-bottom:1px solid var(--color-border-light);">
+                <div>
+                    <h4 class="fw-bold mb-2" style="color:var(--color-text-primary);">@Model.Assignment.Title</h4>
+                    <span class="badge" style="background:var(--color-indigo-light); color:var(--color-indigo-dark); border:1px solid rgba(79,70,229,0.2); padding:6px 12px; font-weight:600; font-size:12px;">
+                        الدرجة القصوى: @Model.Assignment.MaxGrade
+                    </span>
+                </div>
+                
+                @{
+                    var isLateInfo = DateTimeService.UtcNow() > Model.Assignment.DueDate && Model.ExistingSubmission == null;
+                }
+                
+                <div class="p-3 rounded text-center" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light); min-width:140px;">
+                    <div class="text-muted mb-1" style="font-size:11px; font-weight:600;">تاريخ الاستحقاق</div>
+                    <div class="fw-bold @(isLateInfo ? "text-danger" : "text-dark")" style="font-size:13px;">
+                        @DateTimeService.ToLocal(Model.Assignment.DueDate).ToString("yyyy-MM-dd")<br>
+                        @DateTimeService.ToLocal(Model.Assignment.DueDate).ToString("hh:mm tt")
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h6 class="fw-bold mb-3 d-flex align-items-center" style="color:var(--color-text-primary); font-size:15px;">
+                    <i class="bi bi-card-text me-2 text-primary"></i> وصف المهمة
+                </h6>
+                <div class="p-4 rounded" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light); color:var(--color-text-secondary); white-space:pre-wrap; font-size:14px; line-height:1.8;">@Model.Assignment.Description</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card-box p-5 h-100" style="background:var(--color-surface-muted);">
+            <h5 class="fw-bold mb-4 d-flex align-items-center" style="color:var(--color-text-primary);">
+                <i class="bi bi-cloud-arrow-up me-2 text-primary"></i> تسليم المهمة
+            </h5>
+
+            @if (Model.ExistingSubmission != null)
+            {
+                var isGraded = Model.ExistingSubmission.Status == LearnNova.Models.Enums.SubmitStatus.Graded;
+
+                <div class="alert @(isGraded ? "alert-success" : "alert-info") mb-4 d-flex align-items-start gap-3" style="border:none; border-left:4px solid @(isGraded ? "var(--color-success)" : "var(--color-info)"); border-radius:var(--radius-sm);">
+                    <i class="bi @(isGraded ? "bi-check-circle-fill text-success" : "bi-info-circle-fill text-info") fs-4"></i>
+                    <div>
+                        <div class="fw-bold mb-1" style="font-size:14px;">@(isGraded ? "تم التقييم" : "قيد المراجعة")</div>
+                        <div style="font-size:13px; opacity:0.8;">@(isGraded ? "قام المعلم بتقييم هذه المهمة." : "تم تسليم هذه المهمة، في انتظار تقييم المعلم.")</div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-white rounded mb-4" style="border:1px solid var(--color-border-light); box-shadow:var(--shadow-xs);">
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="text-muted small mb-1 fw-semibold">تاريخ التسليم</div>
+                        <div class="fw-bold text-dark" style="font-size:14px;">@DateTimeService.ToLocal(Model.ExistingSubmission.SubmittedAt).ToString("yyyy-MM-dd hh:mm tt")</div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.ExistingSubmission.FileUrl))
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="text-muted small mb-2 fw-semibold">الملف المرفق</div>
+                            <a href="@Model.ExistingSubmission.FileUrl" target="_blank" class="btn btn-light w-100" style="height:44px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:1px solid var(--color-border); background:white;">
+                                <i class="bi bi-download me-2"></i> تحميل الملف
+                            </a>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.ExistingSubmission.TextAnswer))
+                    {
+                        <div>
+                            <div class="text-muted small mb-2 fw-semibold">الإجابة النصية</div>
+                            <div class="p-3 rounded" style="background:var(--color-surface-muted); font-size:13px; white-space:pre-wrap; border:1px solid var(--color-border-light);">@Model.ExistingSubmission.TextAnswer</div>
+                        </div>
+                    }
+                </div>
+
+                @if (isGraded)
+                {
+                    <div class="p-4 rounded" style="background:var(--color-success-light); border:1px solid rgba(16,185,129,0.2);">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="fw-bold text-success-dark">الدرجة النهائية:</div>
+                            <div class="fw-bold text-success" style="font-size:24px;">@Model.ExistingSubmission.Grade <span class="text-muted fs-6">/ @Model.Assignment.MaxGrade</span></div>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.ExistingSubmission.TeacherComment))
+                        {
+                            <div class="pt-3" style="border-top:1px dashed rgba(16,185,129,0.3);">
+                                <div class="text-success-dark small fw-semibold mb-2"><i class="bi bi-chat-quote me-1"></i> ملاحظات المعلم:</div>
+                                <div class="p-3 rounded bg-white" style="color:var(--color-text-secondary); font-size:13px; border:1px solid rgba(16,185,129,0.2);">
+                                    @Model.ExistingSubmission.TeacherComment
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <form asp-action="Submit" method="post" enctype="multipart/form-data" class="bg-white p-4 rounded" style="border:1px solid var(--color-border-light); box-shadow:var(--shadow-xs);">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="assignmentId" value="@Model.Assignment.Id" />
+
+                    <div class="mb-4">
+                        <label asp-for="TextAnswer" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <textarea asp-for="TextAnswer" class="form-control-custom" rows="5" placeholder="اكتب إجابتك هنا (اختياري إن كان هناك ملف)..." style="resize:vertical; background:var(--color-surface-muted);"></textarea>
+                    </div>
+
+                    <div class="mb-4 p-4 rounded text-center" style="border:2px dashed var(--color-border); background:var(--color-surface-muted);">
+                        <i class="bi bi-cloud-arrow-up text-primary d-block mb-2" style="font-size:32px;"></i>
+                        <label asp-for="File" class="form-label fw-semibold d-block mb-2" style="font-size:14px; cursor:pointer;">إرفاق ملف</label>
+                        <input asp-for="File" type="file" class="form-control form-control-sm mx-auto w-75" />
+                        <div class="form-text mt-2" style="font-size:11px;">الامتدادات المسموحة: PDF, صور, ملفات مضغوطة.</div>
+                    </div>
+
+                    <button type="submit" class="btn-primary-custom w-100" style="height:48px; justify-content:center; font-weight:600; font-size:14px; box-shadow:0 4px 12px rgba(111,78,55,0.2);">
+                        <i class="bi bi-send-check me-2 fs-5"></i> تأكيد تسليم المهمة
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+</div>

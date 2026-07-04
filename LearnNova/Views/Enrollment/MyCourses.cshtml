@@ -1,0 +1,79 @@
+@model IEnumerable<LearnNova.Models.Entities.Enrollment>
+@{
+    ViewData["Title"] = "كورساتي";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">كورساتي</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">الكورسات التي اشتركت بها وتتابع التعلم فيها</p>
+    </div>
+    <a asp-controller="Course" asp-action="Catalog" class="btn-primary-custom" style="height:44px;">
+        <i class="bi bi-search me-1"></i> تصفح المزيد من الكورسات
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card-box p-5 text-center my-4" style="background:var(--color-surface-muted); box-shadow:none; border:1px dashed var(--color-border);">
+        <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:80px; height:80px; background:white; color:var(--color-text-secondary); border-radius:var(--radius-xl); box-shadow:var(--shadow-sm);">
+            <i class="bi bi-mortarboard" style="font-size:36px;"></i>
+        </div>
+        <h5 class="fw-bold mb-2">لم تشترك في أي كورس بعد</h5>
+        <p class="text-muted mb-4" style="font-size:14px;">تصفح الكورسات المتاحة وابدأ رحلتك التعليمية الآن.</p>
+        <a asp-controller="Course" asp-action="Catalog" class="btn-primary-custom mx-auto" style="height:48px; padding:0 var(--space-6);">
+            <i class="bi bi-grid-fill me-2"></i> تصفح الكورسات المتاحة
+        </a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var enrollment in Model)
+        {
+            var course = enrollment.Course;
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card-box p-0 h-100 d-flex flex-column" style="overflow:hidden; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';">
+                    <div style="height:140px; background:linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); display:flex; align-items:center; justify-content:center; position:relative;">
+                        <i class="bi bi-journal-richtext text-white opacity-50" style="font-size:48px"></i>
+                        <div style="position:absolute; bottom:0; left:0; right:0; height:40%; background:linear-gradient(to top, rgba(0,0,0,0.3), transparent);"></div>
+                        <span class="badge position-absolute d-flex align-items-center gap-1" style="bottom:-12px; right:20px; background:white; color:var(--color-success-dark); border:1px solid var(--color-success-light); font-size:11px; font-weight:600; padding:6px 12px; border-radius:var(--radius-full); box-shadow:var(--shadow-sm);">
+                            <span style="width:6px; height:6px; border-radius:50%; background:var(--color-success);"></span>
+                            مسجل
+                        </span>
+                    </div>
+
+                    <div class="p-4 pt-4 d-flex flex-column flex-grow-1">
+                        <div class="mb-3 mt-2 d-flex flex-wrap gap-2">
+                            <span class="badge" style="background:var(--color-indigo-light); color:var(--color-indigo-dark); padding:6px 10px; font-weight:600; font-size:11px;">@course.Subject</span>
+                            <span class="badge" style="background:var(--color-surface-muted); color:var(--color-text-secondary); border:1px solid var(--color-border); padding:6px 10px; font-weight:600; font-size:11px;">@course.Stage</span>
+                        </div>
+                        
+                        <h5 class="fw-bold mb-2" style="color:var(--color-text-primary); font-size:16px;">@course.Title</h5>
+                        
+                        <div class="d-flex align-items-center mb-4 text-muted" style="font-size:13px;">
+                            <div class="avatar-placeholder me-2" style="width:24px; height:24px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold;">
+                                @course.Teacher.FullName.Substring(0,1)
+                            </div>
+                            @course.Teacher.FullName
+                        </div>
+                        
+                        <div class="mt-auto d-flex flex-column gap-2">
+                            <a asp-controller="Learning" asp-action="Index" asp-route-courseId="@course.Id" class="btn-primary-custom w-100" style="height:44px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:14px;">
+                                متابعة التعلم <i class="bi bi-play-circle ms-2 fs-5"></i>
+                            </a>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="StudentAssignment" asp-action="Index" asp-route-courseId="@course.Id" class="btn btn-light flex-grow-1" style="height:40px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:1px solid var(--color-border); background:white;">
+                                    المهام <i class="bi bi-journal-check ms-1 text-primary"></i>
+                                </a>
+                                <a asp-controller="QuizEngine" asp-action="Index" asp-route-courseId="@course.Id" class="btn btn-light flex-grow-1" style="height:40px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:1px solid var(--color-border); background:white;">
+                                    الاختبارات <i class="bi bi-ui-checks ms-1 text-primary"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

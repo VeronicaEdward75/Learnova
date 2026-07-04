@@ -1,0 +1,159 @@
+@model LearnNova.Models.ViewModels.Teacher.QuestionFormViewModel
+@{
+    ViewData["Title"] = "إضافة سؤال جديد - " + ViewBag.QuizTitle;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" asp-route-quizId="@ViewBag.QuizId" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى الأسئلة
+    </a>
+</div>
+
+<div class="d-flex align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">إضافة سؤال جديد</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">للاختبار: @ViewBag.QuizTitle</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-box p-5">
+            <h5 class="fw-bold mb-4" style="color:var(--color-text-primary); border-bottom:1px solid var(--color-border); padding-bottom:12px;">تفاصيل السؤال</h5>
+
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="QuizId" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-4"></div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
+                        <label asp-for="Text" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <textarea asp-for="Text" class="form-control-custom" rows="4" placeholder="اكتب نص السؤال هنا..." style="resize:vertical;"></textarea>
+                        <span asp-validation-for="Text" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Points" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                            <input asp-for="Points" type="number" class="form-control border-0 shadow-none bg-white" style="height:46px;" min="1" value="1" />
+                            <span class="input-group-text bg-light border-0 text-muted px-3" style="font-size:13px; font-weight:600; border-right:1px solid var(--color-border) !important;">نقطة</span>
+                        </div>
+                        <span asp-validation-for="Points" class="text-danger small mt-1 d-block"></span>
+
+                        <label asp-for="Type" class="form-label fw-semibold mt-4" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <select asp-for="Type" class="form-select border-0 shadow-none" style="height:46px; border:1px solid var(--color-border) !important; border-radius:var(--radius-md);" id="questionTypeSelect">
+                            <option value="0">اختيار من متعدد</option>
+                            <option value="1">صح أو خطأ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="p-4 mb-4 rounded" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);" id="optionsContainer">
+                    <h6 class="fw-bold mb-3 d-flex align-items-center" style="color:var(--color-text-primary); font-size:14px;"><i class="bi bi-ui-radios me-2 text-primary"></i> خيارات الإجابة</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6" id="optA-container">
+                            <label asp-for="OptionA" class="form-label text-muted fw-semibold" style="font-size:12px">الخيار الأول (أ)</label>
+                            <input asp-for="OptionA" class="form-control-custom" style="height:42px;" placeholder="اكتب الخيار الأول..." />
+                            <span asp-validation-for="OptionA" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                        
+                        <div class="col-md-6" id="optB-container">
+                            <label asp-for="OptionB" class="form-label text-muted fw-semibold" style="font-size:12px">الخيار الثاني (ب)</label>
+                            <input asp-for="OptionB" class="form-control-custom" style="height:42px;" placeholder="اكتب الخيار الثاني..." />
+                            <span asp-validation-for="OptionB" class="text-danger small mt-1 d-block"></span>
+                        </div>
+                        
+                        <div class="col-md-6" id="optC-container">
+                            <label asp-for="OptionC" class="form-label text-muted fw-semibold" style="font-size:12px">الخيار الثالث (ج)</label>
+                            <input asp-for="OptionC" class="form-control-custom" style="height:42px;" placeholder="اكتب الخيار الثالث..." />
+                        </div>
+                        
+                        <div class="col-md-6" id="optD-container">
+                            <label asp-for="OptionD" class="form-label text-muted fw-semibold" style="font-size:12px">الخيار الرابع (د)</label>
+                            <input asp-for="OptionD" class="form-control-custom" style="height:42px;" placeholder="اكتب الخيار الرابع..." />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="CorrectAnswer" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                    <select asp-for="CorrectAnswer" class="form-select border-0 shadow-none w-50" style="height:46px; border:1px solid var(--color-border) !important; border-radius:var(--radius-md); font-weight:600;" id="correctAnswerSelect">
+                        <!-- Populated by JS -->
+                    </select>
+                    <span asp-validation-for="CorrectAnswer" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="d-flex gap-3 pt-3" style="border-top:1px solid var(--color-border);">
+                    <button type="submit" class="btn-primary-custom" style="height:48px; padding:0 var(--space-6);">
+                        <i class="bi bi-check-lg me-1"></i> حفظ السؤال
+                    </button>
+                    <a asp-action="Index" asp-route-quizId="@ViewBag.QuizId" class="btn btn-light" style="height:48px; padding:0 var(--space-6); display:flex; align-items:center; font-weight:600; border:1px solid var(--color-border); background:white;">
+                        إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const typeSelect = document.getElementById('questionTypeSelect');
+            const optA = document.getElementById('optA-container');
+            const optB = document.getElementById('optB-container');
+            const optC = document.getElementById('optC-container');
+            const optD = document.getElementById('optD-container');
+            
+            const optAInput = document.getElementById('OptionA');
+            const optBInput = document.getElementById('OptionB');
+            const correctAnswerSelect = document.getElementById('correctAnswerSelect');
+            
+            const prevCorrectAnswer = '@Model.CorrectAnswer';
+
+            function updateUI() {
+                const type = typeSelect.value;
+                correctAnswerSelect.innerHTML = ''; // Clear
+
+                if (type === '1') { // True/False
+                    optC.style.display = 'none';
+                    optD.style.display = 'none';
+                    
+                    optAInput.value = 'صح';
+                    optAInput.readOnly = true;
+                    optBInput.value = 'خطأ';
+                    optBInput.readOnly = true;
+
+                    correctAnswerSelect.add(new Option('أ / صح', 'صح'));
+                    correctAnswerSelect.add(new Option('ب / خطأ', 'خطأ'));
+                } else { // MCQ
+                    optC.style.display = 'block';
+                    optD.style.display = 'block';
+                    
+                    optAInput.readOnly = false;
+                    optBInput.readOnly = false;
+                    if(optAInput.value === 'صح') optAInput.value = '';
+                    if(optBInput.value === 'خطأ') optBInput.value = '';
+
+                    correctAnswerSelect.add(new Option('أ (الخيار الأول)', 'أ'));
+                    correctAnswerSelect.add(new Option('ب (الخيار الثاني)', 'ب'));
+                    correctAnswerSelect.add(new Option('ج (الخيار الثالث)', 'ج'));
+                    correctAnswerSelect.add(new Option('د (الخيار الرابع)', 'د'));
+                }
+
+                // Restore previous selection if applicable
+                for(let i = 0; i < correctAnswerSelect.options.length; i++){
+                    if(correctAnswerSelect.options[i].value === prevCorrectAnswer){
+                        correctAnswerSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            typeSelect.addEventListener('change', updateUI);
+            updateUI(); // Initial run
+        });
+    </script>
+}

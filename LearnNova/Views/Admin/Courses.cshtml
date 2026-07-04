@@ -1,62 +1,102 @@
 @model IEnumerable<LearnNova.Models.Entities.Course>
 @{
     string isPublishedFilter = (string)ViewBag.IsPublishedFilter;
+    ViewData["Title"] = "إدارة الكورسات";
 }
 
-<div class="section-title">📚 الكورسات</div>
-<div class="section-sub">إشراف على جميع الكورسات ونشرها</div>
+<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">إدارة الكورسات</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">إشراف على جميع الكورسات ونشرها على المنصة.</p>
+    </div>
+</div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success small">@TempData["SuccessMessage"]</div>
+    <div class="alert alert-success small mb-4">
+        <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+    </div>
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger small">@TempData["ErrorMessage"]</div>
+    <div class="alert alert-danger small mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+    </div>
 }
 
-<form method="get" class="d-flex gap-2 mb-3 flex-wrap align-items-center">
-    <select name="isPublished" class="form-control-custom" style="max-width:170px">
-        <option value="">كل الحالات</option>
-        <option value="true" selected="@(isPublishedFilter == "true")">منشور</option>
-        <option value="false" selected="@(isPublishedFilter == "false")">غير منشور</option>
-    </select>
-    <div class="input-group" style="max-width:260px">
-        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-        <input name="term" class="form-control border-start-0" placeholder="ابحث بعنوان الكورس أو المدرس..." value="@ViewBag.Term" />
-    </div>
-    <button type="submit" class="btn-outline-custom">بحث</button>
-</form>
+<div class="card-box p-4 mb-4">
+    <form method="get" class="d-flex flex-wrap gap-3 align-items-center">
+        <div class="flex-grow-1" style="min-width: 280px; max-width:400px;">
+            <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                <span class="input-group-text bg-white border-0 text-muted px-3"><i class="bi bi-search"></i></span>
+                <input name="term" class="form-control border-0 shadow-none bg-white" style="height:44px; font-size:14px;" placeholder="ابحث بعنوان الكورس أو المدرس..." value="@ViewBag.Term" />
+            </div>
+        </div>
+        <select name="isPublished" class="form-control-custom bg-white" style="width:160px; height:44px; box-shadow:var(--shadow-xs);">
+            <option value="">كل الحالات</option>
+            <option value="true" selected="@(isPublishedFilter == "true")">منشور</option>
+            <option value="false" selected="@(isPublishedFilter == "false")">غير منشور</option>
+        </select>
+        <button type="submit" class="btn-outline-custom" style="height:44px;">تصفية</button>
+    </form>
+</div>
 
 @if (!Model.Any())
 {
-    <div class="empty-state"><div class="es-ico">📭</div><div>لا توجد كورسات مطابقة</div></div>
+    <div class="card-box p-5 text-center mt-4">
+        <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:64px; height:64px; background:var(--color-surface-muted); color:var(--color-text-secondary); border-radius:var(--radius-xl);">
+            <i class="bi bi-journal-text" style="font-size:28px;"></i>
+        </div>
+        <h5 class="fw-bold mb-2">لا توجد كورسات</h5>
+        <p class="text-muted" style="font-size:14px;">لم يتم العثور على أي كورسات تطابق معايير البحث.</p>
+    </div>
 }
 else
 {
-    <div class="card-box p-0" style="overflow-x:auto">
+    <div class="card-box p-0" style="overflow-x:auto;">
         <table class="table align-middle mb-0">
             <thead>
-                <tr style="font-size:12.5px;color:var(--gray)">
-                    <th>العنوان</th><th>المادة</th><th>المرحلة</th><th>المدرس</th><th>السعر</th><th>الحالة</th><th>إجراءات</th>
+                <tr>
+                    <th style="padding-right:var(--space-5);">العنوان</th>
+                    <th>المادة</th>
+                    <th>المرحلة</th>
+                    <th>المدرس</th>
+                    <th>السعر</th>
+                    <th>الحالة</th>
+                    <th class="text-start" style="padding-left:var(--space-5);">إجراءات</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var course in Model)
                 {
-                    <tr style="font-size:13.5px">
-                        <td class="fw-semibold">@course.Title</td>
-                        <td>@course.Subject</td>
-                        <td style="color:var(--gray);font-size:12px">@course.Stage @(course.GradeLevel > 0 ? $"- {course.GradeLevel}" : "")</td>
-                        <td>@course.Teacher.FullName</td>
-                        <td>@course.Price ج.م</td>
-                        <td><span class="badge-status @(course.IsPublished ? "badge-ok" : "badge-late")">@(course.IsPublished ? "منشور" : "غير منشور")</span></td>
+                    <tr>
+                        <td class="fw-semibold" style="padding-right:var(--space-5); color:var(--color-text-primary);">
+                            @course.Title
+                        </td>
+                        <td class="text-muted" style="font-size:13px;">@course.Subject</td>
+                        <td class="text-muted" style="font-size:13px;">
+                            @course.Stage @(course.GradeLevel > 0 ? $"- {course.GradeLevel}" : "")
+                        </td>
                         <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="d-flex align-items-center justify-content-center fw-bold" style="width:24px;height:24px;border-radius:var(--radius-sm);background:rgba(201,166,107,0.1);color:var(--color-primary);font-size:10px;">
+                                    @(course.Teacher.FullName.Trim().Length > 0 ? course.Teacher.FullName.Trim()[0].ToString() : "؟")
+                                </div>
+                                <span style="font-size:13px; font-weight:600;">@course.Teacher.FullName</span>
+                            </div>
+                        </td>
+                        <td style="font-size:13px; font-weight:600;">@course.Price ج.م</td>
+                        <td>
+                            <span class="badge @(course.IsPublished ? "badge-success" : "badge-warning")" style="font-weight:600; font-size:11px; padding:6px 10px; border-radius:var(--radius-full);">
+                                @(course.IsPublished ? "منشور" : "غير منشور")
+                            </span>
+                        </td>
+                        <td class="text-start" style="padding-left:var(--space-5);">
                             <form method="post" asp-action="TogglePublish">
                                 <input type="hidden" name="id" value="@course.Id" />
                                 <input type="hidden" name="isPublished" value="@(!course.IsPublished)" />
                                 <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
-                                <button type="submit" class="btn btn-sm @(course.IsPublished ? "btn-outline-custom" : "btn-primary-custom")">
+                                <button type="submit" class="btn btn-sm @(course.IsPublished ? "btn-outline-danger" : "btn-success-custom")" style="font-size:12px; font-weight:600; height:auto; padding:4px 12px; @(course.IsPublished ? "" : "box-shadow:none;")">
                                     @(course.IsPublished ? "إلغاء النشر" : "نشر")
                                 </button>
                             </form>

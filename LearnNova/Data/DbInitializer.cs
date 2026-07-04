@@ -10,6 +10,7 @@ public static class DbInitializer
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+        var dateTimeService = services.GetRequiredService<LearnNova.Services.DateTimeService.IDateTimeService>();
 
         foreach (var role in Enum.GetNames<UserRole>())
         {
@@ -30,7 +31,7 @@ public static class DbInitializer
                 FullName = "مدير النظام",
                 Role = UserRole.Admin,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = dateTimeService.UtcNow()
             };
 
             var result = await userManager.CreateAsync(admin, "Admin@12345");

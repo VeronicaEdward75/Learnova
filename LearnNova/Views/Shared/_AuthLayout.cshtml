@@ -6,12 +6,27 @@
     <title>@ViewData["Title"] - LearnNova</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/cairo.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/learnnova.css" asp-append-version="true" />
 </head>
 <body>
-<div id="login-screen">
-    @RenderBody()
-</div>
+    <div class="auth-split-layout">
+        <div class="auth-split-visual">
+            <div class="auth-visual-content">
+                <div class="logo-large">LN</div>
+                <h1 class="fw-bold text-white mb-3">منصة LearnNova</h1>
+                <p class="text-white-50 fs-5">بيئة التعلم الذكية للمستقبل. حيث يلتقي الإبداع بالمعرفة.</p>
+            </div>
+            <!-- Decorative mesh overlay -->
+            <div class="auth-visual-mesh"></div>
+        </div>
+        <div class="auth-split-form">
+            <div class="auth-form-container">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 @await RenderSectionAsync("Scripts", required: false)

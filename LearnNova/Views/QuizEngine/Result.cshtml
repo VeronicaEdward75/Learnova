@@ -1,0 +1,77 @@
+@model LearnNova.Models.ViewModels.Student.QuizResultViewModel
+@{
+    ViewData["Title"] = "نتيجة الاختبار";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card-box p-0 text-center mt-5 mb-5" style="overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-md);">
+            
+            @if (Model.Passed)
+            {
+                <div class="p-5" style="background:linear-gradient(135deg, var(--color-success-light), #d1fae5); border-bottom:1px solid rgba(16,185,129,0.2);">
+                    <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:100px; height:100px; border-radius:50%; background:white; color:var(--color-success); box-shadow:0 10px 25px rgba(16,185,129,0.3);">
+                        <i class="bi bi-award-fill" style="font-size:56px;"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2 text-success-dark">مبارك، لقد اجتزت الاختبار بنجاح!</h2>
+                    <p class="text-success mb-0 fw-semibold" style="font-size:15px; opacity:0.9;">أداء ممتاز في اختبار "@Model.QuizTitle"</p>
+                </div>
+            }
+            else
+            {
+                <div class="p-5" style="background:linear-gradient(135deg, var(--color-danger-light), #fee2e2); border-bottom:1px solid rgba(225,29,72,0.2);">
+                    <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:100px; height:100px; border-radius:50%; background:white; color:var(--color-danger); box-shadow:0 10px 25px rgba(225,29,72,0.3);">
+                        <i class="bi bi-exclamation-octagon-fill" style="font-size:56px;"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2 text-danger-dark">للأسف، لم تجتز الاختبار</h2>
+                    <p class="text-danger mb-0 fw-semibold" style="font-size:15px; opacity:0.9;">يمكنك المحاولة مرة أخرى إذا كان لديك محاولات متبقية.</p>
+                </div>
+            }
+
+            <div class="p-5 bg-white">
+                <div class="row g-4 mb-5 text-start">
+                    <div class="col-6">
+                        <div class="p-4 rounded h-100 d-flex flex-column justify-content-center" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                            <div class="d-flex align-items-center gap-2 mb-2 text-muted" style="font-weight:600;">
+                                <i class="bi bi-bullseye text-primary"></i> الدرجة النهائية
+                            </div>
+                            <div class="fw-bold" style="font-size:32px; color:var(--color-primary); line-height:1;">@Model.Score <span style="font-size:16px; color:var(--color-text-secondary); font-weight:normal;">/ @Model.TotalPoints</span></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-4 rounded h-100 d-flex flex-column justify-content-center" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                            <div class="d-flex align-items-center gap-2 mb-2 text-muted" style="font-weight:600;">
+                                <i class="bi bi-percent text-info"></i> النسبة المئوية
+                            </div>
+                            <div class="fw-bold" style="font-size:32px; color:var(--color-text-primary); line-height:1;">@Model.Percentage%</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-4 rounded h-100 d-flex flex-column justify-content-center" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                            <div class="d-flex align-items-center gap-2 mb-2 text-muted" style="font-weight:600;">
+                                <i class="bi bi-stopwatch text-warning"></i> الوقت المستغرق
+                            </div>
+                            <div class="fw-bold" style="font-size:20px; color:var(--color-text-primary);">
+                                @(Model.DurationSeconds / 60) دقيقة و @(Model.DurationSeconds % 60) ثانية
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-4 rounded h-100 d-flex flex-column justify-content-center" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                            <div class="d-flex align-items-center gap-2 mb-2 text-muted" style="font-weight:600;">
+                                <i class="bi bi-arrow-repeat text-secondary"></i> المحاولات المستخدمة
+                            </div>
+                            <div class="fw-bold" style="font-size:20px; color:var(--color-text-primary);">@Model.AttemptNumber <span style="font-size:14px; color:var(--color-text-secondary); font-weight:normal;">من @Model.MaxAttempts</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 pt-3 border-top">
+                    <a asp-controller="Enrollment" asp-action="MyCourses" class="btn btn-light px-5" style="height:48px; display:flex; align-items:center; font-weight:600; font-size:14px; border:1px solid var(--color-border); background:white;">
+                        <i class="bi bi-house me-2"></i> العودة للكورسات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

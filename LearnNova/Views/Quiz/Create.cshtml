@@ -1,0 +1,90 @@
+@model LearnNova.Models.ViewModels.Teacher.QuizFormViewModel
+@{
+    ViewData["Title"] = "إضافة اختبار جديد - " + ViewBag.CourseTitle;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" asp-route-courseId="@ViewBag.CourseId" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى الاختبارات
+    </a>
+</div>
+
+<div class="d-flex align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">إضافة اختبار جديد</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">إعداد اختبار جديد للكورس: @ViewBag.CourseTitle</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-box p-5">
+            <h5 class="fw-bold mb-4" style="color:var(--color-text-primary); border-bottom:1px solid var(--color-border); padding-bottom:12px;">تفاصيل الاختبار الأساسية</h5>
+
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="CourseId" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-4"></div>
+
+                <div class="mb-4">
+                    <label asp-for="Title" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                    <input asp-for="Title" class="form-control-custom" style="height:48px;" placeholder="مثال: اختبار الوحدة الأولى" />
+                    <span asp-validation-for="Title" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="mb-5">
+                    <label asp-for="Description" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                    <textarea asp-for="Description" class="form-control-custom" rows="4" placeholder="وصف محتوى الاختبار أو إرشادات للطلاب..." style="resize:vertical;"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <h5 class="fw-bold mb-4" style="color:var(--color-text-primary); border-bottom:1px solid var(--color-border); padding-bottom:12px;">إعدادات التقييم والوقت</h5>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-4">
+                        <label asp-for="TimeLimitMinutes" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                            <span class="input-group-text bg-white border-0 text-muted px-3"><i class="bi bi-clock"></i></span>
+                            <input asp-for="TimeLimitMinutes" type="number" class="form-control border-0 shadow-none bg-white" style="height:46px;" min="1" value="30" />
+                            <span class="input-group-text bg-light border-0 text-muted px-3" style="font-size:13px; font-weight:600; border-right:1px solid var(--color-border) !important;">دقيقة</span>
+                        </div>
+                        <span asp-validation-for="TimeLimitMinutes" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label asp-for="PassingScore" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                            <span class="input-group-text bg-white border-0 text-muted px-3"><i class="bi bi-check-circle"></i></span>
+                            <input asp-for="PassingScore" type="number" class="form-control border-0 shadow-none bg-white" style="height:46px;" min="0" value="50" />
+                            <span class="input-group-text bg-light border-0 text-muted px-3" style="font-size:13px; font-weight:600; border-right:1px solid var(--color-border) !important;">درجة</span>
+                        </div>
+                        <span asp-validation-for="PassingScore" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label asp-for="MaxAttempts" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
+                        <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                            <span class="input-group-text bg-white border-0 text-muted px-3"><i class="bi bi-arrow-repeat"></i></span>
+                            <input asp-for="MaxAttempts" type="number" class="form-control border-0 shadow-none bg-white" style="height:46px;" min="1" value="1" />
+                            <span class="input-group-text bg-light border-0 text-muted px-3" style="font-size:13px; font-weight:600; border-right:1px solid var(--color-border) !important;">مرة</span>
+                        </div>
+                        <span asp-validation-for="MaxAttempts" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 pt-3" style="border-top:1px solid var(--color-border);">
+                    <button type="submit" class="btn-primary-custom" style="height:48px; padding:0 var(--space-6);">
+                        <i class="bi bi-check-lg me-1"></i> حفظ الاختبار
+                    </button>
+                    <a asp-action="Index" asp-route-courseId="@ViewBag.CourseId" class="btn btn-light" style="height:48px; padding:0 var(--space-6); display:flex; align-items:center; font-weight:600; border:1px solid var(--color-border); background:white;">
+                        إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

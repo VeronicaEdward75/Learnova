@@ -1,0 +1,176 @@
+@model LearnNova.Models.Entities.Course
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="mb-4">
+    <a asp-controller="Course" asp-action="Catalog" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى تصفح الكورسات
+    </a>
+</div>
+
+<div class="row g-4">
+    @* Left: main info *@
+    <div class="col-12 col-lg-8">
+        <div class="card-box p-0 mb-4" style="overflow:hidden;">
+            @* Header strip *@
+            <div style="height:200px; background:linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); display:flex; align-items:center; justify-content:center; position:relative;">
+                <i class="bi bi-journal-richtext text-white opacity-50" style="font-size:80px"></i>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:50%; background:linear-gradient(to top, rgba(0,0,0,0.4), transparent);"></div>
+            </div>
+
+            <div class="p-5">
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge" style="background:var(--color-indigo-light); color:var(--color-indigo-dark); padding:6px 12px; font-weight:600; font-size:12px;">@Model.Subject</span>
+                    <span class="badge" style="background:var(--color-surface-muted); color:var(--color-text-secondary); border:1px solid var(--color-border); padding:6px 12px; font-weight:600; font-size:12px;">@Model.Stage</span>
+                    @{
+                        var gradeLabel = LearnNova.Models.Lookups.CurriculumLookup.GetGradeLabel(Model.Stage, Model.GradeLevel);
+                    }
+                    @if (!string.IsNullOrEmpty(gradeLabel))
+                    {
+                        <span class="badge" style="background:var(--color-success-light); color:var(--color-success-dark); padding:6px 12px; font-weight:600; font-size:12px;">@gradeLabel</span>
+                    }
+                </div>
+
+                <h2 class="fw-bold mb-3" style="color:var(--color-text-primary); letter-spacing:-0.5px;">@Model.Title</h2>
+
+                <div class="d-flex align-items-center mb-4 pb-4" style="border-bottom:1px solid var(--color-border-light);">
+                    <div class="avatar-placeholder me-3" style="width:40px; height:40px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:bold;">
+                        @Model.Teacher.FullName.Substring(0,1)
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size:12px; font-weight:600;">مقدم الكورس</div>
+                        <div class="fw-bold" style="color:var(--color-text-primary); font-size:14px;">@Model.Teacher.FullName</div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3" style="color:var(--color-text-primary); font-size:16px;">عن هذا الكورس</h5>
+                
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div style="font-size:14px; color:var(--color-text-secondary); line-height:1.8;">
+                        @Model.Description
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 rounded text-center" style="background:var(--color-surface-muted); border:1px dashed var(--color-border);">
+                        <i class="bi bi-info-circle text-muted mb-2 d-block fs-4"></i>
+                        <p class="mb-0 text-muted" style="font-size:13px;">لم يُضف المدرس وصفاً لهذا الكورس بعد.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (Model.Contents.Any())
+        {
+            <div class="card-box p-5">
+                <h5 class="fw-bold mb-4 d-flex align-items-center" style="color:var(--color-text-primary); font-size:16px;">
+                    <i class="bi bi-collection-play me-2 text-primary"></i> محتوى الكورس
+                </h5>
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var item in Model.Contents.OrderBy(c => c.OrderIndex))
+                    {
+                        <div class="d-flex align-items-center gap-3 p-3 rounded" style="border:1px solid var(--color-border); background:var(--color-surface); transition:background 0.2s, border-color 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='var(--color-surface-muted)';" onmouseout="this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)';">
+                            @{
+                                var icon = item.Type == LearnNova.Models.Enums.ContentType.Video
+                                    ? "bi-play-circle-fill"
+                                    : item.Type == LearnNova.Models.Enums.ContentType.Pdf
+                                        ? "bi-file-earmark-pdf-fill"
+                                        : "bi-file-earmark-text-fill";
+                                var iconColor = item.Type == LearnNova.Models.Enums.ContentType.Video
+                                    ? "var(--color-indigo)" : "var(--color-danger)";
+                                var iconBg = item.Type == LearnNova.Models.Enums.ContentType.Video
+                                    ? "var(--color-indigo-light)" : "var(--color-danger-light)";
+                            }
+                            <div style="width:40px; height:40px; border-radius:var(--radius-md); background:@iconBg; color:@iconColor; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <i class="bi @icon" style="font-size:20px;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold" style="font-size:14px; color:var(--color-text-primary);">@item.Title</div>
+                                <div class="text-muted mt-1" style="font-size:12px;">@item.Type.ToString()</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    @* Right: price & enroll sidebar *@
+    <div class="col-12 col-lg-4">
+        <div class="card-box p-4 position-sticky" style="top:20px;">
+            <div class="p-4 mb-4 rounded text-center" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                <div class="fw-bold mb-1" style="font-size:32px; color:var(--color-text-primary); letter-spacing:-1px;">
+                    @(Model.Price == 0 ? "مجانًا" : Model.Price.ToString("N0") + " ج.م")
+                </div>
+                <div class="text-muted" style="font-size:13px;">
+                    @(Model.Price == 0 ? "هذا الكورس متاح مجانًا للجميع" : "سعر الاشتراك الشامل في الكورس")
+                </div>
+            </div>
+
+            <h6 class="fw-bold mb-3" style="font-size:14px; color:var(--color-text-primary);">ماذا يتضمن هذا الكورس؟</h6>
+            
+            <div class="d-flex flex-column gap-3 mb-4 text-muted" style="font-size:13px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:28px; height:28px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <span>@Model.Contents.Count درس تعليمي</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:28px; height:28px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-mortarboard"></i>
+                    </div>
+                    <span>@Model.Stage — @(gradeLabel ?? "الصف الدراسي")</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:28px; height:28px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-infinity"></i>
+                    </div>
+                    <span>وصول مدى الحياة للمحتوى</span>
+                </div>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success small text-center mb-4">
+                    <i class="bi bi-check-circle-fill d-block mb-1 fs-5"></i>
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger small text-center mb-4">
+                    <i class="bi bi-exclamation-triangle-fill d-block mb-1 fs-5"></i>
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <div class="pt-3" style="border-top:1px solid var(--color-border-light);">
+                @if (ViewBag.IsEnrolled == true)
+                {
+                    <div class="p-3 mb-3 text-center rounded" style="background:var(--color-success-light); border:1px solid rgba(16,185,129,0.2);">
+                        <i class="bi bi-check-circle-fill text-success fs-4 mb-2 d-block"></i>
+                        <div class="fw-bold text-success mb-1" style="font-size:14px;">أنت مسجل في هذا الكورس</div>
+                        <div style="font-size:12px; color:var(--color-success-dark);">يمكنك الوصول لمحتوى الكورس الآن</div>
+                    </div>
+                    
+                    <a asp-controller="Enrollment" asp-action="MyCourses" class="btn btn-light w-100" style="height:48px; display:flex; align-items:center; justify-content:center; font-weight:600; border:1px solid var(--color-border); background:white;">
+                        الانتقال إلى كورساتي <i class="bi bi-arrow-left ms-2"></i>
+                    </a>
+                }
+                else
+                {
+                    <form asp-controller="Enrollment" asp-action="Enroll" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="courseId" value="@Model.Id" />
+                        <button type="submit" class="btn-primary-custom w-100" style="height:48px; justify-content:center; font-size:14px; font-weight:600; box-shadow:0 4px 12px rgba(111,78,55,0.2);">
+                            <i class="bi bi-lightning-charge-fill me-2"></i> اشترك الآن في الكورس
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

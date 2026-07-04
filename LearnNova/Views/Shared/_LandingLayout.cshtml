@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>@ViewData["Title"] - LearnNova</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    
+    <!-- Fonts and Design Tokens -->
+    <link rel="stylesheet" href="~/css/cairo.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/learnnova.css" asp-append-version="true" />
+    
+    <!-- Premium Landing Page CSS -->
+    <link rel="stylesheet" href="~/css/landing.css" asp-append-version="true" />
+</head>
+<body class="landing-body">
+    
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-progress-container">
+        <div class="scroll-progress-bar" id="scrollBar"></div>
+    </div>
+
+    <!-- Background Elements (Blobs & Particles) -->
+    <div class="bg-elements">
+        <div class="bg-blob blob-1"></div>
+        <div class="bg-blob blob-2"></div>
+        <div class="bg-blob blob-3"></div>
+        <div class="bg-noise"></div>
+    </div>
+
+    <!-- Premium Sticky Header -->
+    <nav class="premium-navbar" id="mainNav">
+        <div class="container d-flex justify-content-between align-items-center">
+            <!-- Brand -->
+            <a href="/" class="landing-brand text-decoration-none d-flex align-items-center gap-2">
+                <div class="landing-logo-icon">LN</div>
+                <span class="landing-logo-text fw-bold">LearnNova</span>
+            </a>
+            
+            <!-- Desktop Links -->
+            <div class="landing-nav-links d-none d-lg-flex align-items-center gap-4">
+                <a href="#hero" class="nav-link-item">الرئيسية</a>
+                <a href="#features" class="nav-link-item">المميزات</a>
+                <a href="#courses" class="nav-link-item">الكورسات</a>
+                <a href="#instructors" class="nav-link-item">المدربون</a>
+                <a href="#testimonials" class="nav-link-item">آراء الطلاب</a>
+                <a href="#faq" class="nav-link-item">الأسئلة</a>
+                <a href="#contact" class="nav-link-item">اتصل بنا</a>
+            </div>
+            
+            <!-- Actions -->
+            <div class="landing-nav-actions d-none d-lg-flex align-items-center gap-3">
+                <button class="icon-btn" aria-label="Search" title="بحث">
+                    <i class="bi bi-search"></i>
+                </button>
+                <button class="icon-btn" aria-label="Toggle Dark Mode" title="الوضع الليلي">
+                    <i class="bi bi-moon"></i>
+                </button>
+                <div class="nav-separator"></div>
+                <a asp-controller="Account" asp-action="Login" class="btn-text">تسجيل الدخول</a>
+                <a asp-controller="Account" asp-action="Register" class="btn-premium ripple">
+                    ابدأ الآن <i class="bi bi-arrow-left ms-2"></i>
+                </a>
+            </div>
+            
+            <!-- Mobile Toggle -->
+            <button class="landing-mobile-toggle d-lg-none" id="mobileMenuBtn">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenu">
+        <div class="mobile-menu-inner">
+            <button class="close-menu-btn" id="closeMenuBtn"><i class="bi bi-x-lg"></i></button>
+            <div class="d-flex flex-column gap-4 mt-5">
+                <a href="#hero" class="mobile-nav-link">الرئيسية</a>
+                <a href="#features" class="mobile-nav-link">المميزات</a>
+                <a href="#courses" class="mobile-nav-link">الكورسات</a>
+                <a href="#instructors" class="mobile-nav-link">المدربون</a>
+                <a href="#testimonials" class="mobile-nav-link">آراء الطلاب</a>
+                <a href="#faq" class="mobile-nav-link">الأسئلة الشائعة</a>
+                <hr class="border-secondary opacity-25 my-2" />
+                <a asp-controller="Account" asp-action="Login" class="btn-text text-center fs-5">تسجيل الدخول</a>
+                <a asp-controller="Account" asp-action="Register" class="btn-premium text-center ripple py-3">ابدأ مجاناً</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="landing-main position-relative">
+        @RenderBody()
+    </main>
+
+    <!-- Huge Premium Footer -->
+    <footer id="contact" class="premium-footer position-relative">
+        <!-- Footer decorative glow -->
+        <div class="footer-glow"></div>
+        <div class="container position-relative z-1">
+            <div class="footer-top row g-5">
+                <!-- Brand Column -->
+                <div class="col-12 col-lg-4">
+                    <a href="/" class="landing-brand text-decoration-none d-flex align-items-center gap-2 mb-4">
+                        <div class="landing-logo-icon">LN</div>
+                        <span class="landing-logo-text fw-bold text-white fs-3">LearnNova</span>
+                    </a>
+                    <p class="footer-text mb-4 pe-lg-4">
+                        المنصة التعليمية الرائدة التي تعيد تعريف مستقبل التعليم. صُممت خصيصاً لتمكين المعلمين وإلهام الطلاب بأسلوب عصري ومبتكر.
+                    </p>
+                    <div class="footer-social d-flex gap-3">
+                        <a href="#" class="social-icon"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="social-icon"><i class="bi bi-github"></i></a>
+                        <a href="#" class="social-icon"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+
+                <!-- Links Columns -->
+                <div class="col-6 col-md-4 col-lg-2">
+                    <h5 class="footer-title">عن المنصة</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">من نحن</a></li>
+                        <li><a href="#">المميزات</a></li>
+                        <li><a href="#">قصص النجاح</a></li>
+                        <li><a href="#">الوظائف</a></li>
+                        <li><a href="#">المدونة</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-2">
+                    <h5 class="footer-title">روابط سريعة</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">الكورسات</a></li>
+                        <li><a href="#">المدربون</a></li>
+                        <li><a href="#">الأسعار</a></li>
+                        <li><a href="#">الشركاء</a></li>
+                        <li><a href="#">خريطة الموقع</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact & Newsletter -->
+                <div class="col-12 col-md-4 col-lg-4">
+                    <h5 class="footer-title">تواصل معنا</h5>
+                    <ul class="footer-contact">
+                        <li><i class="bi bi-envelope"></i> hello@learnnova.com</li>
+                        <li><i class="bi bi-telephone"></i> +20 100 123 4567</li>
+                        <li><i class="bi bi-geo-alt"></i> القاهرة، جمهورية مصر العربية</li>
+                    </ul>
+                    
+                    <h5 class="footer-title mt-4">النشرة البريدية</h5>
+                    <p class="footer-text small mb-3">اشترك ليصلك أحدث الكورسات والمقالات التعليمية.</p>
+                    <form class="newsletter-form position-relative">
+                        <input type="email" class="form-control newsletter-input" placeholder="البريد الإلكتروني..." required />
+                        <button type="submit" class="newsletter-btn"><i class="bi bi-send"></i></button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom mt-5 pt-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="copyright text-muted" style="font-size:14px;">
+                    &copy; @DateTime.Now.Year LearnNova Inc. جميع الحقوق محفوظة.
+                </div>
+                <div class="legal-links d-flex gap-4" style="font-size:14px;">
+                    <a href="#" class="text-muted text-decoration-none hover-white">سياسة الخصوصية</a>
+                    <a href="#" class="text-muted text-decoration-none hover-white">شروط الاستخدام</a>
+                    <a href="#" class="text-muted text-decoration-none hover-white">ملفات تعريف الارتباط</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to top button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to Top">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/landing.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

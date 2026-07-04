@@ -1,6 +1,7 @@
 using LearnNova.Models.Entities;
 using LearnNova.Models.Enums;
 using LearnNova.Repositories;
+using LearnNova.Services.DateTimeService;
 using Microsoft.AspNetCore.Identity;
 
 namespace LearnNova.Services;
@@ -9,11 +10,13 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IDateTimeService _dateTimeService;
 
-    public UserService(IUserRepository userRepository, UserManager<ApplicationUser> userManager)
+    public UserService(IUserRepository userRepository, UserManager<ApplicationUser> userManager, IDateTimeService dateTimeService)
     {
         _userRepository = userRepository;
         _userManager = userManager;
+        _dateTimeService = dateTimeService;
     }
 
     public Task<IEnumerable<ApplicationUser>> GetAllUsersAsync() => _userRepository.GetAllAsync();
@@ -32,7 +35,7 @@ public class UserService : IUserService
     {
         user.Role = role;
         user.UserName = user.Email;
-        user.CreatedAt = DateTime.UtcNow;
+        user.CreatedAt = _dateTimeService.UtcNow();
         user.IsActive = isActive;
 
         var result = await _userManager.CreateAsync(user, password);

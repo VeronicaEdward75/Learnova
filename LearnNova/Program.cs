@@ -1,5 +1,6 @@
 using LearnNova.Data;
 using LearnNova.Models.Entities;
+using LearnNova.Extensions;
 using LearnNova.Repositories;
 using LearnNova.Services;
 using Microsoft.AspNetCore.Identity;
@@ -30,13 +31,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
-builder.Services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ICourseRepository, CourseRepository>();
-builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
@@ -47,6 +42,14 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+else
+{
+    // Ensure we handle exceptions smoothly even in development, but we could use developer exception page.
+    // For this specific requirement, we will use UseExceptionHandler to test error pages.
+    app.UseExceptionHandler("/Home/Error");
+}
+
+app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 
 app.UseHttpsRedirection();
 app.UseRouting();

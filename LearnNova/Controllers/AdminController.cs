@@ -111,7 +111,7 @@ public class AdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ToggleActive(string id, bool isActive, string? returnUrl)
+    public async Task<IActionResult> ToggleActive(string id, bool targetStatus, string? returnUrl)
     {
         var currentUserId = _userManager.GetUserId(User);
         if (id == currentUserId)
@@ -120,10 +120,10 @@ public class AdminController : Controller
             return LocalRedirectOrDefault(returnUrl, nameof(Users));
         }
 
-        var result = await _userService.SetActiveStatusAsync(id, isActive);
+        var result = await _userService.SetActiveStatusAsync(id, targetStatus);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
             result.Succeeded
-                ? (isActive ? "تم تفعيل الحساب بنجاح." : "تم إيقاف الحساب بنجاح.")
+                ? (targetStatus ? "تم تفعيل الحساب بنجاح." : "تم إيقاف الحساب بنجاح.")
                 : string.Join(" ", result.Errors);
 
         return LocalRedirectOrDefault(returnUrl, nameof(Users));

@@ -1,0 +1,161 @@
+@model LearnNova.Models.ViewModels.Teacher.QuizAnalyticsViewModel
+@{
+    ViewData["Title"] = "إحصائيات الاختبار";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" asp-route-courseId="@Model.CourseId" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+        <i class="bi bi-arrow-right me-1"></i> العودة إلى الاختبارات
+    </a>
+</div>
+
+<div class="d-flex align-items-end mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">إحصائيات: @Model.QuizTitle</h3>
+        <p class="text-muted mb-0" style="font-size:14px;">تحليل أداء الطلاب ونتائج الاختبار بشكل تفصيلي.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card-box p-4 h-100 position-relative overflow-hidden" style="border:1px solid var(--color-border);">
+            <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--color-indigo);"></div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="text-muted" style="font-size:13px; font-weight:600;">متوسط الدرجات</div>
+                <div style="width:32px; height:32px; border-radius:50%; background:var(--color-indigo-light); color:var(--color-indigo-dark); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-calculator"></i>
+                </div>
+            </div>
+            <div class="fw-bold mb-1" style="font-size:32px; color:var(--color-text-primary); letter-spacing:-1px;">@Model.AverageScore%</div>
+            <div class="text-muted" style="font-size:12px;">من إجمالي المحاولات</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-box p-4 h-100 position-relative overflow-hidden" style="border:1px solid var(--color-border);">
+            <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--color-success);"></div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="text-muted" style="font-size:13px; font-weight:600;">نسبة النجاح</div>
+                <div style="width:32px; height:32px; border-radius:50%; background:var(--color-success-light); color:var(--color-success-dark); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-award"></i>
+                </div>
+            </div>
+            <div class="fw-bold mb-1" style="font-size:32px; color:var(--color-success); letter-spacing:-1px;">@Model.PassRate%</div>
+            <div class="text-muted" style="font-size:12px;">مقارنة بدرجة النجاح المطلوبة</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-box p-4 h-100 position-relative overflow-hidden" style="border:1px solid var(--color-border);">
+            <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--color-warning);"></div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="text-muted" style="font-size:13px; font-weight:600;">أعلى درجة</div>
+                <div style="width:32px; height:32px; border-radius:50%; background:var(--color-warning-light); color:var(--color-warning-dark); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-trophy"></i>
+                </div>
+            </div>
+            <div class="fw-bold mb-1" style="font-size:32px; color:var(--color-text-primary); letter-spacing:-1px;">@Model.HighestScore</div>
+            <div class="text-muted" style="font-size:12px;">أقل درجة: <span class="fw-bold">@Model.LowestScore</span></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-box p-4 h-100 position-relative overflow-hidden" style="border:1px solid var(--color-border);">
+            <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--color-primary);"></div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="text-muted" style="font-size:13px; font-weight:600;">إجمالي المحاولات</div>
+                <div style="width:32px; height:32px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+            <div class="fw-bold mb-1" style="font-size:32px; color:var(--color-text-primary); letter-spacing:-1px;">@Model.TotalAttempts</div>
+            <div class="text-muted" style="font-size:12px;">من <span class="fw-bold text-dark">@Model.UniqueStudentsAttempted</span> طالب مختلف</div>
+        </div>
+    </div>
+</div>
+
+<div class="card-box p-0" style="overflow:hidden;">
+    <div class="d-flex justify-content-between align-items-center p-4 border-bottom flex-wrap gap-3" style="background:var(--color-surface-muted);">
+        <h5 class="fw-bold mb-0" style="color:var(--color-text-primary); font-size:16px;"><i class="bi bi-list-check me-2 text-primary"></i>قائمة المحاولات والنتائج</h5>
+        
+        <form method="get" class="d-flex gap-2">
+            <div class="input-group" style="width:250px; border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                <span class="input-group-text bg-white border-0 text-muted px-2"><i class="bi bi-search"></i></span>
+                <input type="text" name="searchTerm" class="form-control border-0 shadow-none bg-white" placeholder="ابحث باسم الطالب..." value="@Model.SearchTerm" style="height:36px; font-size:13px;">
+            </div>
+            <div style="width:160px; border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
+                <select name="sortBy" class="form-select border-0 shadow-none bg-white" style="height:36px; font-size:13px;" onchange="this.form.submit()">
+                    <!option value="Newest" @(Model.SortBy == "Newest" || string.IsNullOrEmpty(Model.SortBy) ? "selected" : "")>الأحدث أولاً</!option>
+                    <!option value="Oldest" @(Model.SortBy == "Oldest" ? "selected" : "")>الأقدم أولاً</!option>
+                    <!option value="Highest" @(Model.SortBy == "Highest" ? "selected" : "")>الأعلى درجة</!option>
+                    <!option value="Lowest" @(Model.SortBy == "Lowest" ? "selected" : "")>الأقل درجة</!option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="height:36px; padding:0 16px; font-size:13px; font-weight:600; border-radius:var(--radius-md);">
+                تطبيق
+            </button>
+        </form>
+    </div>
+
+    @if (!Model.StudentAttempts.Any())
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-1 mb-2 d-block text-secondary opacity-50"></i>
+            <p style="font-size:14px;">لا توجد بيانات مطابقة للبحث.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 custom-table">
+                <thead style="background:white;">
+                    <tr>
+                        <th style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">الطالب</th>
+                        <th class="text-center" style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">الدرجة</th>
+                        <th class="text-center" style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">النسبة</th>
+                        <th class="text-center" style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">الحالة</th>
+                        <th class="text-center" style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">رقم المحاولة</th>
+                        <th style="padding:16px 24px; font-size:13px; font-weight:600; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border);">تاريخ التسليم</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var student in Model.StudentAttempts)
+                    {
+                        <tr style="border-bottom:1px solid var(--color-border-light);">
+                            <td style="padding:16px 24px;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-placeholder" style="width:32px; height:32px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;">
+                                        @student.StudentName.Substring(0, 1)
+                                    </div>
+                                    <span class="fw-semibold text-dark" style="font-size:14px;">@student.StudentName</span>
+                                </div>
+                            </td>
+                            <td class="text-center" style="padding:16px 24px;">
+                                <span class="fw-bold text-dark">@student.Score</span> <span class="text-muted" style="font-size:12px;">/ @student.TotalPoints</span>
+                            </td>
+                            <td class="text-center" style="padding:16px 24px;">
+                                <span class="fw-bold" style="color:var(--color-indigo);">@student.Percentage%</span>
+                            </td>
+                            <td class="text-center" style="padding:16px 24px;">
+                                @if (student.Passed)
+                                {
+                                    <span class="badge" style="background:var(--color-success-light); color:var(--color-success-dark); border:none; padding:6px 12px; font-size:12px; border-radius:var(--radius-full);">ناجح</span>
+                                }
+                                else
+                                {
+                                    <span class="badge" style="background:var(--color-danger-light); color:var(--color-danger-dark); border:none; padding:6px 12px; font-size:12px; border-radius:var(--radius-full);">راسب</span>
+                                }
+                            </td>
+                            <td class="text-center text-muted" style="padding:16px 24px; font-size:13px;">
+                                <span class="bg-light px-2 py-1 rounded border">@student.AttemptNumber</span>
+                            </td>
+                            <td style="padding:16px 24px; color:var(--color-text-secondary); font-size:13px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-clock"></i>
+                                    @DateTimeService.ToLocal(student.SubmittedAt).ToString("yyyy-MM-dd hh:mm tt")
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

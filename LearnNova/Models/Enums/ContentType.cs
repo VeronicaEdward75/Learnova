@@ -4,5 +4,12 @@ public enum ContentType
 {
     Video,
     Pdf,
-    Document
+    Document,
+    Word,
+    PowerPoint,
+    Excel,
+    Archive,
+    Image,
+    ExternalLink,
+    OtherDocument
 }
