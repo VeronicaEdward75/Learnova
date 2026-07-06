@@ -49,6 +49,15 @@ public class QuizQuestionService : IQuizQuestionService
         }
         else
         {
+            if (model.CorrectAnswer == "A" || model.CorrectAnswer == "أ" || model.CorrectAnswer == "OptionA")
+                model.CorrectAnswer = model.OptionA;
+            else if (model.CorrectAnswer == "B" || model.CorrectAnswer == "ب" || model.CorrectAnswer == "OptionB")
+                model.CorrectAnswer = model.OptionB;
+            else if (model.CorrectAnswer == "C" || model.CorrectAnswer == "ج" || model.CorrectAnswer == "OptionC")
+                model.CorrectAnswer = model.OptionC;
+            else if (model.CorrectAnswer == "D" || model.CorrectAnswer == "د" || model.CorrectAnswer == "OptionD")
+                model.CorrectAnswer = model.OptionD;
+
             var validOptions = new[] { model.OptionA, model.OptionB, model.OptionC, model.OptionD };
             if (!validOptions.Contains(model.CorrectAnswer))
                 return ServiceResult.Fail("الإجابة الصحيحة يجب أن تتطابق مع أحد الخيارات المدخلة.");
@@ -103,6 +112,15 @@ public class QuizQuestionService : IQuizQuestionService
         }
         else
         {
+            if (model.CorrectAnswer == "A" || model.CorrectAnswer == "أ" || model.CorrectAnswer == "OptionA")
+                model.CorrectAnswer = model.OptionA;
+            else if (model.CorrectAnswer == "B" || model.CorrectAnswer == "ب" || model.CorrectAnswer == "OptionB")
+                model.CorrectAnswer = model.OptionB;
+            else if (model.CorrectAnswer == "C" || model.CorrectAnswer == "ج" || model.CorrectAnswer == "OptionC")
+                model.CorrectAnswer = model.OptionC;
+            else if (model.CorrectAnswer == "D" || model.CorrectAnswer == "د" || model.CorrectAnswer == "OptionD")
+                model.CorrectAnswer = model.OptionD;
+
             var validOptions = new[] { model.OptionA, model.OptionB, model.OptionC, model.OptionD };
             if (!validOptions.Contains(model.CorrectAnswer))
                 return ServiceResult.Fail("الإجابة الصحيحة يجب أن تتطابق مع أحد الخيارات المدخلة.");
