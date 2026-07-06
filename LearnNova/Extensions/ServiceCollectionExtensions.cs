@@ -35,6 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQuizQuestionService, QuizQuestionService>();
         services.AddScoped<IQuizAttemptService, QuizAttemptService>();
         services.AddScoped<IDateTimeService, SystemDateTimeService>();
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }
