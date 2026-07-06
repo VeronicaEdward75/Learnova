@@ -171,15 +171,26 @@ public class TeacherController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> TogglePublish(int id, bool isPublished)
+    public async Task<IActionResult> Publish(int id)
     {
         var teacherId = _userManager.GetUserId(User)!;
-        var result = await _courseService.SetPublishedStatusAsync(id, isPublished, teacherId);
+        var result = await _courseService.SetPublishedStatusAsync(id, true, teacherId);
 
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded
-                ? (isPublished ? "تم نشر الكورس بنجاح." : "تم إلغاء نشر الكورس.")
-                : string.Join(" ", result.Errors);
+            result.Succeeded ? "تم نشر الكورس بنجاح." : string.Join(" ", result.Errors);
+
+        return RedirectToAction(nameof(MyCourses));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Unpublish(int id)
+    {
+        var teacherId = _userManager.GetUserId(User)!;
+        var result = await _courseService.SetPublishedStatusAsync(id, false, teacherId);
+
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
+            result.Succeeded ? "تم إلغاء نشر الكورس." : string.Join(" ", result.Errors);
 
         return RedirectToAction(nameof(MyCourses));
     }

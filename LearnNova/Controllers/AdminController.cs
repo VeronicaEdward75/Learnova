@@ -142,13 +142,22 @@ public class AdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> TogglePublish(int id, bool isPublished, string? returnUrl)
+    public async Task<IActionResult> Publish(int id, string? returnUrl)
     {
-        var result = await _courseService.SetPublishedStatusAsync(id, isPublished);
+        var result = await _courseService.SetPublishedStatusAsync(id, true);
         TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
-            result.Succeeded
-                ? (isPublished ? "تم نشر الكورس بنجاح." : "تم إلغاء نشر الكورس.")
-                : string.Join(" ", result.Errors);
+            result.Succeeded ? "تم نشر الكورس بنجاح." : string.Join(" ", result.Errors);
+
+        return LocalRedirectOrDefault(returnUrl, nameof(Courses));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Unpublish(int id, string? returnUrl)
+    {
+        var result = await _courseService.SetPublishedStatusAsync(id, false);
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
+            result.Succeeded ? "تم إلغاء نشر الكورس." : string.Join(" ", result.Errors);
 
         return LocalRedirectOrDefault(returnUrl, nameof(Courses));
     }

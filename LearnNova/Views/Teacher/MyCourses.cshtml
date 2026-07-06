@@ -108,23 +108,26 @@ else
                                     </button>
                                 </form>
                             </div>
-                            <form asp-action="TogglePublish" method="post" class="m-0">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@course.Id" />
-                                <input type="hidden" name="isPublished" value="@(!course.IsPublished)" />
-                                @if (course.IsPublished)
-                                {
+                            @if (course.IsPublished)
+                            {
+                                <form asp-action="Unpublish" method="post" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@course.Id" />
                                     <button type="submit" class="btn btn-sm" style="font-size:12px; font-weight:600; color:var(--color-warning-dark); background:var(--color-warning-light); border:none; padding:4px 10px;">
                                         إلغاء النشر
                                     </button>
-                                }
-                                else
-                                {
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="Publish" method="post" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@course.Id" />
                                     <button type="submit" class="btn btn-sm btn-success-custom" style="font-size:12px; font-weight:600; padding:4px 10px;">
                                         نشر الكورس
                                     </button>
-                                }
-                            </form>
+                                </form>
+                            }
                         </div>
                     </div>
                 </div>

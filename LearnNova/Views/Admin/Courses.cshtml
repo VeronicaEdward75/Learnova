@@ -92,14 +92,26 @@ else
                             </span>
                         </td>
                         <td class="text-start" style="padding-left:var(--space-5);">
-                            <form method="post" asp-action="TogglePublish">
-                                <input type="hidden" name="id" value="@course.Id" />
-                                <input type="hidden" name="isPublished" value="@(!course.IsPublished)" />
-                                <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
-                                <button type="submit" class="btn btn-sm @(course.IsPublished ? "btn-outline-danger" : "btn-success-custom")" style="font-size:12px; font-weight:600; height:auto; padding:4px 12px; @(course.IsPublished ? "" : "box-shadow:none;")">
-                                    @(course.IsPublished ? "إلغاء النشر" : "نشر")
-                                </button>
-                            </form>
+                            @if (course.IsPublished)
+                            {
+                                <form method="post" asp-action="Unpublish">
+                                    <input type="hidden" name="id" value="@course.Id" />
+                                    <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size:12px; font-weight:600; height:auto; padding:4px 12px;">
+                                        إلغاء النشر
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" asp-action="Publish">
+                                    <input type="hidden" name="id" value="@course.Id" />
+                                    <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
+                                    <button type="submit" class="btn btn-sm btn-success-custom" style="font-size:12px; font-weight:600; height:auto; padding:4px 12px; box-shadow:none;">
+                                        نشر
+                                    </button>
+                                </form>
+                            }
                         </td>
                     </tr>
                 }
