@@ -3,65 +3,61 @@
     ViewData["Title"] = "تصفح الكورسات";
 }
 
-<div class="d-flex align-items-end mb-4 flex-wrap gap-3">
-    <div>
-        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">تصفح الكورسات</h3>
-        <p class="text-muted mb-0" style="font-size:14px;">اكتشف الكورسات المتاحة وابدأ رحلتك التعليمية</p>
+<!-- Page Header -->
+<div class="page-header animate-in">
+    <div class="page-header-info">
+        <div class="page-header-title">
+            <div class="ph-icon"><i class="bi bi-grid-1x2"></i></div>
+            تصفح الكورسات
+        </div>
+        <div class="page-header-subtitle">اكتشف الكورسات المتاحة وابدأ رحلتك التعليمية اليوم.</div>
     </div>
 </div>
 
 @* Filter bar *@
-<form asp-action="Catalog" method="get" class="card-box p-4 mb-4" style="background:var(--color-surface-muted);">
-    <div class="row g-3 align-items-end">
-        <div class="col-12 col-md-5">
-            <label class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);">بحث</label>
-            <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--color-border); box-shadow:var(--shadow-xs);">
-                <span class="input-group-text bg-white border-0 text-muted px-3"><i class="bi bi-search"></i></span>
-                <input type="text" name="term" value="@Model.Term" class="form-control border-0 shadow-none bg-white" placeholder="اسم الكورس أو المدرس..." style="height:46px;">
+<form asp-action="Catalog" method="get" class="filter-card animate-in animate-in-delay-1">
+    <div class="d-flex flex-wrap gap-3 align-items-end">
+        <!-- Search -->
+        <div class="flex-grow-1" style="min-width:220px;">
+            <div style="font-size:12px;font-weight:700;color:var(--color-text-muted);margin-bottom:var(--space-2);text-transform:uppercase;letter-spacing:0.5px;">بحث</div>
+            <div class="search-input-wrap">
+                <i class="bi bi-search"></i>
+                <input type="text" name="term" value="@Model.Term" class="search-input" placeholder="اسم الكورس أو المدرس...">
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <label class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);">المادة</label>
-            <select name="subject" class="form-select border-0 shadow-none" style="height:46px; border:1px solid var(--color-border) !important; border-radius:var(--radius-md);">
+        <!-- Subject -->
+        <div style="min-width:160px;">
+            <div style="font-size:12px;font-weight:700;color:var(--color-text-muted);margin-bottom:var(--space-2);text-transform:uppercase;letter-spacing:0.5px;">المادة</div>
+            <select name="subject" class="form-control-custom">
                 <option value="">كل المواد</option>
                 @foreach (var opt in Model.SubjectOptions)
                 {
-                    if (opt.Value == Model.Subject)
-                    {
-                        <option value="@opt.Value" selected>@opt.Text</option>
-                    }
-                    else
-                    {
-                        <option value="@opt.Value">@opt.Text</option>
-                    }
+                    if (opt.Value == Model.Subject) { <option value="@opt.Value" selected>@opt.Text</option> }
+                    else { <option value="@opt.Value">@opt.Text</option> }
                 }
             </select>
         </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);">المرحلة</label>
-            <select name="stage" class="form-select border-0 shadow-none" style="height:46px; border:1px solid var(--color-border) !important; border-radius:var(--radius-md);">
+        <!-- Stage -->
+        <div style="min-width:155px;">
+            <div style="font-size:12px;font-weight:700;color:var(--color-text-muted);margin-bottom:var(--space-2);text-transform:uppercase;letter-spacing:0.5px;">المرحلة</div>
+            <select name="stage" class="form-control-custom">
                 <option value="">كل المراحل</option>
                 @foreach (var opt in Model.StageOptions)
                 {
-                    if (opt.Value == Model.Stage)
-                    {
-                        <option value="@opt.Value" selected>@opt.Text</option>
-                    }
-                    else
-                    {
-                        <option value="@opt.Value">@opt.Text</option>
-                    }
+                    if (opt.Value == Model.Stage) { <option value="@opt.Value" selected>@opt.Text</option> }
+                    else { <option value="@opt.Value">@opt.Text</option> }
                 }
             </select>
         </div>
-        <div class="col-12 col-md-2 d-flex gap-2">
-            <button type="submit" class="btn-primary-custom w-100" style="height:46px; justify-content:center;">
-                تطبيق البحث
+        <!-- Actions -->
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn-primary-custom">
+                <i class="bi bi-search"></i> بحث
             </button>
             @if (!string.IsNullOrEmpty(Model.Term) || !string.IsNullOrEmpty(Model.Subject) || !string.IsNullOrEmpty(Model.Stage))
             {
-                <a asp-action="Catalog" class="btn btn-light d-flex align-items-center justify-content-center" title="مسح الفلاتر" style="height:46px; width:46px; border:1px solid var(--color-border); background:white;">
-                    <i class="bi bi-x-lg text-secondary"></i>
+                <a asp-action="Catalog" class="btn-icon" title="مسح الفلاتر">
+                    <i class="bi bi-x-lg"></i>
                 </a>
             }
         </div>
@@ -70,64 +66,82 @@
 
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger small mb-4">
-        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+    <div class="alert alert-danger animate-in">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["ErrorMessage"]</span>
     </div>
 }
 
 @if (!Model.Courses.Any())
 {
-    <div class="card-box p-5 text-center my-4" style="background:var(--color-surface-muted); box-shadow:none; border:1px dashed var(--color-border);">
-        <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:64px; height:64px; background:white; color:var(--color-text-secondary); border-radius:var(--radius-xl); box-shadow:var(--shadow-sm);">
-            <i class="bi bi-search" style="font-size:28px;"></i>
+    <div class="empty-state animate-in animate-in-delay-2">
+        <div class="es-icon-wrap">
+            <i class="bi bi-search es-ico"></i>
         </div>
-        <h5 class="fw-bold mb-2">لا توجد كورسات تطابق بحثك</h5>
-        <p class="text-muted mb-0" style="font-size:14px;">جرب كلمات بحث مختلفة أو قم بمسح الفلاتر لعرض جميع الكورسات.</p>
+        <div class="es-title">لا توجد كورسات تطابق بحثك</div>
+        <div class="es-desc">جرب كلمات بحث مختلفة أو قم بمسح الفلاتر لعرض جميع الكورسات المتاحة.</div>
+        <a asp-action="Catalog" class="btn-outline-custom mx-auto">
+            <i class="bi bi-arrow-counterclockwise"></i> عرض الكل
+        </a>
     </div>
 }
 else
 {
-    <div class="row g-4">
+    <div class="row g-4 animate-in animate-in-delay-2">
+        @{
+            var coverGradients = new[] {
+                "linear-gradient(135deg,#4338CA,#6366F1)",
+                "linear-gradient(135deg,#0369A1,#0EA5E9)",
+                "linear-gradient(135deg,#059669,#10B981)",
+                "linear-gradient(135deg,#8B5E3C,#C4874E)",
+                "linear-gradient(135deg,#7C3AED,#A855F7)",
+                "linear-gradient(135deg,#BE123C,#F43F5E)",
+                "linear-gradient(135deg,#B45309,#F59E0B)",
+                "linear-gradient(135deg,#0F766E,#14B8A6)",
+            };
+        }
         @foreach (var course in Model.Courses)
         {
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card-box p-0 h-100 d-flex flex-column" style="overflow:hidden; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';">
-                    <div style="height:140px; background:linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); display:flex; align-items:center; justify-content:center; position:relative;">
-                        <i class="bi bi-journal-richtext text-white opacity-50" style="font-size:48px"></i>
-                        <div style="position:absolute; bottom:0; left:0; right:0; height:40%; background:linear-gradient(to top, rgba(0,0,0,0.3), transparent);"></div>
-                        <span class="badge position-absolute" style="top:12px; left:12px; background:rgba(255,255,255,0.2); backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.3); color:white; font-size:12px; font-weight:600; padding:6px 10px;">
-                            @(course.Price == 0 ? "مجانًا" : course.Price.ToString("N0") + " ج.م")
+            var gradient = coverGradients[Math.Abs(course.Title.GetHashCode()) % coverGradients.Length];
+            var teacherInitial = course.Teacher.FullName.Trim().Length > 0 ? course.Teacher.FullName.Trim()[0].ToString() : "؟";
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="course-card">
+                    <!-- Cover -->
+                    <div class="course-cover" style="background:@gradient;">
+                        <i class="bi bi-journal-richtext course-cover-icon"></i>
+                        <span class="course-cover-badge">
+                            @(course.Price == 0 ? "مجاني" : $"{course.Price:N0} ج.م")
                         </span>
                     </div>
 
-                    <div class="p-4 d-flex flex-column flex-grow-1">
-                        <div class="mb-3 d-flex flex-wrap gap-2">
-                            <span class="badge" style="background:var(--color-indigo-light); color:var(--color-indigo-dark); padding:6px 10px; font-weight:600; font-size:11px;">@course.Subject</span>
-                            <span class="badge" style="background:var(--color-surface-muted); color:var(--color-text-secondary); border:1px solid var(--color-border); padding:6px 10px; font-weight:600; font-size:11px;">@course.Stage</span>
+                    <!-- Body -->
+                    <div class="course-body">
+                        <div class="course-meta">
+                            <span class="badge-status badge-indigo" style="font-size:11px;">@course.Subject</span>
+                            <span class="badge-status" style="background:var(--color-surface-muted);color:var(--color-text-secondary);font-size:11px;">@course.Stage</span>
                         </div>
-                        
-                        <h5 class="fw-bold mb-2" style="color:var(--color-text-primary); font-size:16px;">@course.Title</h5>
-                        
-                        <div class="d-flex align-items-center mb-3 text-muted" style="font-size:13px;">
-                            <div class="avatar-placeholder me-2" style="width:24px; height:24px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary-dark); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold;">
-                                @course.Teacher.FullName.Substring(0,1)
-                            </div>
+                        <div class="course-title">@course.Title</div>
+                        <div class="course-teacher">
+                            <div class="teacher-avatar-xs">@teacherInitial</div>
                             @course.Teacher.FullName
                         </div>
-                        
-                        <p class="text-muted mb-4" style="font-size:13px; line-height:1.6; flex-grow:1;">
+                        <div class="course-desc mt-2">
                             @if (!string.IsNullOrEmpty(course.Description))
                             {
                                 @(course.Description.Length > 90 ? course.Description[..90] + "..." : course.Description)
                             }
                             else
                             {
-                                <span class="fst-italic opacity-50">لا يوجد وصف للكورس...</span>
+                                <span class="fst-italic" style="opacity:.5">لا يوجد وصف للكورس...</span>
                             }
-                        </p>
-                        
-                        <a asp-action="Details" asp-route-id="@course.Id" class="btn btn-light w-100 mt-auto" style="height:44px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:14px; border:1px solid var(--color-border); background:white;">
-                            التفاصيل <i class="bi bi-arrow-left me-2"></i>
+                        </div>
+                    </div>
+
+                    <!-- Footer CTA -->
+                    <div class="course-footer">
+                        <a asp-action="Details" asp-route-id="@course.Id" class="btn-primary-custom w-100" style="justify-content:center;height:42px;">
+                            عرض الكورس <i class="bi bi-arrow-left"></i>
                         </a>
                     </div>
                 </div>
@@ -135,7 +149,7 @@ else
         }
     </div>
 
-    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center" style="font-size:13px; color:var(--color-text-secondary);">
-        <span>يعرض <span class="fw-bold text-dark">@Model.Courses.Count()</span> كورسات</span>
+    <div class="mt-5 pt-3" style="border-top:1px solid var(--color-border);font-size:13px;color:var(--color-text-muted);font-weight:600;">
+        يعرض <strong style="color:var(--color-text-primary)">@Model.Courses.Count()</strong> كورس متاح
     </div>
 }

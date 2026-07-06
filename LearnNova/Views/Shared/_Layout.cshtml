@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="LearnNova - منصة التعليم الإلكتروني الذكية" />
     <title>@ViewData["Title"] - LearnNova</title>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/cairo.css" asp-append-version="true" />
@@ -14,130 +16,223 @@
 {
     var fullName = User.FindFirst("FullName")?.Value ?? User.Identity!.Name ?? "؟";
     var initial = fullName.Trim().Length > 0 ? fullName.Trim()[0].ToString() : "؟";
-    var roleLabel = User.IsInRole("Admin") ? "مدير النظام" : User.IsInRole("Teacher") ? "مدرس" : "طالب";
+    var roleLabel = User.IsInRole("Admin") ? "مدير النظام" : User.IsInRole("Teacher") ? "مدرّس" : "طالب";
     var activeNav = ViewBag.ActiveNav as string ?? "";
 
     <div id="sidebar-overlay" onclick="closeSidebar()"></div>
 
-    <div id="sidebar">
-        <div class="logo-wrap d-flex align-items-center gap-3">
-            <div class="logo-icon">LN</div>
+    <!-- ═══════════════════════════════════════════════════
+         PREMIUM FLOATING SIDEBAR
+         ═══════════════════════════════════════════════════ -->
+    <aside id="sidebar" role="navigation" aria-label="القائمة الرئيسية">
+
+        <!-- Logo -->
+        <div class="logo-wrap">
+            <div class="logo-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <path d="M8 10L12 13L16 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 13V18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="9" r="2" fill="white"/>
+                </svg>
+            </div>
             <div>
                 <div class="logo-text">LearnNova</div>
-                <div class="logo-sub">منصة التعليم الإلكتروني</div>
+                <div class="logo-sub">منصة التعليم الذكية</div>
             </div>
         </div>
-        
-        <nav id="sb-nav">
+
+        <!-- Navigation -->
+        <nav id="sb-nav" aria-label="التنقل">
             @if (User.IsInRole("Admin"))
             {
                 <div class="nav-section-title">الرئيسية</div>
-                <a class="nav-link-item @(activeNav == "dashboard" ? "active" : "")" asp-controller="Admin" asp-action="Dashboard">
-                    <i class="bi bi-house"></i><span>لوحة التحكم</span>
+                <a class="nav-link-item @(activeNav == "dashboard" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Dashboard"
+                   aria-current="@(activeNav == "dashboard" ? "page" : null)">
+                    <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                    <span>لوحة التحكم</span>
                 </a>
-                
-                <div class="nav-section-title">الإدارة</div>
-                <a class="nav-link-item @(activeNav == "users" ? "active" : "")" asp-controller="Admin" asp-action="Users">
-                    <i class="bi bi-people"></i><span>المستخدمون</span>
+
+                <div class="nav-section-title">إدارة المستخدمين</div>
+                <a class="nav-link-item @(activeNav == "users" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Users">
+                    <i class="bi bi-people" aria-hidden="true"></i>
+                    <span>المستخدمون</span>
                 </a>
-                <a class="nav-link-item @(activeNav == "create-admin" ? "active" : "")" asp-controller="Admin" asp-action="CreateAdmin">
-                    <i class="bi bi-person-plus"></i><span>إنشاء مدير</span>
+                <a class="nav-link-item @(activeNav == "create-admin" ? "active" : "")"
+                   asp-controller="Admin" asp-action="CreateAdmin">
+                    <i class="bi bi-person-badge" aria-hidden="true"></i>
+                    <span>إنشاء مدير</span>
                 </a>
-                
-                <div class="nav-section-title">التعليم</div>
-                <a class="nav-link-item @(activeNav == "courses" ? "active" : "")" asp-controller="Admin" asp-action="Courses">
-                    <i class="bi bi-journal-richtext"></i><span>الكورسات</span>
+
+                <div class="nav-section-title">المحتوى التعليمي</div>
+                <a class="nav-link-item @(activeNav == "courses" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Courses">
+                    <i class="bi bi-journals" aria-hidden="true"></i>
+                    <span>الكورسات</span>
                 </a>
             }
             else if (User.IsInRole("Teacher"))
             {
                 <div class="nav-section-title">الرئيسية</div>
-                <a class="nav-link-item @(activeNav == "dashboard" ? "active" : "")" asp-controller="Teacher" asp-action="Dashboard">
-                    <i class="bi bi-house"></i><span>لوحة التحكم</span>
+                <a class="nav-link-item @(activeNav == "dashboard" ? "active" : "")"
+                   asp-controller="Teacher" asp-action="Dashboard">
+                    <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                    <span>لوحة التحكم</span>
                 </a>
-                
+
                 <div class="nav-section-title">التعليم</div>
-                <a class="nav-link-item @(activeNav == "my-courses" ? "active" : "")" asp-controller="Teacher" asp-action="MyCourses">
-                    <i class="bi bi-journal-richtext"></i><span>كورساتي</span>
+                <a class="nav-link-item @(activeNav == "my-courses" ? "active" : "")"
+                   asp-controller="Teacher" asp-action="MyCourses">
+                    <i class="bi bi-journals" aria-hidden="true"></i>
+                    <span>كورساتي</span>
                 </a>
-                <a class="nav-link-item @(activeNav == "create-course" ? "active" : "")" asp-controller="Teacher" asp-action="CreateCourse">
-                    <i class="bi bi-plus-square"></i><span>إنشاء كورس</span>
+                <a class="nav-link-item @(activeNav == "create-course" ? "active" : "")"
+                   asp-controller="Teacher" asp-action="CreateCourse">
+                    <i class="bi bi-plus-square" aria-hidden="true"></i>
+                    <span>كورس جديد</span>
                 </a>
             }
             else if (User.IsInRole("Student"))
             {
                 <div class="nav-section-title">التعليم</div>
-                <a class="nav-link-item @(activeNav == "catalog" ? "active" : "")" asp-controller="Course" asp-action="Catalog">
-                    <i class="bi bi-grid"></i><span>تصفح الكورسات</span>
+                <a class="nav-link-item @(activeNav == "catalog" ? "active" : "")"
+                   asp-controller="Course" asp-action="Catalog">
+                    <i class="bi bi-grid-1x2" aria-hidden="true"></i>
+                    <span>تصفح الكورسات</span>
                 </a>
-                <a class="nav-link-item @(activeNav == "my-courses" ? "active" : "")" asp-controller="Enrollment" asp-action="MyCourses">
-                    <i class="bi bi-journal-check"></i><span>كورساتي</span>
+                <a class="nav-link-item @(activeNav == "my-courses" ? "active" : "")"
+                   asp-controller="Enrollment" asp-action="MyCourses">
+                    <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                    <span>كورساتي</span>
                 </a>
             }
             else
             {
                 <a class="nav-link-item active" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-house"></i><span>الرئيسية</span>
+                    <i class="bi bi-house" aria-hidden="true"></i>
+                    <span>الرئيسية</span>
                 </a>
             }
-            
-            <div class="nav-section-title mt-4">الحساب</div>
+
+            <div class="nav-section-title" style="margin-top: 12px;">الحساب</div>
             <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
-                <button type="submit" class="nav-link-item text-danger" style="color:var(--color-danger)!important">
-                    <i class="bi bi-box-arrow-right"></i><span>تسجيل الخروج</span>
+                <button type="submit" class="nav-link-item" style="color:var(--color-danger)!important">
+                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                    <span>تسجيل الخروج</span>
                 </button>
             </form>
         </nav>
-        
+
+        <!-- User Profile Card -->
         <div class="user-card-wrap">
-            <div class="user-card">
-                <div class="user-avatar">@initial</div>
-                <div class="flex-grow-1">
-                    <div class="user-name">@fullName</div>
+            <div class="user-card" role="button" tabindex="0" aria-label="بيانات المستخدم">
+                <div class="user-avatar" aria-hidden="true">@initial</div>
+                <div class="flex-grow-1 overflow-hidden">
+                    <div class="user-name text-truncate">@fullName</div>
                     <div class="user-role">@roleLabel</div>
                 </div>
-                <i class="bi bi-chevron-expand" style="color:var(--color-text-muted);font-size:14px"></i>
+                <i class="bi bi-chevron-expand" style="color:var(--color-text-muted);font-size:13px;flex-shrink:0" aria-hidden="true"></i>
             </div>
         </div>
-    </div>
+    </aside>
 
-    <div id="mob-topbar">
-        <button class="btn btn-sm btn-light" onclick="openSidebar()"><i class="bi bi-list fs-5"></i></button>
-        <div class="d-flex align-items-center gap-2">
-            <div class="logo-icon" style="width:32px;height:32px;font-size:13px;border-radius:8px;background:var(--color-surface-raised);border:1px solid var(--color-border);display:inline-flex;align-items:center;justify-content:center;color:var(--color-primary);font-weight:800;">LN</div>
-            <span class="fw-bold" style="color:var(--color-text-primary)">LearnNova</span>
+    <!-- ═══════════════════════════════════════════════════
+         MOBILE TOP BAR
+         ═══════════════════════════════════════════════════ -->
+    <div id="mob-topbar" role="banner">
+        <button class="mob-menu-btn" onclick="openSidebar()" aria-label="فتح القائمة">
+            <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+        <div class="mob-logo-wrap">
+            <div class="logo-icon" style="width:32px;height:32px;border-radius:8px;background:var(--gradient-primary);display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow-primary);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M8 10L12 13L16 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 13V18" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="12" cy="9" r="2" fill="white"/>
+                </svg>
+            </div>
+            <span class="fw-bold" style="color:var(--color-text-primary);font-size:15px;letter-spacing:-0.2px">LearnNova</span>
         </div>
-        <div style="width:32px"></div>
+        <div style="width:36px"></div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════
+         MAIN CONTENT AREA
+         ═══════════════════════════════════════════════════ -->
     <div id="main-wrap">
         <div id="main">
-            <div class="topbar">
+
+            <!-- Premium Glass Topbar -->
+            <header class="topbar" role="banner">
+                <!-- Page title -->
                 <div class="d-flex align-items-center gap-3">
-                    <h5 class="topbar-page-title">@ViewData["Title"]</h5>
+                    <h1 class="topbar-page-title">@ViewData["Title"]</h1>
                 </div>
-                
-                <div class="d-flex align-items-center gap-4">
-                    <div class="topbar-search d-none d-md-flex">
-                        <i class="bi bi-search"></i>
+
+                <!-- Topbar right actions -->
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Search -->
+                    <div class="topbar-search d-none d-md-flex" role="search" aria-label="بحث سريع" tabindex="0" id="topbar-search-btn">
+                        <i class="bi bi-search" aria-hidden="true"></i>
                         <span>البحث في المنصة...</span>
-                        <span class="shortcut">Ctrl K</span>
+                        <span class="shortcut" aria-label="Ctrl K">⌘ K</span>
                     </div>
-                    
+
+                    <!-- Notifications -->
                     <div class="topbar-actions">
-                        <button class="topbar-btn"><i class="bi bi-bell"></i></button>
+                        <button class="topbar-btn" id="notif-btn" aria-label="الإشعارات">
+                            <i class="bi bi-bell" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <!-- Profile -->
+                    <div class="profile-trigger" id="profile-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
+                        <div class="profile-avatar-sm" aria-hidden="true">@initial</div>
+                        <span class="profile-name-sm d-none d-lg-block">@fullName</span>
+                        <i class="bi bi-chevron-down d-none d-lg-block" style="font-size:11px;color:var(--color-text-muted)" aria-hidden="true"></i>
+
+                        <!-- Dropdown -->
+                        <div class="profile-dropdown" role="menu" aria-label="قائمة الملف الشخصي">
+                            <div style="padding:var(--space-3) var(--space-3) var(--space-2);">
+                                <div style="font-size:12.5px;font-weight:700;color:var(--color-text-primary);">@fullName</div>
+                                <div style="font-size:11.5px;color:var(--color-text-muted);margin-top:1px;">@roleLabel</div>
+                            </div>
+                            <div class="profile-dropdown-divider"></div>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                <button type="submit" class="profile-dropdown-item danger" role="menuitem">
+                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                    تسجيل الخروج
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="page-content">
+            </header>
+
+            <!-- Page body -->
+            <main class="page-content" role="main" id="page-main-content">
                 @RenderBody()
-            </div>
+            </main>
         </div>
-        
-        <footer class="app-footer">
-            <div>&copy; @DateTime.Now.Year LearnNova. جميع الحقوق محفوظة.</div>
-            <div class="d-flex gap-3">
+
+        <!-- Premium App Footer -->
+        <footer class="app-footer" role="contentinfo">
+            <div class="footer-brand">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+                    <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" fill="rgba(139,94,60,0.15)" stroke="var(--color-primary)" stroke-width="1.5"/>
+                    <path d="M8 10L12 13L16 10" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 13V18" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="9" r="2" fill="var(--color-primary)"/>
+                </svg>
+                <span>LearnNova</span>
+            </div>
+            <div class="footer-copy">
+                &copy; @DateTime.Now.Year LearnNova. جميع الحقوق محفوظة.
+                <span style="margin-right: 8px; opacity: 0.6">v3.0</span>
+            </div>
+            <div class="footer-links">
                 <a href="#">المساعدة</a>
                 <a href="#">الخصوصية</a>
                 <a href="#">الشروط</a>
@@ -145,36 +240,63 @@
         </footer>
     </div>
 
-    <nav id="bottomnav">
+    <!-- ═══════════════════════════════════════════════════
+         MOBILE BOTTOM NAV
+         ═══════════════════════════════════════════════════ -->
+    <nav id="bottomnav" aria-label="تنقل سريع">
         @if (User.IsInRole("Admin"))
         {
-            <button onclick="location.href='@Url.Action("Dashboard", "Admin")'"><i class="bi bi-house-fill"></i>الرئيسية</button>
-            <button onclick="location.href='@Url.Action("Users", "Admin")'"><i class="bi bi-people-fill"></i>المستخدمون</button>
-            <button onclick="location.href='@Url.Action("Courses", "Admin")'"><i class="bi bi-journal-richtext"></i>الكورسات</button>
+            <button onclick="location.href='@Url.Action("Dashboard", "Admin")'" class="@(activeNav == "dashboard" ? "active" : "")">
+                <i class="bi bi-speedometer2" aria-hidden="true"></i>الرئيسية
+            </button>
+            <button onclick="location.href='@Url.Action("Users", "Admin")'" class="@(activeNav == "users" ? "active" : "")">
+                <i class="bi bi-people" aria-hidden="true"></i>المستخدمون
+            </button>
+            <button onclick="location.href='@Url.Action("Courses", "Admin")'" class="@(activeNav == "courses" ? "active" : "")">
+                <i class="bi bi-journals" aria-hidden="true"></i>الكورسات
+            </button>
         }
         else if (User.IsInRole("Teacher"))
         {
-            <button onclick="location.href='@Url.Action("Dashboard", "Teacher")'"><i class="bi bi-house-fill"></i>الرئيسية</button>
-            <button onclick="location.href='@Url.Action("MyCourses", "Teacher")'"><i class="bi bi-journal-richtext"></i>كورساتي</button>
-            <button onclick="location.href='@Url.Action("CreateCourse", "Teacher")'"><i class="bi bi-plus-circle-fill"></i>إضافة</button>
+            <button onclick="location.href='@Url.Action("Dashboard", "Teacher")'" class="@(activeNav == "dashboard" ? "active" : "")">
+                <i class="bi bi-speedometer2" aria-hidden="true"></i>الرئيسية
+            </button>
+            <button onclick="location.href='@Url.Action("MyCourses", "Teacher")'" class="@(activeNav == "my-courses" ? "active" : "")">
+                <i class="bi bi-journals" aria-hidden="true"></i>كورساتي
+            </button>
+            <button onclick="location.href='@Url.Action("CreateCourse", "Teacher")'" class="@(activeNav == "create-course" ? "active" : "")">
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>إضافة
+            </button>
         }
         else if (User.IsInRole("Student"))
         {
-            <button onclick="location.href='@Url.Action("Catalog", "Course")'"><i class="bi bi-grid-fill"></i>تصفح</button>
-            <button onclick="location.href='@Url.Action("MyCourses", "Enrollment")'"><i class="bi bi-journal-richtext"></i>كورساتي</button>
+            <button onclick="location.href='@Url.Action("Catalog", "Course")'" class="@(activeNav == "catalog" ? "active" : "")">
+                <i class="bi bi-grid-1x2" aria-hidden="true"></i>تصفح
+            </button>
+            <button onclick="location.href='@Url.Action("MyCourses", "Enrollment")'" class="@(activeNav == "my-courses" ? "active" : "")">
+                <i class="bi bi-mortarboard" aria-hidden="true"></i>كورساتي
+            </button>
         }
         else
         {
-            <button onclick="location.href='@Url.Action("Index", "Home")'"><i class="bi bi-house-fill"></i>الرئيسية</button>
+            <button onclick="location.href='@Url.Action("Index", "Home")'">
+                <i class="bi bi-house" aria-hidden="true"></i>الرئيسية
+            </button>
         }
     </nav>
     <div id="modal-root"></div>
 }
 else
 {
-    <div class="p-5 text-center">
-        <p>يجب تسجيل الدخول لعرض هذه الصفحة.</p>
-        <a asp-controller="Account" asp-action="Login" class="btn-primary-custom">تسجيل الدخول</a>
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:var(--space-4);padding:var(--space-8);">
+        <div style="width:60px;height:60px;border-radius:var(--radius-xl);background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-primary);margin-bottom:var(--space-2);">
+            <i class="bi bi-lock text-white fs-4"></i>
+        </div>
+        <h2 style="font-weight:800;color:var(--color-text-primary);">يجب تسجيل الدخول</h2>
+        <p style="color:var(--color-text-muted);font-size:14px;">هذه الصفحة تتطلب تسجيل الدخول للوصول إليها.</p>
+        <a asp-controller="Account" asp-action="Login" class="btn-primary-custom" style="height:48px;padding:0 var(--space-8);">
+            <i class="bi bi-box-arrow-in-right"></i> تسجيل الدخول
+        </a>
     </div>
 }
 <script src="~/lib/jquery/dist/jquery.min.js"></script>

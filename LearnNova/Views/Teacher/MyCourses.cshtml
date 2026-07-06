@@ -6,114 +6,131 @@
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success small mb-4">
-        <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+    <div class="alert alert-success animate-in">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@TempData["SuccessMessage"]</span>
     </div>
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger small mb-4">
-        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+    <div class="alert alert-danger animate-in">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["ErrorMessage"]</span>
     </div>
 }
 
-<div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
-    <div>
-        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">كورساتي</h3>
-        <p class="text-muted mb-0" style="font-size:14px;">إدارة كورساتك التعليمية ومتابعة المحتوى والمهام.</p>
+<!-- Page Header -->
+<div class="page-header animate-in">
+    <div class="page-header-info">
+        <div class="page-header-title">
+            <div class="ph-icon"><i class="bi bi-journals"></i></div>
+            كورساتي
+        </div>
+        <div class="page-header-subtitle">إدارة كورساتك التعليمية ومتابعة المحتوى والمهام.</div>
     </div>
-    <a asp-action="CreateCourse" class="btn-primary-custom" style="height:40px;">
-        <i class="bi bi-plus-circle me-1"></i> كورس جديد
+    <a asp-action="CreateCourse" class="btn-primary-custom">
+        <i class="bi bi-plus-circle"></i> كورس جديد
     </a>
 </div>
 
 @if (!Model.Any())
 {
-    <div class="card-box p-5 text-center mt-4">
-        <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:64px; height:64px; background:var(--color-surface-muted); color:var(--color-text-secondary); border-radius:var(--radius-xl);">
-            <i class="bi bi-journal-plus" style="font-size:28px;"></i>
+    <div class="empty-state animate-in animate-in-delay-1">
+        <div class="es-icon-wrap">
+            <i class="bi bi-journal-plus es-ico"></i>
         </div>
-        <h5 class="fw-bold mb-2">لا توجد كورسات بعد</h5>
-        <p class="text-muted mb-4" style="font-size:14px;">ابدأ بإنشاء أول كورس لك وشارك معرفتك مع الطلاب.</p>
-        <a asp-action="CreateCourse" class="btn-primary-custom mx-auto" style="height:44px; padding:0 var(--space-6);">
-            <i class="bi bi-plus-circle me-2"></i> إنشاء كورس جديد
+        <div class="es-title">لا توجد كورسات بعد</div>
+        <div class="es-desc">ابدأ بإنشاء أول كورس لك وشارك معرفتك مع الطلاب في المنصة.</div>
+        <a asp-action="CreateCourse" class="btn-primary-custom mx-auto">
+            <i class="bi bi-plus-circle"></i> إنشاء كورس جديد
         </a>
     </div>
 }
 else
 {
-    <div class="row g-4">
+    <div class="row g-4 animate-in animate-in-delay-1">
         @foreach (var course in Model)
         {
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card-box p-0 h-100 d-flex flex-column" style="overflow:hidden; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-                    <div class="p-4" style="background:var(--color-surface-muted); border-bottom:1px solid var(--color-border); position:relative;">
-                        @if (course.IsPublished)
-                        {
-                            <span class="badge badge-success" style="position:absolute; top:16px; left:16px; font-weight:600; font-size:11px; padding:6px 10px; border-radius:var(--radius-full);">منشور</span>
-                        }
-                        else
-                        {
-                            <span class="badge badge-warning" style="position:absolute; top:16px; left:16px; font-weight:600; font-size:11px; padding:6px 10px; border-radius:var(--radius-full);">مسودة</span>
-                        }
-                        
-                        <div class="d-flex align-items-center justify-content-center mb-3" style="width:48px; height:48px; background:var(--color-surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); color:var(--color-primary);">
-                            <i class="bi bi-journal-text" style="font-size:20px;"></i>
+            // Pick a gradient per subject type for visual variety
+            var coverGradients = new[] {
+                "linear-gradient(135deg,#4338CA,#6366F1)",
+                "linear-gradient(135deg,#0369A1,#0EA5E9)",
+                "linear-gradient(135deg,#059669,#10B981)",
+                "linear-gradient(135deg,#8B5E3C,#C4874E)",
+                "linear-gradient(135deg,#7C3AED,#A855F7)",
+                "linear-gradient(135deg,#BE123C,#F43F5E)",
+            };
+            var gradient = coverGradients[Math.Abs(course.Title.GetHashCode()) % coverGradients.Length];
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="course-card">
+                    <!-- Cover -->
+                    <div class="course-cover" style="background:@gradient;">
+                        <i class="bi bi-journal-richtext course-cover-icon"></i>
+                        <span class="course-status-badge @(course.IsPublished ? "badge-success" : "badge-warning")">
+                            @(course.IsPublished ? "منشور" : "مسودة")
+                        </span>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="course-body">
+                        <div class="course-meta">
+                            <span class="badge-status badge-indigo" style="font-size:11px;">@course.Subject</span>
+                            <span class="badge-status" style="background:var(--color-surface-muted);color:var(--color-text-secondary);font-size:11px;">@course.Stage</span>
+                            <span style="font-size:12.5px;font-weight:700;color:var(--color-primary);margin-right:auto;">
+                                @(course.Price == 0 ? "مجاني" : $"{course.Price:N0} ج.م")
+                            </span>
                         </div>
-                        <h5 class="fw-bold mb-1" style="color:var(--color-text-primary); line-height:1.4;">@course.Title</h5>
-                        <div class="d-flex align-items-center gap-2 text-muted" style="font-size:12px; font-weight:600;">
-                            <span>@course.Subject</span>
-                            <span>•</span>
-                            <span>@course.Stage</span>
-                            <span>•</span>
-                            <span style="color:var(--color-primary);">@course.Price.ToString("N0") ج.م</span>
+                        <div class="course-title">@course.Title</div>
+                        <div class="course-desc">
+                            @if (!string.IsNullOrEmpty(course.Description))
+                            {
+                                @(course.Description.Length > 110 ? course.Description[..110] + "..." : course.Description)
+                            }
+                            else
+                            {
+                                <span class="fst-italic" style="opacity:.5">لا يوجد وصف لهذا الكورس.</span>
+                            }
                         </div>
                     </div>
 
-                    <div class="p-4 flex-grow-1">
-                        @if (!string.IsNullOrEmpty(course.Description))
-                        {
-                            <p class="text-muted mb-0" style="font-size:13px; line-height:1.6;">
-                                @(course.Description!.Length > 100 ? course.Description[..100] + "..." : course.Description)
-                            </p>
-                        }
-                        else
-                        {
-                            <p class="text-muted mb-0" style="font-size:13px; font-style:italic;">لا يوجد وصف لهذا الكورس.</p>
-                        }
-                    </div>
-
-                    <div class="p-3" style="border-top:1px solid var(--color-border); background:var(--color-surface);">
-                        <div class="d-flex flex-wrap gap-2 mb-2">
-                            <a asp-controller="CourseContent" asp-action="Index" asp-route-courseId="@course.Id" class="btn btn-sm btn-light flex-grow-1" style="font-size:12px; font-weight:600; border:1px solid var(--color-border); background:white;">
-                                <i class="bi bi-list-task me-1"></i> المحتوى
+                    <!-- Footer actions -->
+                    <div class="course-footer">
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <a asp-controller="CourseContent" asp-action="Index" asp-route-courseId="@course.Id"
+                               class="btn-outline-custom btn-sm flex-grow-1" style="justify-content:center;">
+                                <i class="bi bi-list-task"></i> المحتوى
                             </a>
-                            <a asp-controller="Assignment" asp-action="Index" asp-route-courseId="@course.Id" class="btn btn-sm btn-light flex-grow-1" style="font-size:12px; font-weight:600; border:1px solid var(--color-border); background:white;">
-                                <i class="bi bi-clipboard-check me-1"></i> المهام
+                            <a asp-controller="Assignment" asp-action="Index" asp-route-courseId="@course.Id"
+                               class="btn-outline-custom btn-sm flex-grow-1" style="justify-content:center;">
+                                <i class="bi bi-clipboard-check"></i> المهام
                             </a>
-                            <a asp-controller="Quiz" asp-action="Index" asp-route-courseId="@course.Id" class="btn btn-sm btn-light flex-grow-1" style="font-size:12px; font-weight:600; border:1px solid var(--color-border); background:white;">
-                                <i class="bi bi-pencil-square me-1"></i> الاختبارات
+                            <a asp-controller="Quiz" asp-action="Index" asp-route-courseId="@course.Id"
+                               class="btn-outline-custom btn-sm flex-grow-1" style="justify-content:center;">
+                                <i class="bi bi-pencil-square"></i> الاختبارات
                             </a>
                         </div>
-                        <div class="d-flex gap-2 align-items-center justify-content-between pt-2 mt-2" style="border-top:1px dashed var(--color-border);">
-                            <div class="d-flex gap-2">
-                                <a asp-action="EditCourse" asp-route-id="@course.Id" class="btn btn-sm text-muted hover-primary p-1">
-                                    <i class="bi bi-pencil" style="font-size:14px;"></i>
+
+                        <div class="d-flex align-items-center justify-content-between gap-2" style="border-top:1px dashed var(--color-border);padding-top:var(--space-3);">
+                            <div class="d-flex gap-1">
+                                <a asp-action="EditCourse" asp-route-id="@course.Id" class="btn-icon btn-sm" title="تعديل الكورس">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
                                 <form asp-action="DeleteCourse" method="post" class="m-0" onsubmit="return confirm('هل أنت متأكد من حذف هذا الكورس؟ لا يمكن التراجع.')">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@course.Id" />
-                                    <button type="submit" class="btn btn-sm text-muted hover-danger p-1 border-0 bg-transparent">
-                                        <i class="bi bi-trash" style="font-size:14px;"></i>
+                                    <button type="submit" class="btn-icon btn-sm danger" title="حذف الكورس">
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </div>
+
                             @if (course.IsPublished)
                             {
                                 <form asp-action="Unpublish" method="post" class="m-0">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@course.Id" />
-                                    <button type="submit" class="btn btn-sm" style="font-size:12px; font-weight:600; color:var(--color-warning-dark); background:var(--color-warning-light); border:none; padding:4px 10px;">
+                                    <button type="submit" class="btn-warning-custom btn-sm">
                                         إلغاء النشر
                                     </button>
                                 </form>
@@ -123,8 +140,8 @@ else
                                 <form asp-action="Publish" method="post" class="m-0">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@course.Id" />
-                                    <button type="submit" class="btn btn-sm btn-success-custom" style="font-size:12px; font-weight:600; padding:4px 10px;">
-                                        نشر الكورس
+                                    <button type="submit" class="btn-success-custom btn-sm">
+                                        <i class="bi bi-globe2"></i> نشر
                                     </button>
                                 </form>
                             }
@@ -133,5 +150,9 @@ else
                 </div>
             </div>
         }
+    </div>
+
+    <div class="mt-5 pt-3" style="border-top:1px solid var(--color-border);font-size:13px;color:var(--color-text-muted);font-weight:600;">
+        إجمالي: <strong style="color:var(--color-text-primary)">@Model.Count()</strong> كورس
     </div>
 }

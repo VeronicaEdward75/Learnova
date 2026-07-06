@@ -3,98 +3,132 @@
 @{
     string currentUserId = (string?)ViewBag.CurrentUserId ?? "";
     var isPending = Model.Role == UserRole.Teacher && !Model.IsActive;
-    var badgeClass = Model.IsActive ? "badge-ok" : (isPending ? "badge-pending" : "badge-late");
+    var badgeClass = Model.IsActive ? "badge-success" : (isPending ? "badge-warning" : "badge-danger");
     var badgeText = Model.IsActive ? "نشط" : (isPending ? "قيد المراجعة" : "موقوف");
     var roleLabel = Model.Role == UserRole.Admin ? "مدير" : Model.Role == UserRole.Teacher ? "مدرس" : "طالب";
     var initial = Model.FullName.Trim().Length > 0 ? Model.FullName.Trim()[0].ToString() : "؟";
+    ViewData["Title"] = "تفاصيل المستخدم";
 }
 
-<div class="mb-4">
-    <a asp-action="Users" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
-        <i class="bi bi-arrow-right me-1"></i> العودة للمستخدمين
+<!-- Back -->
+<div class="mb-5 animate-in">
+    <a asp-action="Users" class="btn-outline-custom btn-sm">
+        <i class="bi bi-arrow-right"></i> العودة للمستخدمين
     </a>
 </div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success small mb-4">
-        <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+    <div class="alert alert-success animate-in">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@TempData["SuccessMessage"]</span>
     </div>
 }
 
-<div class="row gx-4">
-    <div class="col-lg-4 mb-4">
-        <div class="card-box p-4 text-center">
-            <div class="d-flex align-items-center justify-content-center mx-auto mb-3 fw-bold shadow-sm" style="width:88px;height:88px;border-radius:var(--radius-xl);background:var(--gradient-primary);color:var(--color-text-inverse);font-size:32px;">
-                @initial
+<div class="row g-5 animate-in animate-in-delay-1">
+    <!-- Profile Card -->
+    <div class="col-lg-4">
+        <div class="section-card text-center">
+            <div class="section-card-header justify-content-center">
+                <div class="section-card-title"><i class="bi bi-person-circle"></i> بطاقة المستخدم</div>
             </div>
-            <h4 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">@Model.FullName</h4>
-            <div class="text-muted mb-3" style="font-size:14px;">@Model.Email</div>
-            <span class="badge @badgeClass" style="font-weight:600; font-size:12px; padding:6px 12px; border-radius:var(--radius-full);">@badgeText</span>
-            
-            @if (Model.Id != currentUserId)
-            {
-                <div class="mt-4 pt-4" style="border-top:1px solid var(--color-border);">
-                    <form method="post" asp-action="ToggleActive">
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <input type="hidden" name="targetStatus" value="@(Model.IsActive ? "false" : "true")" />
-                        <input type="hidden" name="returnUrl" value="@Url.Action("UserDetails", new { id = Model.Id })" />
-                        <button type="submit" class="w-100 btn @(Model.IsActive ? "btn-outline-danger" : "btn-success-custom")" style="height:44px;">
-                            @(Model.IsActive ? "إيقاف الحساب" : "تفعيل الحساب")
-                        </button>
-                    </form>
-                </div>
-            }
-        </div>
-    </div>
-    
-    <div class="col-lg-8">
-        <div class="card-box p-0 mb-4">
-            <div class="p-4" style="border-bottom:1px solid var(--color-border);">
-                <h5 class="fw-bold mb-0" style="color:var(--color-text-primary);">المعلومات الشخصية والوظيفية</h5>
-            </div>
-            <div class="p-4">
-                <div class="row gy-4">
-                    <div class="col-sm-6">
-                        <div class="text-muted" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">الدور</div>
-                        <div class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">
-                            <span style="color:var(--color-primary); background:rgba(201,166,107,0.1); padding:4px 8px; border-radius:var(--radius-sm);">
-                                @roleLabel
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="text-muted" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">تاريخ الإنشاء</div>
-                        <div class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@DateTimeService.ToLocal(Model.CreatedAt).ToString("yyyy-MM-dd")</div>
-                    </div>
+            <div class="section-card-body">
+                <div class="avatar-circle size-xl mx-auto mb-4" style="font-size:32px;">@initial</div>
+                <h4 class="fw-bold mb-1" style="color:var(--color-text-primary);letter-spacing:-0.3px;">@Model.FullName</h4>
+                <div style="font-size:13.5px;color:var(--color-text-muted);margin-bottom:var(--space-4);">@Model.Email</div>
 
-                    @if (Model.Role == UserRole.Student)
+                <div class="d-flex justify-content-center gap-3 mb-5">
+                    @if (Model.Role == UserRole.Admin)
                     {
-                        <div class="col-sm-6">
-                            <div class="text-muted" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">المرحلة الدراسية</div>
-                            <div class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@Model.Stage</div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="text-muted" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">الصف الدراسي</div>
-                            <div class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@Model.GradeLabel</div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="text-muted" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">الفصل</div>
-                            <div class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@(Model.Section ?? "—")</div>
-                        </div>
+                        <span class="role-tag role-tag-admin"><i class="bi bi-shield-fill"></i>مدير</span>
                     }
                     else if (Model.Role == UserRole.Teacher)
                     {
-                        <div class="col-sm-6">
-                            <div class="text-muted" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">المادة التي يُدرّسها</div>
-                            <div class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@Model.Subject</div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="text-muted" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">المرحلة المستهدفة</div>
-                            <div class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@Model.TeachStage</div>
-                        </div>
+                        <span class="role-tag role-tag-teacher"><i class="bi bi-person-workspace"></i>مدرس</span>
                     }
+                    else
+                    {
+                        <span class="role-tag role-tag-student"><i class="bi bi-mortarboard-fill"></i>طالب</span>
+                    }
+                    <span class="badge-status @badgeClass">@badgeText</span>
                 </div>
+
+                @if (Model.Id != currentUserId)
+                {
+                    <form method="post" asp-action="ToggleActive" class="m-0">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="hidden" name="targetStatus" value="@(Model.IsActive ? "false" : "true")" />
+                        <input type="hidden" name="returnUrl" value="@Url.Action("UserDetails", new { id = Model.Id })" />
+                        @if (Model.IsActive)
+                        {
+                            <button type="submit" class="btn-danger-outline w-100 justify-content-center" style="height:44px;">
+                                <i class="bi bi-slash-circle"></i> إيقاف الحساب
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn-success-custom w-100 justify-content-center" style="height:44px;">
+                                <i class="bi bi-check-circle"></i> تفعيل الحساب
+                            </button>
+                        }
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="col-lg-8">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title">
+                    <i class="bi bi-info-circle"></i> المعلومات الشخصية والوظيفية
+                </div>
+            </div>
+            <div class="section-card-body" style="padding:0 var(--space-6);">
+                <div class="info-row">
+                    <div class="info-label">الدور</div>
+                    <div class="info-value">@roleLabel</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">البريد الإلكتروني</div>
+                    <div class="info-value">@Model.Email</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">تاريخ الإنشاء</div>
+                    <div class="info-value">@DateTimeService.ToLocal(Model.CreatedAt).ToString("yyyy/MM/dd")</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">الحالة</div>
+                    <div class="info-value"><span class="badge-status @badgeClass">@badgeText</span></div>
+                </div>
+
+                @if (Model.Role == UserRole.Student)
+                {
+                    <div class="info-row">
+                        <div class="info-label">المرحلة الدراسية</div>
+                        <div class="info-value">@Model.Stage</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">الصف الدراسي</div>
+                        <div class="info-value">@Model.GradeLabel</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">الفصل</div>
+                        <div class="info-value">@(Model.Section ?? "—")</div>
+                    </div>
+                }
+                else if (Model.Role == UserRole.Teacher)
+                {
+                    <div class="info-row">
+                        <div class="info-label">المادة التي يُدرّسها</div>
+                        <div class="info-value">@Model.Subject</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">المرحلة المستهدفة</div>
+                        <div class="info-value">@Model.TeachStage</div>
+                    </div>
+                }
             </div>
         </div>
     </div>

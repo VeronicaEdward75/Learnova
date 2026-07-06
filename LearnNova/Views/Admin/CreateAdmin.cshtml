@@ -1,55 +1,80 @@
 @model LearnNova.Models.ViewModels.CreateAdminViewModel
 
-<div class="mb-4">
-    <a asp-action="Users" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
-        <i class="bi bi-arrow-right me-1"></i> العودة للمستخدمين
+@{
+    ViewData["Title"] = "إضافة مدير جديد";
+}
+
+<!-- Back button -->
+<div class="mb-5 animate-in">
+    <a asp-action="Users" class="btn-outline-custom btn-sm">
+        <i class="bi bi-arrow-right"></i> العودة للمستخدمين
     </a>
 </div>
 
-<div class="d-flex align-items-end mb-4 flex-wrap gap-3">
-    <div>
-        <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">إضافة مدير جديد</h3>
-        <p class="text-muted mb-0" style="font-size:14px;">قم بإنشاء حساب بصلاحيات الإدارة للنظام.</p>
+<!-- Page Header -->
+<div class="page-header animate-in">
+    <div class="page-header-info">
+        <div class="page-header-title">
+            <div class="ph-icon"><i class="bi bi-person-badge"></i></div>
+            إضافة مدير جديد
+        </div>
+        <div class="page-header-subtitle">قم بإنشاء حساب بصلاحيات الإدارة للنظام.</div>
     </div>
 </div>
 
-<div class="card-box p-5 mx-auto" style="max-width:600px">
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-4"></div>
-    <form asp-action="CreateAdmin" method="post">
-        <div class="mb-4">
-            <label asp-for="FullName" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
-            <input asp-for="FullName" class="form-control-custom" style="height:48px;" placeholder="أدخل الاسم الكامل" />
-            <span asp-validation-for="FullName" class="text-danger small mt-1 d-block"></span>
-        </div>
-        <div class="mb-4">
-            <label asp-for="Email" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
-            <input asp-for="Email" class="form-control-custom" style="height:48px;" placeholder="أدخل البريد الإلكتروني" />
-            <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
-        </div>
-        <div class="row gx-3 mb-4">
-            <div class="col-sm-6">
-                <label asp-for="Password" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
-                <input asp-for="Password" class="form-control-custom" style="height:48px;" placeholder="••••••••" />
-                <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+<div class="row justify-content-center animate-in animate-in-delay-1">
+    <div class="col-12 col-lg-7">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title">
+                    <i class="bi bi-person-fill-add"></i>
+                    بيانات المدير الجديد
+                </div>
             </div>
-            <div class="col-sm-6">
-                <label asp-for="ConfirmPassword" class="form-label fw-semibold" style="font-size:13px; color:var(--color-text-secondary);"></label>
-                <input asp-for="ConfirmPassword" class="form-control-custom" style="height:48px;" placeholder="••••••••" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger small mt-1 d-block"></span>
-            </div>
-        </div>
-        
-        <div class="alert alert-warning mb-4" style="background:var(--color-warning-light); color:var(--color-warning-dark); border:none; display:flex; align-items:flex-start; gap:12px;">
-            <i class="bi bi-info-circle-fill mt-1"></i>
-            <div style="font-size:13px; line-height:1.5;">
-                <strong>ملاحظة هامة:</strong> الحساب الذي سيتم إنشاؤه سيحصل فوراً على كافة صلاحيات الإدارة، بما في ذلك إضافة وحذف المستخدمين وتعديل الدورات التدريبية. يرجى توخي الحذر.
-            </div>
-        </div>
+            <div class="section-card-body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-5"></div>
+                <form asp-action="CreateAdmin" method="post">
+                    <div class="form-group-custom">
+                        <label asp-for="FullName" class="form-label-custom"></label>
+                        <input asp-for="FullName" class="form-control-custom" placeholder="أدخل الاسم الكامل" />
+                        <span asp-validation-for="FullName" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="form-group-custom">
+                        <label asp-for="Email" class="form-label-custom"></label>
+                        <input asp-for="Email" class="form-control-custom" placeholder="admin@learnnova.com" />
+                        <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="row gx-4 mb-0">
+                        <div class="col-sm-6">
+                            <div class="form-group-custom">
+                                <label asp-for="Password" class="form-label-custom"></label>
+                                <input asp-for="Password" class="form-control-custom" placeholder="••••••••" />
+                                <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group-custom">
+                                <label asp-for="ConfirmPassword" class="form-label-custom"></label>
+                                <input asp-for="ConfirmPassword" class="form-control-custom" placeholder="••••••••" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                        </div>
+                    </div>
 
-        <button type="submit" class="btn-primary-custom w-100 justify-content-center" style="height: 48px;">
-            <i class="bi bi-check-lg me-1"></i> إنشاء حساب المدير
-        </button>
-    </form>
+                    <div class="alert alert-warning mb-5">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div>
+                            <strong>ملاحظة هامة:</strong> الحساب الذي سيتم إنشاؤه سيحصل فوراً على كافة صلاحيات الإدارة، بما في ذلك إضافة وحذف المستخدمين وتعديل الدورات التدريبية. يرجى توخي الحذر.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary-custom w-100 justify-content-center" style="height:50px;font-size:15px;">
+                        <i class="bi bi-check-lg"></i> إنشاء حساب المدير
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
