@@ -48,7 +48,7 @@ public class QuizAttemptRepository : GenericRepository<QuizAttempt>, IQuizAttemp
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            query = query.Where(a => a.Student != null && (a.Student.FullName.Contains(searchTerm) || a.Student.Email.Contains(searchTerm)));
+            query = query.Where(a => a.Student != null && ((a.Student.FullName != null && a.Student.FullName.Contains(searchTerm)) || (a.Student.Email != null && a.Student.Email.Contains(searchTerm))));
         }
 
         query = sortBy switch

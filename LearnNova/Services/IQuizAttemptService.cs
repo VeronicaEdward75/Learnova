@@ -12,4 +12,5 @@ public interface IQuizAttemptService
     // Sprint 9.5
     Task<ServiceResult<StudentQuizHistoryViewModel>> GetStudentHistoryAsync(int quizId, string studentId);
     Task<ServiceResult<QuizAnalyticsViewModel>> GetQuizAnalyticsAsync(int quizId, string teacherId, string searchTerm, string sortBy);
+    Task<int> GetAttemptsCountAsync(int quizId, string studentId);
 }

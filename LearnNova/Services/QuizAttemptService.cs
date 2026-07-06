@@ -28,6 +28,11 @@ public class QuizAttemptService : IQuizAttemptService
         _dateTimeService = dateTimeService;
     }
 
+    public async Task<int> GetAttemptsCountAsync(int quizId, string studentId)
+    {
+        return await _attemptRepository.GetAttemptsCountAsync(quizId, studentId);
+    }
+
     public async Task<ServiceResult<QuizEngineViewModel>> GetQuizForStudentAsync(int quizId, string studentId)
     {
         var quiz = await _quizRepository.GetByIdWithCourseAsync(quizId);

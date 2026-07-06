@@ -115,7 +115,7 @@ public class TeacherController : Controller
         var model = new CourseFormViewModel
         {
             Title       = course.Title,
-            Description = course.Description,
+            Description = course.Description ?? string.Empty,
             Subject     = course.Subject,
             Stage       = course.Stage,
             GradeLevel  = course.GradeLevel,

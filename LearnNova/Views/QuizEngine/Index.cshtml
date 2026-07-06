@@ -1,4 +1,4 @@
-@model IEnumerable<LearnNova.Models.Entities.Quiz>
+@model LearnNova.Models.ViewModels.Student.StudentQuizListViewModel
 @{
     ViewData["Title"] = "الاختبارات";
 }
@@ -23,7 +23,7 @@
     </div>
 }
 
-@if (!Model.Any())
+@if (!Model.Quizzes.Any())
 {
     <div class="card-box p-5 text-center my-4" style="background:var(--color-surface-muted); box-shadow:none; border:1px dashed var(--color-border);">
         <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:80px; height:80px; background:white; color:var(--color-text-secondary); border-radius:var(--radius-xl); box-shadow:var(--shadow-sm);">
@@ -36,7 +36,7 @@
 else
 {
     <div class="row g-4">
-        @foreach (var quiz in Model)
+        @foreach (var quiz in Model.Quizzes)
         {
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card-box p-0 h-100 d-flex flex-column" style="overflow:hidden; transition:transform 0.2s, box-shadow 0.2s; border:1px solid var(--color-border); box-shadow:var(--shadow-sm);" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';">
@@ -59,7 +59,7 @@ else
                             @(string.IsNullOrWhiteSpace(quiz.Description) ? "لا يوجد وصف إضافي لهذا الاختبار." : quiz.Description)
                         </p>
                         
-                        <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
+                        <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded flex-wrap" style="background:var(--color-surface-muted); border:1px solid var(--color-border-light);">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="bi bi-clock-history text-secondary"></i>
                                 <span class="text-dark" style="font-size:13px; font-weight:600;">@quiz.TimeLimitMinutes دقيقة</span>
@@ -67,14 +67,31 @@ else
                             <div style="width:1px; height:16px; background:var(--color-border);"></div>
                             <div class="d-flex align-items-center gap-2">
                                 <i class="bi bi-ui-radios-grid text-secondary"></i>
-                                <span class="text-dark" style="font-size:13px; font-weight:600;">@quiz.Questions.Count أسئلة</span>
+                                <span class="text-dark" style="font-size:13px; font-weight:600;">@quiz.QuestionCount أسئلة</span>
+                            </div>
+                            <div style="width:1px; height:16px; background:var(--color-border);"></div>
+                            <div class="d-flex align-items-center gap-2 w-100 mt-2">
+                                <i class="bi bi-arrow-repeat text-secondary"></i>
+                                <span class="text-dark" style="font-size:13px; font-weight:600;">المحاولات: @quiz.UsedAttempts / @quiz.MaxAttempts (المتبقي: @quiz.RemainingAttempts)</span>
                             </div>
                         </div>
 
                         <div class="mt-auto d-flex flex-column gap-2">
-                            <a asp-action="TakeQuiz" asp-route-quizId="@quiz.Id" class="btn w-100 text-white" style="background:linear-gradient(to right, var(--color-success), #10b981); height:44px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:14px; border-radius:var(--radius-md); box-shadow:0 4px 12px rgba(16,185,129,0.2); border:none;">
-                                <i class="bi bi-play-fill me-2 fs-5"></i> ابدأ الاختبار الآن
-                            </a>
+                            @if (quiz.RemainingAttempts > 0)
+                            {
+                                <a asp-action="TakeQuiz" asp-route-quizId="@quiz.Id" class="btn w-100 text-white" style="background:linear-gradient(to right, var(--color-success), #10b981); height:44px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:14px; border-radius:var(--radius-md); box-shadow:0 4px 12px rgba(16,185,129,0.2); border:none;">
+                                    <i class="bi bi-play-fill me-2 fs-5"></i> ابدأ الاختبار الآن
+                                </a>
+                            }
+                            else
+                            {
+                                <button disabled class="btn btn-secondary w-100" style="height:44px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:14px; border-radius:var(--radius-md); border:none; opacity:0.8;">
+                                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i> لقد استنفدت جميع المحاولات
+                                </button>
+                                <div class="alert alert-warning mt-1 small text-center mb-0 px-2 py-2 fw-semibold" style="font-size:12px;">
+                                    عذراً، لا يمكنك إجراء الاختبار مرة أخرى.
+                                </div>
+                            }
                             <a asp-action="History" asp-route-quizId="@quiz.Id" class="btn btn-light w-100" style="height:40px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:1px solid var(--color-border); background:white;">
                                 <i class="bi bi-journal-text me-2"></i> سجل المحاولات السابقة
                             </a>

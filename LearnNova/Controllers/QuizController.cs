@@ -118,7 +118,8 @@ public class QuizController : Controller
             Description = quiz.Description,
             TimeLimitMinutes = quiz.TimeLimitMinutes,
             PassingScore = quiz.PassingScore,
-            MaxAttempts = quiz.MaxAttempts
+            MaxAttempts = quiz.MaxAttempts,
+            ShowAnswers = quiz.ShowAnswers
         };
 
         return View(model);

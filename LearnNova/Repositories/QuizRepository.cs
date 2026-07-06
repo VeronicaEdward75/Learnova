@@ -12,7 +12,7 @@ public class QuizRepository : GenericRepository<Quiz>, IQuizRepository
 
     public async Task<IEnumerable<Quiz>> GetByCourseIdAsync(int courseId)
     {
-        return await _set.Where(q => q.CourseId == courseId).ToListAsync();
+        return await _set.Include(q => q.Questions).Where(q => q.CourseId == courseId).ToListAsync();
     }
 
     public async Task<Quiz?> GetByIdWithCourseAsync(int id)

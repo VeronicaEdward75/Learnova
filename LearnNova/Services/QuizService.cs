@@ -58,7 +58,8 @@ public class QuizService : IQuizService
             MaxAttempts = model.MaxAttempts,
             CourseId = model.CourseId,
             IsPublished = model.IsPublished,
-            ShowAnswers = model.ShowAnswers
+            ShowAnswers = model.ShowAnswers,
+            CreatedAt = DateTime.UtcNow
         };
 
         await _quizRepository.AddAsync(quiz);

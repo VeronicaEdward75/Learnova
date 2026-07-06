@@ -39,8 +39,29 @@ public class QuizEngineController : Controller
                         .Where(q => q.IsPublished)
                         .ToList();
 
-        ViewBag.CourseId = courseId;
-        return View(quizzes);
+        var viewModel = new StudentQuizListViewModel
+        {
+            CourseId = courseId,
+            Quizzes = new List<StudentQuizCardViewModel>()
+        };
+
+        foreach (var q in quizzes)
+        {
+            int usedAttempts = await _attemptService.GetAttemptsCountAsync(q.Id, studentId);
+            viewModel.Quizzes.Add(new StudentQuizCardViewModel
+            {
+                Id = q.Id,
+                Title = q.Title,
+                Description = q.Description,
+                TimeLimitMinutes = q.TimeLimitMinutes,
+                PassingScore = q.PassingScore,
+                QuestionCount = q.Questions?.Count ?? 0,
+                MaxAttempts = q.MaxAttempts,
+                UsedAttempts = usedAttempts
+            });
+        }
+
+        return View(viewModel);
     }
 
     public async Task<IActionResult> TakeQuiz(int quizId)
@@ -51,6 +72,11 @@ public class QuizEngineController : Controller
         if (!result.Succeeded)
         {
             TempData["ErrorMessage"] = string.Join(" ", result.Errors);
+            var quiz = await _quizRepository.GetByIdAsync(quizId);
+            if (quiz != null)
+            {
+                return RedirectToAction(nameof(Index), new { courseId = quiz.CourseId });
+            }
             return RedirectToAction("MyCourses", "Enrollment");
         }
 

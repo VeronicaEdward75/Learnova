@@ -54,9 +54,9 @@ public class QuizQuestionService : IQuizQuestionService
             else if (model.CorrectAnswer == "B" || model.CorrectAnswer == "ب" || model.CorrectAnswer == "OptionB")
                 model.CorrectAnswer = model.OptionB;
             else if (model.CorrectAnswer == "C" || model.CorrectAnswer == "ج" || model.CorrectAnswer == "OptionC")
-                model.CorrectAnswer = model.OptionC;
+                model.CorrectAnswer = model.OptionC ?? string.Empty;
             else if (model.CorrectAnswer == "D" || model.CorrectAnswer == "د" || model.CorrectAnswer == "OptionD")
-                model.CorrectAnswer = model.OptionD;
+                model.CorrectAnswer = model.OptionD ?? string.Empty;
 
             var validOptions = new[] { model.OptionA, model.OptionB, model.OptionC, model.OptionD };
             if (!validOptions.Contains(model.CorrectAnswer))
@@ -71,7 +71,7 @@ public class QuizQuestionService : IQuizQuestionService
             QuizId = model.QuizId,
             Text = model.Text,
             Type = model.Type,
-            CorrectAnswer = model.CorrectAnswer,
+            CorrectAnswer = model.CorrectAnswer ?? string.Empty,
             Points = model.Points,
             OrderIndex = maxOrder + 1
         };
@@ -117,9 +117,9 @@ public class QuizQuestionService : IQuizQuestionService
             else if (model.CorrectAnswer == "B" || model.CorrectAnswer == "ب" || model.CorrectAnswer == "OptionB")
                 model.CorrectAnswer = model.OptionB;
             else if (model.CorrectAnswer == "C" || model.CorrectAnswer == "ج" || model.CorrectAnswer == "OptionC")
-                model.CorrectAnswer = model.OptionC;
+                model.CorrectAnswer = model.OptionC ?? string.Empty;
             else if (model.CorrectAnswer == "D" || model.CorrectAnswer == "د" || model.CorrectAnswer == "OptionD")
-                model.CorrectAnswer = model.OptionD;
+                model.CorrectAnswer = model.OptionD ?? string.Empty;
 
             var validOptions = new[] { model.OptionA, model.OptionB, model.OptionC, model.OptionD };
             if (!validOptions.Contains(model.CorrectAnswer))
@@ -129,7 +129,7 @@ public class QuizQuestionService : IQuizQuestionService
         question.Text = model.Text;
 
         question.Type = model.Type;
-        question.CorrectAnswer = model.CorrectAnswer;
+        question.CorrectAnswer = model.CorrectAnswer ?? string.Empty;
         question.Points = model.Points;
 
         if (model.Type == QuestionType.TrueFalse)

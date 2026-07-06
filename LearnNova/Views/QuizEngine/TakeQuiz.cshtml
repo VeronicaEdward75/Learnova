@@ -54,24 +54,24 @@
                             @if (q.Type == LearnNova.Models.Enums.QuestionType.MultipleChoice)
                             {
                                 <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='var(--color-surface-muted)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
-                                    <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_A" value="أ" required onchange="updateRadioStyles(this)">
+                                    <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_A" value="@q.OptionA" required onchange="updateRadioStyles(this)">
                                     <span class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@q.OptionA</span>
                                 </label>
                                 <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='var(--color-surface-muted)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
-                                    <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_B" value="ب" required onchange="updateRadioStyles(this)">
+                                    <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_B" value="@q.OptionB" required onchange="updateRadioStyles(this)">
                                     <span class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@q.OptionB</span>
                                 </label>
                                 @if (!string.IsNullOrWhiteSpace(q.OptionC))
                                 {
                                     <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='var(--color-surface-muted)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
-                                        <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_C" value="ج" required onchange="updateRadioStyles(this)">
+                                        <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_C" value="@q.OptionC" required onchange="updateRadioStyles(this)">
                                         <span class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@q.OptionC</span>
                                     </label>
                                 }
                                 @if (!string.IsNullOrWhiteSpace(q.OptionD))
                                 {
                                     <label class="d-flex align-items-center p-3 rounded cursor-pointer" style="border:1px solid var(--color-border); background:var(--color-surface); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='var(--color-surface-muted)';" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--color-border)'; this.style.background='var(--color-surface)'; }">
-                                        <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_D" value="د" required onchange="updateRadioStyles(this)">
+                                        <input class="form-check-input ms-3 mt-0" type="radio" name="Answers[@q.Id]" id="q_@(q.Id)_D" value="@q.OptionD" required onchange="updateRadioStyles(this)">
                                         <span class="fw-semibold" style="font-size:15px; color:var(--color-text-primary);">@q.OptionD</span>
                                     </label>
                                 }
