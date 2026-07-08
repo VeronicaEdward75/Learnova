@@ -1,6 +1,7 @@
 using LearnNova.Data;
 using LearnNova.Models.Entities;
 using LearnNova.Extensions;
+using LearnNova.Middlewares;
 using LearnNova.Repositories;
 using LearnNova.Services;
 using Microsoft.AspNetCore.Identity;
@@ -59,6 +60,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ActiveUserMiddleware>();
 
 app.MapStaticAssets();
 

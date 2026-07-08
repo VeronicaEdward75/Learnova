@@ -30,10 +30,16 @@ public class AccountController : Controller
     }
 
     [HttpGet]
-    public IActionResult Login(string? returnUrl = null)
+    public IActionResult Login(string? returnUrl = null, bool deactivated = false)
     {
         ViewData["Title"] = "تسجيل الدخول";
         ViewData["ReturnUrl"] = returnUrl;
+
+        if (deactivated)
+        {
+            ModelState.AddModelError(string.Empty, "تم إيقاف هذا الحساب. تواصل مع الإدارة لمزيد من المعلومات.");
+        }
+
         return View(new LoginViewModel());
     }
 
