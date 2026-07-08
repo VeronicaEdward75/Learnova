@@ -1,0 +1,17 @@
+@{
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-header text-center mb-4">
+    <h3 class="fw-bold text-danger">رابط غير صالح</h3>
+</div>
+
+<div class="text-center">
+    <p class="text-muted mb-4">
+        عذراً، الرابط الذي استخدمته غير صالح أو انتهت صلاحيته. قد تكون قمت بتأكيد بريدك مسبقاً أو أن الرابط قديم.
+    </p>
+
+    <a asp-action="ResendVerification" class="btn btn-primary w-100 mb-3" style="background-color: #8B5E3C; border: none;">إعادة إرسال رابط التأكيد</a>
+    
+    <a asp-action="Login" class="btn btn-outline-secondary w-100">العودة لتسجيل الدخول</a>
+</div>

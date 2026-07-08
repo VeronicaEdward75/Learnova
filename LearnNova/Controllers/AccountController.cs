@@ -72,6 +72,11 @@ public class AccountController : Controller
                 ModelState.AddModelError(string.Empty, "حسابك كمدرس قيد المراجعة من الإدارة، برجاء الانتظار حتى تتم الموافقة.");
                 break;
 
+            case LoginOutcome.UnconfirmedEmail:
+                TempData["UnconfirmedEmail"] = model.Email;
+                ModelState.AddModelError(string.Empty, "يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.");
+                break;
+
             case LoginOutcome.AccountDeactivated:
                 ModelState.AddModelError(string.Empty, "تم إيقاف هذا الحساب. تواصل مع الإدارة لمزيد من المعلومات.");
                 break;
@@ -112,13 +117,37 @@ public class AccountController : Controller
             return View(model);
         }
 
+        var user = result.Data!;
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, protocol: Request.Scheme);
+
+        var emailBody = $@"
+            <div style='font-family: Cairo, Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
+                <h2 style='color: #4a90e2; text-align: center;'>أهلاً بك في LearnNova</h2>
+                <p>مرحباً {user.FullName}،</p>
+                <p>شكراً لتسجيلك في منصتنا. يرجى تأكيد بريدك الإلكتروني عبر النقر على الزر أدناه:</p>
+                <div style='text-align: center; margin: 30px 0;'>
+                    <a href='{System.Text.Encodings.Web.HtmlEncoder.Default.Encode(callbackUrl!)}' style='background-color: #4a90e2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;'>تأكيد البريد الإلكتروني</a>
+                </div>
+                <p>إذا لم تتمكن من النقر على الزر، يمكنك نسخ هذا الرابط ولصقه في متصفحك:</p>
+                <p><a href='{System.Text.Encodings.Web.HtmlEncoder.Default.Encode(callbackUrl!)}'>{callbackUrl}</a></p>
+                <hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;' />
+                <p style='font-size: 12px; color: #888; text-align: center;'>هذا الرابط صالح لمدة محدودة لدواعي أمنية. إذا لم تقم بالتسجيل في LearnNova، يرجى تجاهل هذا البريد.</p>
+            </div>";
+
+        await _emailService.SendEmailAsync(user.Email!, "تأكيد حسابك في LearnNova", emailBody);
+
         if (model.Role == UserRole.Teacher)
         {
-            TempData["SuccessMessage"] = "تم إنشاء حسابك بنجاح، وهو الآن قيد المراجعة من الإدارة. سيتم إعلامك عند الموافقة.";
-            return RedirectToAction(nameof(Login));
+            TempData["SuccessMessage"] = "تم إنشاء حسابك بنجاح. يرجى التحقق من بريدك الإلكتروني لتأكيد الحساب. علماً بأن حسابك سيخضع للمراجعة من الإدارة قبل التفعيل الكامل.";
+        }
+        else
+        {
+            TempData["SuccessMessage"] = "تم إنشاء حسابك بنجاح. يرجى التحقق من بريدك الإلكتروني لتأكيد الحساب.";
         }
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction(nameof(VerifyEmailNotice));
     }
 
     [HttpPost]
@@ -174,8 +203,8 @@ public class AccountController : Controller
         
         if (!isEmailConfirmed)
         {
-            _logger.LogWarning("User email is NOT confirmed. Proceeding anyway because email verification is not fully enforced in registration.");
-            // return RedirectToAction(nameof(ForgotPasswordConfirmation));
+            ModelState.AddModelError(string.Empty, "يرجى تأكيد بريدك الإلكتروني أولاً قبل إعادة تعيين كلمة المرور.");
+            return View(model);
         }
 
         _logger.LogInformation("Generating password reset token...");
@@ -225,6 +254,94 @@ public class AccountController : Controller
     {
         ViewData["Title"] = "تأكيد إرسال البريد";
         return View();
+    }
+
+    // ==========================================
+    // EMAIL VERIFICATION
+    // ==========================================
+
+    [HttpGet]
+    public IActionResult VerifyEmailNotice()
+    {
+        ViewData["Title"] = "تأكيد البريد الإلكتروني";
+        return View();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    {
+        if (userId == null || token == null)
+        {
+            return RedirectToAction(nameof(InvalidConfirmationLink));
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return RedirectToAction(nameof(InvalidConfirmationLink));
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if (result.Succeeded)
+        {
+            return View("EmailConfirmed");
+        }
+
+        return RedirectToAction(nameof(InvalidConfirmationLink));
+    }
+
+    [HttpGet]
+    public IActionResult InvalidConfirmationLink()
+    {
+        ViewData["Title"] = "رابط غير صالح";
+        return View();
+    }
+
+    [HttpGet]
+    public IActionResult ResendVerification()
+    {
+        ViewData["Title"] = "إعادة إرسال رابط التأكيد";
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResendVerification(string email)
+    {
+        ViewData["Title"] = "إعادة إرسال رابط التأكيد";
+        
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            ModelState.AddModelError(string.Empty, "البريد الإلكتروني مطلوب.");
+            return View();
+        }
+
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user != null && !await _userManager.IsEmailConfirmedAsync(user))
+        {
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, protocol: Request.Scheme);
+
+            var emailBody = $@"
+                <div style='font-family: Cairo, Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
+                    <h2 style='color: #4a90e2; text-align: center;'>أهلاً بك في LearnNova</h2>
+                    <p>مرحباً {user.FullName}،</p>
+                    <p>لقد طلبتم إعادة إرسال رابط تأكيد البريد الإلكتروني. يرجى النقر على الزر أدناه:</p>
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='{System.Text.Encodings.Web.HtmlEncoder.Default.Encode(callbackUrl!)}' style='background-color: #4a90e2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;'>تأكيد البريد الإلكتروني</a>
+                    </div>
+                    <p>إذا لم تتمكن من النقر على الزر، يمكنك نسخ هذا الرابط ولصقه في متصفحك:</p>
+                    <p><a href='{System.Text.Encodings.Web.HtmlEncoder.Default.Encode(callbackUrl!)}'>{callbackUrl}</a></p>
+                    <hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;' />
+                    <p style='font-size: 12px; color: #888; text-align: center;'>هذا الرابط صالح لمدة محدودة لدواعي أمنية.</p>
+                </div>";
+
+            await _emailService.SendEmailAsync(user.Email!, "رابط تأكيد حسابك في LearnNova", emailBody);
+        }
+
+        // Generic success message to prevent email enumeration
+        TempData["SuccessMessage"] = "إذا كان البريد الإلكتروني مسجلاً لدينا وغير مؤكد، فسيتم إرسال رابط جديد إليه.";
+        return RedirectToAction(nameof(VerifyEmailNotice));
     }
 
     [HttpGet]

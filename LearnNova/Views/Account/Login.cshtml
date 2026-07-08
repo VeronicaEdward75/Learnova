@@ -13,6 +13,15 @@
     <a asp-action="Register" class="auth-tab-btn">حساب جديد</a>
 </div>
 
+@if (TempData["UnconfirmedEmail"] != null)
+{
+    <div class="alert alert-warning small mb-3 text-center">
+        يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.
+        <br />
+        <a asp-action="ResendVerification" class="fw-bold text-decoration-underline" style="color:#8B5E3C">إعادة إرسال رابط التأكيد</a>
+    </div>
+}
+
 <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
 
 <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">

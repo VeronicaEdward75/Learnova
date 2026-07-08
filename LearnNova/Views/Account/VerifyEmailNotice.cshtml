@@ -1,0 +1,27 @@
+@{
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-header text-center mb-4">
+    <h3 class="fw-bold" style="color:var(--color-text-primary)">تأكيد البريد الإلكتروني</h3>
+</div>
+
+<div class="text-center">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success small mb-4">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    
+    <p class="text-muted mb-4">
+        لقد أرسلنا رابط تأكيد إلى بريدك الإلكتروني. يرجى مراجعة صندوق الوارد (أو مجلد الرسائل غير المرغوب فيها) والنقر على الرابط لتفعيل حسابك.
+    </p>
+
+    <a asp-action="Login" class="btn btn-primary w-100 mb-3" style="background-color: #8B5E3C; border: none;">العودة لتسجيل الدخول</a>
+    
+    <p class="small text-muted mt-3">
+        لم تستلم البريد الإلكتروني؟ 
+        <a asp-action="ResendVerification" class="fw-bold text-decoration-underline" style="color:#8B5E3C">إعادة إرسال الرابط</a>
+    </p>
+</div>

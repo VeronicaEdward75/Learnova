@@ -1,0 +1,27 @@
+@{
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-header text-center mb-4">
+    <h3 class="fw-bold" style="color:var(--color-text-primary)">إعادة إرسال الرابط</h3>
+    <p class="text-muted">أدخل بريدك الإلكتروني لإرسال رابط تأكيد جديد</p>
+</div>
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+
+<form asp-action="ResendVerification" method="post">
+    <div class="mb-4">
+        <label for="email" class="form-label fw-semibold" style="font-size:13px">البريد الإلكتروني</label>
+        <input type="email" id="email" name="email" class="form-control-custom" placeholder="أدخل البريد الإلكتروني" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 py-2 mb-3 fw-bold shadow-sm" style="background-color: #8B5E3C; border: none; font-size:15px; border-radius: 8px;">
+        إرسال الرابط
+    </button>
+    
+    <div class="text-center mt-3">
+        <a asp-action="Login" class="text-decoration-none fw-semibold" style="color:#8B5E3C; font-size:14px">
+            <i class="bi bi-arrow-right-short align-middle"></i> العودة لتسجيل الدخول
+        </a>
+    </div>
+</form>

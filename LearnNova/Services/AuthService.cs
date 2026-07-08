@@ -40,20 +40,25 @@ public class AuthService : IAuthService
             return new AuthResult(outcome, user);
         }
 
+        if (!user.EmailConfirmed)
+        {
+            return new AuthResult(LoginOutcome.UnconfirmedEmail, user);
+        }
+
         await SignInAsync(user, rememberMe);
         return new AuthResult(LoginOutcome.Succeeded, user);
     }
 
-    public async Task<ServiceResult> RegisterAsync(RegisterViewModel model)
+    public async Task<ServiceResult<ApplicationUser>> RegisterAsync(RegisterViewModel model)
     {
         if (model.Role != UserRole.Student && model.Role != UserRole.Teacher)
         {
-            return ServiceResult.Fail("الدور المحدد غير صالح");
+            return ServiceResult<ApplicationUser>.Fail("الدور المحدد غير صالح");
         }
 
         if (await _userService.EmailExistsAsync(model.Email))
         {
-            return ServiceResult.Fail("هذا البريد الإلكتروني مستخدم بالفعل");
+            return ServiceResult<ApplicationUser>.Fail("هذا البريد الإلكتروني مستخدم بالفعل");
         }
 
         var user = new ApplicationUser
@@ -80,15 +85,10 @@ public class AuthService : IAuthService
         var result = await _userService.CreateUserAsync(user, model.Password, model.Role, isActive);
         if (!result.Succeeded)
         {
-            return result;
+            return ServiceResult<ApplicationUser>.Fail(result.Errors);
         }
 
-        if (model.Role == UserRole.Student)
-        {
-            await SignInAsync(user, isPersistent: false);
-        }
-
-        return ServiceResult.Success();
+        return ServiceResult<ApplicationUser>.Success(user);
     }
 
     public Task LogoutAsync() => _signInManager.SignOutAsync();
