@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using LearnNova.Models.Entities;
+using LearnNova.Repositories;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace LearnNova.Controllers;
 
@@ -57,13 +61,33 @@ public class CertificateController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Student")]
-    public async Task<IActionResult> MyCertificates()
+    public async Task<IActionResult> MyCertificates([FromServices] IGenericRepository<Enrollment> enrollmentRepo)
     {
         ViewData["Title"] = "شهاداتي";
         ViewBag.ActiveNav = "certificates";
         var studentId = _userManager.GetUserId(User)!;
 
+        // 1. Fetch all enrollments
+        var enrollments = await enrollmentRepo.GetQueryable()
+            .Include(e => e.Course)
+            .Where(e => e.StudentId == studentId && e.IsActive)
+            .ToListAsync();
+
+        var missingRequirements = new Dictionary<string, string>();
+
+        foreach (var enrollment in enrollments)
+        {
+            var res = await _certificateService.CheckAndIssueCertificateAsync(studentId, enrollment.CourseId);
+            if (!res.Success)
+            {
+                missingRequirements[enrollment.Course.Title] = res.Message;
+            }
+        }
+
         var certs = await _certificateService.GetStudentCertificatesAsync(studentId);
+        
+        ViewBag.MissingRequirements = missingRequirements;
+
         return View(certs);
     }
 }

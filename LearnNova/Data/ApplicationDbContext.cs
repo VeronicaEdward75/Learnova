@@ -31,6 +31,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<CouponUsage> CouponUsages => Set<CouponUsage>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<SystemSettings> SystemSettings => Set<SystemSettings>();
+    public DbSet<Certificate> Certificates => Set<Certificate>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
@@ -263,8 +264,20 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Invoice>().Property(i => i.VAT).HasPrecision(18, 4);
         builder.Entity<Invoice>().Property(i => i.Total).HasPrecision(18, 4);
         builder.Entity<Invoice>().HasIndex(i => i.InvoiceNumber).IsUnique();
+
+        // Certificate Relationships
+        builder.Entity<Certificate>()
+            .HasOne(c => c.Student)
+            .WithMany()
+            .HasForeignKey(c => c.StudentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Certificate>()
+            .HasOne(c => c.Course)
+            .WithMany()
+            .HasForeignKey(c => c.CourseId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
+
+
 }
-
-
-

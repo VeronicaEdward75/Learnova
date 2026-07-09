@@ -1,0 +1,66 @@
+@model IEnumerable<LearnNova.Models.ViewModels.Student.OrderHistoryViewModel>
+@{
+    ViewData["Title"] = "المدفوعات";
+}
+
+<style>
+    #main {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">@ViewData["Title"]</h2>
+</div>
+
+<div class="card-box p-0 overflow-hidden">
+    @if(Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">رقم العملية</th>
+                        <th>التاريخ</th>
+                        <th>طريقة الدفع</th>
+                        <th>حالة الدفع</th>
+                        <th class="text-end pe-4">المبلغ المخصوم</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-primary font-monospace">@item.TransactionId</div>
+                                <div class="text-muted small">طلب #@item.PaymentId</div>
+                            </td>
+                            <td class="text-muted">@item.PurchaseDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                <div><i class="bi bi-credit-card me-1"></i> @item.PaymentMethod</div>
+                            </td>
+                            <td>
+                                @if(item.Status == LearnNova.Models.Enums.PaymentStatus.Succeeded) { <span class="badge bg-success">ناجح</span> }
+                                else if(item.Status == LearnNova.Models.Enums.PaymentStatus.Refunded) { <span class="badge bg-secondary">مسترد</span> }
+                                else if(item.Status == LearnNova.Models.Enums.PaymentStatus.Failed) { <span class="badge bg-danger">فشل</span> }
+                                else { <span class="badge bg-warning text-dark">@item.Status</span> }
+                            </td>
+                            <td class="text-end fw-bold pe-4">
+                                @item.AmountPaid.ToString("N2") <small class="text-muted fw-normal">@item.Currency</small>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="p-5 text-center text-muted">
+            <i class="bi bi-credit-card d-block mb-3" style="font-size: 3rem;"></i>
+            ليس لديك أي مدفوعات حتى الآن
+        </div>
+    }
+</div>

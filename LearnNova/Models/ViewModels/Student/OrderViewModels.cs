@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using LearnNova.Models.Enums;
 
@@ -16,6 +16,10 @@ public class OrderHistoryViewModel
     public string Currency { get; set; } = "EGP";
     public PaymentStatus Status { get; set; }
     public string? CouponCode { get; set; }
+    
+    // For payments
+    public string? TransactionId { get; set; }
+    public string? PaymentMethod { get; set; }
     
     // For refund logic
     public bool CanRequestRefund { get; set; }

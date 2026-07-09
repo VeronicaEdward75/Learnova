@@ -1,7 +1,16 @@
-﻿@model LearnNova.Models.ViewModels.Student.OrderDetailsViewModel
+@model LearnNova.Models.ViewModels.Student.OrderDetailsViewModel
 @{
     ViewData["Title"] = "تفاصيل الطلب #" + Model.PaymentId;
 }
+
+<style>
+    /* Issue 1: Prevent #main from fading in slowly so it renders instantly */
+    #main {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+</style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">@ViewData["Title"]</h2>

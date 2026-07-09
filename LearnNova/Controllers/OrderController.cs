@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using LearnNova.Models.ViewModels.Student;
 using LearnNova.Services;
@@ -37,8 +37,30 @@ public class OrderController : Controller
 
     public async Task<IActionResult> History()
     {
-        ViewData["Title"] = "تفاصيل الطلب والفاتورة";
+        ViewData["Title"] = "سجل الطلبات";
         ViewBag.ActiveNav = "orders";
+        var studentId = _userManager.GetUserId(User)!;
+
+        var orders = await _refundService.GetStudentOrdersAsync(studentId);
+        return View(orders);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Payments()
+    {
+        ViewData["Title"] = "المدفوعات";
+        ViewBag.ActiveNav = "payments";
+        var studentId = _userManager.GetUserId(User)!;
+
+        var orders = await _refundService.GetStudentOrdersAsync(studentId);
+        return View(orders);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Invoices()
+    {
+        ViewData["Title"] = "الفواتير";
+        ViewBag.ActiveNav = "invoices";
         var studentId = _userManager.GetUserId(User)!;
 
         var orders = await _refundService.GetStudentOrdersAsync(studentId);

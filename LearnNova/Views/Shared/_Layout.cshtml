@@ -140,10 +140,10 @@
                 <a class="nav-link-item @(activeNav == "orders" ? "active" : "")" asp-controller="Order" asp-action="History">
                     <i class="bi bi-receipt"></i><span>سجل الطلبات</span>
                 </a>
-                <a class="nav-link-item" asp-controller="Order" asp-action="History">
+                <a class="nav-link-item @(activeNav == "payments" ? "active" : "")" asp-controller="Order" asp-action="Payments">
                     <i class="bi bi-credit-card"></i><span>المدفوعات</span>
                 </a>
-                <a class="nav-link-item" asp-controller="Order" asp-action="History">
+                <a class="nav-link-item @(activeNav == "invoices" ? "active" : "")" asp-controller="Order" asp-action="Invoices">
                     <i class="bi bi-file-earmark-text"></i><span>الفواتير</span>
                 </a>
                 <a class="nav-link-item @(activeNav == "wallet" ? "active" : "")" asp-controller="Order" asp-action="Wallet">

@@ -167,6 +167,8 @@ public class RefundService : IRefundService
                 Currency = p.Currency,
                 Status = p.Status,
                 CouponCode = coupon,
+                TransactionId = p.TransactionId,
+                PaymentMethod = p.PaymentMethod,
                 CanRequestRefund = false
             };
 
