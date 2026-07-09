@@ -1,4 +1,4 @@
-using LearnNova.Models.Entities;
+﻿using LearnNova.Models.Entities;
 using LearnNova.Repositories;
 using LearnNova.Services.DateTimeService;
 
@@ -49,7 +49,7 @@ public class EnrollmentService : IEnrollmentService
     public async Task<ServiceResult> UnenrollAsync(string studentId, int courseId)
     {
         var enrollment = (await _enrollmentRepository.FindAsync(e => e.StudentId == studentId && e.CourseId == courseId)).FirstOrDefault();
-        if (enrollment == null) return ServiceResult.Fail("?????? ??? ???? ?? ??????.");
+        if (enrollment == null) return ServiceResult.Fail("الطالب غير مسجل في الكورس.");
         
         _enrollmentRepository.Remove(enrollment);
         await _enrollmentRepository.SaveChangesAsync();

@@ -1,4 +1,4 @@
-using LearnNova.Models.ViewModels.Teacher;
+﻿using LearnNova.Models.ViewModels.Teacher;
 using LearnNova.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -227,7 +227,7 @@ public class TeacherController : Controller
     [HttpGet]
     public async Task<IActionResult> Withdraw()
     {
-        ViewData["Title"] = "??? ???????";
+        ViewData["Title"] = "سحب الأرباح";
         ViewBag.ActiveNav = "wallet";
 
         var teacherId = _userManager.GetUserId(User)!;
@@ -283,7 +283,7 @@ public class TeacherController : Controller
     [HttpGet]
     public async Task<IActionResult> Revenue(string dateFilter = "This Month")
     {
-        ViewData["Title"] = "??????? ?????????";
+        ViewData["Title"] = "المالية والأرباح";
         ViewBag.ActiveNav = "revenue";
 
         var teacherId = _userManager.GetUserId(User)!;
@@ -311,7 +311,7 @@ public class TeacherController : Controller
     [HttpGet]
     public async Task<IActionResult> Coupons()
     {
-        ViewData["Title"] = "??????? ?????";
+        ViewData["Title"] = "إدارة الكوبونات";
         ViewBag.ActiveNav = "coupons";
 
         var teacherId = _userManager.GetUserId(User)!;
@@ -342,7 +342,7 @@ public class TeacherController : Controller
     [HttpGet]
     public async Task<IActionResult> CreateCoupon()
     {
-        ViewData["Title"] = "????? ????? ????";
+        ViewData["Title"] = "إدارة الكوبون";
         ViewBag.ActiveNav = "coupons";
         
         var teacherId = _userManager.GetUserId(User)!;
@@ -356,7 +356,7 @@ public class TeacherController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateCoupon(LearnNova.Models.ViewModels.Teacher.TeacherCouponFormViewModel vm)
     {
-        ViewData["Title"] = "????? ????? ????";
+        ViewData["Title"] = "إدارة الكوبون";
         ViewBag.ActiveNav = "coupons";
         var teacherId = _userManager.GetUserId(User)!;
 

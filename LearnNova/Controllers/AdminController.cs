@@ -1,4 +1,4 @@
-using LearnNova.Models.Entities;
+﻿using LearnNova.Models.Entities;
 using LearnNova.Models.Enums;
 using LearnNova.Models.ViewModels;
 using LearnNova.Models.ViewModels.Admin;
@@ -188,7 +188,7 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> Withdrawals(WithdrawalStatus? status)
     {
-        ViewData["Title"] = "????? ?????";
+        ViewData["Title"] = "طلبات السحب";
         ViewBag.ActiveNav = "withdrawals";
 
         var requests = await _withdrawalService.GetAllWithdrawalsAsync(status);
@@ -203,7 +203,7 @@ public class AdminController : Controller
     {
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "?????? ??? ?????.";
+            TempData["ErrorMessage"] = "الطلب غير موجود.";
             return RedirectToAction(nameof(Withdrawals));
         }
 
@@ -224,7 +224,7 @@ public class AdminController : Controller
     {
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "?????? ??? ?????.";
+            TempData["ErrorMessage"] = "الطلب غير موجود.";
             return RedirectToAction(nameof(Withdrawals));
         }
 
@@ -244,7 +244,7 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> Finance(string dateFilter = "This Month")
     {
-        ViewData["Title"] = "???????? ???????";
+        ViewData["Title"] = "المالية والأرباح";
         ViewBag.ActiveNav = "finance";
 
         var vm = await _financeAnalyticsService.GetAdminFinanceDashboardAsync(dateFilter);
@@ -270,7 +270,7 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> Coupons()
     {
-        ViewData["Title"] = "????? ?????????";
+        ViewData["Title"] = "إدارة الكوبونات";
         ViewBag.ActiveNav = "coupons";
 
         var couponService = HttpContext.RequestServices.GetService(typeof(ICouponService)) as ICouponService;
@@ -301,7 +301,7 @@ public class AdminController : Controller
     [HttpGet]
     public IActionResult CreateCoupon()
     {
-        ViewData["Title"] = "????? ????? ????";
+        ViewData["Title"] = "إدارة الكوبون";
         ViewBag.ActiveNav = "coupons";
         return View("CouponForm", new LearnNova.Models.ViewModels.Admin.CouponFormViewModel());
     }
@@ -310,7 +310,7 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateCoupon(LearnNova.Models.ViewModels.Admin.CouponFormViewModel vm)
     {
-        ViewData["Title"] = "????? ????? ????";
+        ViewData["Title"] = "إدارة الكوبون";
         ViewBag.ActiveNav = "coupons";
 
         if (!ModelState.IsValid) return View("CouponForm", vm);
@@ -374,7 +374,7 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> Refunds(LearnNova.Models.Enums.RefundStatus? statusFilter)
     {
-        ViewData["Title"] = "????? ????????? ??????????";
+        ViewData["Title"] = "إدارة المرتجعات";
         ViewBag.ActiveNav = "refunds";
 
         var refundService = HttpContext.RequestServices.GetService(typeof(IRefundService)) as IRefundService;

@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = "?????? ?? ???????";
+﻿@{
+    ViewData["Title"] = "التحقق من الشهادة";
     var cert = ViewBag.Certificate as LearnNova.Models.Entities.Certificate;
 }
 
@@ -8,14 +8,14 @@
         <div class="col-12 col-md-8 col-lg-6">
             <div class="text-center mb-5">
                 <i class="bi bi-patch-check-fill text-primary" style="font-size: 4rem;"></i>
-                <h1 class="fw-bold mt-3" style="color:var(--color-text-primary);">???? ?? ??????? ???????</h1>
-                <p class="text-muted">???? ??? ?????? (Verification Code) ?? ??? ??????? (Certificate Number) ?????? ?? ?????.</p>
+                <h1 class="fw-bold mt-3" style="color:var(--color-text-primary);">تحقق من موثوقية الشهادة</h1>
+                <p class="text-muted">أدخل كود التحقق (Verification Code) أو رقم الشهادة (Certificate Number) للتحقق من صحتها.</p>
             </div>
 
             <div class="card-box p-4 mb-4">
                 <form asp-action="VerifyPost" method="post" class="d-flex gap-2">
-                    <input type="text" name="code" class="form-control form-control-lg" placeholder="????: LN-2026-A1B2C3D4" value="@ViewBag.Code" required />
-                    <button type="submit" class="btn btn-primary-custom px-4 fw-bold">????</button>
+                    <input type="text" name="code" class="form-control form-control-lg" placeholder="مثال: LN-2026-A1B2C3D4" value="@ViewBag.Code" required />
+                    <button type="submit" class="btn btn-primary-custom px-4 fw-bold">تحقق</button>
                 </form>
                 @if(ViewBag.Error != null)
                 {
@@ -32,32 +32,32 @@
                             <div class="d-inline-block p-3 rounded-circle bg-success text-white mb-3">
                                 <i class="bi bi-check-lg fs-1"></i>
                             </div>
-                            <h3 class="fw-bold text-success">????? ????? ??????</h3>
+                            <h3 class="fw-bold text-success">الشهادة أصلية وموثقة</h3>
                         </div>
                         
                         <div class="bg-light p-4 rounded mb-3">
                             <div class="row g-3">
                                 <div class="col-12 border-bottom pb-2">
-                                    <div class="text-muted small">??? ??????</div>
+                                    <div class="text-muted small">اسم الطالب</div>
                                     <div class="fw-bold fs-5">@cert?.Student?.FullName</div>
                                 </div>
                                 <div class="col-12 border-bottom pb-2">
-                                    <div class="text-muted small">??????</div>
+                                    <div class="text-muted small">الكورس</div>
                                     <div class="fw-bold">@cert?.Course?.Title</div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-muted small">????? ???????</div>
+                                    <div class="text-muted small">تاريخ الإصدار</div>
                                     <div class="fw-bold">@cert?.IssueDate.ToString("dd MMM yyyy")</div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-muted small">??? ???????</div>
+                                    <div class="text-muted small">رقم الشهادة</div>
                                     <div class="fw-bold">@cert?.CertificateNumber</div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="text-center mt-4">
-                            <a href="/Document/DownloadCertificate/@cert?.Id" class="btn btn-outline-primary"><i class="bi bi-download me-2"></i> ????? ???? PDF</a>
+                            <a href="/Document/DownloadCertificate/@cert?.Id" class="btn btn-outline-primary"><i class="bi bi-download me-2"></i> تحميل بصيغة PDF</a>
                         </div>
                     </div>
                 }
@@ -67,8 +67,8 @@
                         <div class="d-inline-block p-3 rounded-circle bg-danger text-white mb-3">
                             <i class="bi bi-x-lg fs-1"></i>
                         </div>
-                        <h3 class="fw-bold text-danger">????? ??? ?????</h3>
-                        <p class="text-muted mt-2">?? ????? ?? ?????? ??? ?? ????? ?????? ?? ????? ??????. ???? ?????? ?? ????? ????????? ??? ????.</p>
+                        <h3 class="fw-bold text-danger">الشهادة غير موجودة</h3>
+                        <p class="text-muted mt-2">لم نتمكن من العثور على أي شهادة تطابق هذا الرقم. يرجى التأكد من الرقم والمحاولة مرة أخرى.</p>
                     </div>
                 }
             }

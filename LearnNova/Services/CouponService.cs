@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,32 +26,32 @@ public class CouponService : ICouponService
 
     public async Task<(bool IsValid, string Message, Coupon? Coupon)> ValidateCouponAsync(string code, int courseId, string studentId)
     {
-        if (string.IsNullOrWhiteSpace(code)) return (false, "??? ????? ????", null);
+        if (string.IsNullOrWhiteSpace(code)) return (false, "كود الكوبون فارغ", null);
 
         var coupons = await _couponRepository.FindAsync(c => c.Code.ToLower() == code.ToLower());
         var coupon = coupons.FirstOrDefault();
 
-        if (coupon == null) return (false, "??? ????? ??? ????", null);
-        if (!coupon.IsActive) return (false, "??? ????? ??? ????", null);
-        if (coupon.StartDate.HasValue && coupon.StartDate.Value > DateTime.UtcNow) return (false, "??? ????? ?? ???? ???", null);
-        if (coupon.EndDate.HasValue && coupon.EndDate.Value < DateTime.UtcNow) return (false, "??? ????? ????? ????????", null);
+        if (coupon == null) return (false, "كود الكوبون غير موجود", null);
+        if (!coupon.IsActive) return (false, "كود الكوبون غير موجود", null);
+        if (coupon.StartDate.HasValue && coupon.StartDate.Value > DateTime.UtcNow) return (false, "هذا الكوبون لم يبدأ بعد", null);
+        if (coupon.EndDate.HasValue && coupon.EndDate.Value < DateTime.UtcNow) return (false, "هذا الكوبون منتهي الصلاحية", null);
 
         var usages = await _usageRepository.FindAsync(u => u.CouponId == coupon.Id);
-        if (coupon.UsageLimit.HasValue && usages.Count() >= coupon.UsageLimit.Value) return (false, "??? ?? ?????? ???? ?????? ???????? ?????", null);
+        if (coupon.UsageLimit.HasValue && usages.Count() >= coupon.UsageLimit.Value) return (false, "لقد تم تجاوز الحد الأقصى لاستخدام الكوبون", null);
 
         // Check if user already used it
-        if (usages.Any(u => u.StudentId == studentId)) return (false, "??? ??? ???????? ??? ????? ??????", null);
+        if (usages.Any(u => u.StudentId == studentId)) return (false, "لقد قمت باستخدام هذا الكوبون مسبقاً", null);
 
         // Scope validation
         var course = await _courseRepository.GetByIdAsync(courseId);
-        if (course == null) return (false, "?????? ??? ?????", null);
+        if (course == null) return (false, "الكورس غير موجود", null);
 
-        if (coupon.CourseId.HasValue && coupon.CourseId.Value != courseId) return (false, "??? ????? ??? ???? ???? ??????", null);
-        if (!string.IsNullOrEmpty(coupon.TeacherId) && coupon.TeacherId != course.TeacherId) return (false, "??? ????? ??? ???? ????? ??? ??????", null);
+        if (coupon.CourseId.HasValue && coupon.CourseId.Value != courseId) return (false, "هذا الكوبون غير صالح لهذا الكورس", null);
+        if (!string.IsNullOrEmpty(coupon.TeacherId) && coupon.TeacherId != course.TeacherId) return (false, "هذا الكوبون غير صالح لكورس هذا المعلم", null);
 
-        if (coupon.MinimumOrder.HasValue && course.Price < coupon.MinimumOrder.Value) return (false, $"??? ????? ????? ?? ???? ?????? {coupon.MinimumOrder.Value} EGP", null);
+        if (coupon.MinimumOrder.HasValue && course.Price < coupon.MinimumOrder.Value) return (false, $"هذا الكوبون يتطلب حد أدنى للطلب {coupon.MinimumOrder.Value} EGP", null);
 
-        return (true, "??? ????? ????", coupon);
+        return (true, "كود الكوبون فارغ", coupon);
     }
 
     public decimal CalculateDiscount(decimal price, Coupon coupon)
@@ -115,19 +115,19 @@ public class CouponService : ICouponService
     public async Task<(bool Success, string Message)> CreateCouponAsync(Coupon coupon)
     {
         var existing = await GetCouponByCodeAsync(coupon.Code);
-        if (existing != null) return (false, "??? ????? ?????? ?? ???");
+        if (existing != null) return (false, "كود الكوبون موجود بالفعل");
 
         await _couponRepository.AddAsync(coupon);
-        return (true, "?? ????? ??? ????? ?????");
+        return (true, "تم إضافة هذا الكوبون بنجاح");
     }
 
     public async Task<(bool Success, string Message)> UpdateCouponAsync(Coupon coupon)
     {
         var existing = await _couponRepository.GetByIdAsync(coupon.Id);
-        if (existing == null) return (false, "????? ??? ?????");
+        if (existing == null) return (false, "الكوبون غير موجود");
 
         var checkCode = await GetCouponByCodeAsync(coupon.Code);
-        if (checkCode != null && checkCode.Id != coupon.Id) return (false, "??? ????? ?????? ?? ???");
+        if (checkCode != null && checkCode.Id != coupon.Id) return (false, "كود الكوبون موجود بالفعل");
 
         existing.Code = coupon.Code;
         existing.DiscountType = coupon.DiscountType;
@@ -143,29 +143,29 @@ public class CouponService : ICouponService
         _couponRepository.Update(existing);
         await _couponRepository.SaveChangesAsync();
 
-        return (true, "?? ????? ????? ?????");
+        return (true, "تم تعديل الكوبون بنجاح");
     }
 
     public async Task<(bool Success, string Message)> ToggleCouponStatusAsync(int id)
     {
         var coupon = await _couponRepository.GetByIdAsync(id);
-        if (coupon == null) return (false, "????? ??? ?????");
+        if (coupon == null) return (false, "الكوبون غير موجود");
 
         coupon.IsActive = !coupon.IsActive;
         _couponRepository.Update(coupon);
         await _couponRepository.SaveChangesAsync();
 
-        return (true, coupon.IsActive ? "?? ????? ????? ?????" : "?? ????? ????? ?????");
+        return (true, coupon.IsActive ? "تم تعديل الكوبون بنجاح" : "تم تعديل الكوبون بنجاح");
     }
 
     public async Task<(bool Success, string Message)> DeleteCouponAsync(int id)
     {
         var coupon = await _couponRepository.GetByIdAsync(id);
-        if (coupon == null) return (false, "????? ??? ?????");
+        if (coupon == null) return (false, "الكوبون غير موجود");
 
         _couponRepository.Remove(coupon);
         await _couponRepository.SaveChangesAsync();
-        return (true, "?? ??? ????? ?????");
+        return (true, "تم حذف الكوبون بنجاح");
     }
 
     public async Task<int> GetCouponUsageCountAsync(int couponId)

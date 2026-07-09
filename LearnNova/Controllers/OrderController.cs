@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using LearnNova.Models.ViewModels.Student;
 using LearnNova.Services;
@@ -26,7 +26,7 @@ public class OrderController : Controller
     [HttpGet]
     public async Task<IActionResult> Wallet()
     {
-        ViewData["Title"] = "??????";
+        ViewData["Title"] = "سجل الطلبات";
         ViewBag.ActiveNav = "student-wallet";
         var studentId = _userManager.GetUserId(User)!;
         var wallet = await _walletService.GetWalletAsync(studentId);
@@ -37,7 +37,7 @@ public class OrderController : Controller
 
     public async Task<IActionResult> History()
     {
-        ViewData["Title"] = "??? ??????? ??????????";
+        ViewData["Title"] = "تفاصيل الطلب والفاتورة";
         ViewBag.ActiveNav = "orders";
         var studentId = _userManager.GetUserId(User)!;
 
@@ -48,7 +48,7 @@ public class OrderController : Controller
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
-        ViewData["Title"] = "?????? ?????";
+        ViewData["Title"] = "عرض الفاتورة";
         ViewBag.ActiveNav = "orders";
         var studentId = _userManager.GetUserId(User)!;
 
@@ -61,7 +61,7 @@ public class OrderController : Controller
     [HttpGet]
     public async Task<IActionResult> RequestRefund(int paymentId)
     {
-        ViewData["Title"] = "??? ??????? ???????";
+        ViewData["Title"] = "طلب استرداد المبلغ";
         ViewBag.ActiveNav = "orders";
         var studentId = _userManager.GetUserId(User)!;
 
@@ -89,7 +89,7 @@ public class OrderController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RequestRefund(RefundRequestViewModel vm)
     {
-        ViewData["Title"] = "??? ??????? ???????";
+        ViewData["Title"] = "طلب استرداد المبلغ";
         ViewBag.ActiveNav = "orders";
         var studentId = _userManager.GetUserId(User)!;
 

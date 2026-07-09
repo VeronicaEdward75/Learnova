@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,26 +42,26 @@ public class RefundService : IRefundService
     public async Task<(bool Success, string Message)> CanRequestRefundAsync(int paymentId, string studentId)
     {
         var payment = await _paymentRepo.GetByIdAsync(paymentId);
-        if (payment == null || payment.StudentId != studentId) return (false, "عملية الدفع غير موجودة");
+        if (payment == null || payment.StudentId != studentId) return (false, "Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¯ÙØ¹ ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©");
 
-        if (payment.Status != PaymentStatus.Succeeded) return (false, "لا يمكن استرداد عملية غير ناجحة");
+        if (payment.Status != PaymentStatus.Succeeded) return (false, "Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ø¹Ù…Ù„ÙŠØ© ØºÙŠØ± Ù†Ø§Ø¬Ø­Ø©");
 
         var settings = (await _settingsRepo.GetAllAsync()).FirstOrDefault();
         int refundDays = settings?.RefundDays ?? 14;
 
         if ((DateTime.UtcNow - payment.CreatedAt).TotalDays > refundDays)
-            return (false, $"لقد تجاوزت فترة الاسترداد المسموحة ({refundDays} يوماً)");
+            return (false, $"Ù„Ù‚Ø¯ ØªØ¬Ø§ÙˆØ²Øª ÙØªØ±Ø© Ø§Ù„Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ø§Ù„Ù…Ø³Ù…ÙˆØ­Ø© ({refundDays} ÙŠÙˆÙ…Ø§Ù‹)");
 
         var existingRefunds = await _refundRepo.FindAsync(r => r.PaymentId == paymentId);
         var activeRefund = existingRefunds.FirstOrDefault(r => r.Status == RefundStatus.Pending || r.Status == RefundStatus.Approved);
         
         if (activeRefund != null)
         {
-            if (activeRefund.Status == RefundStatus.Approved) return (false, "تم استرداد هذا الطلب مسبقاً");
-            return (false, "يوجد طلب استرداد قيد المراجعة حالياً");
+            if (activeRefund.Status == RefundStatus.Approved) return (false, "ØªÙ… Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ù‡Ø°Ø§ Ø§Ù„Ø·Ù„Ø¨ Ù…Ø³Ø¨Ù‚Ø§Ù‹");
+            return (false, "ÙŠÙˆØ¬Ø¯ Ø·Ù„Ø¨ Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø© Ø­Ø§Ù„ÙŠØ§Ù‹");
         }
 
-        return (true, "مسموح بطلب استرداد");
+        return (true, "Ù…Ø³Ù…ÙˆØ­ Ø¨Ø·Ù„Ø¨ Ø§Ø³ØªØ±Ø¯Ø§Ø¯");
     }
 
     public async Task<(bool Success, string Message)> RequestRefundAsync(int paymentId, string studentId, string reason, string? description)
@@ -82,19 +82,17 @@ public class RefundService : IRefundService
         await _refundRepo.AddAsync(request);
         await _refundRepo.SaveChangesAsync();
 
-        return (true, "تم تقديم طلب الاسترداد بنجاح وجاري مراجعته");
+        return (true, "ØªÙ… ØªÙ‚Ø¯ÙŠÙ… Ø·Ù„Ø¨ Ø§Ù„Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ø¨Ù†Ø¬Ø§Ø­ ÙˆØ¬Ø§Ø±ÙŠ Ù…Ø±Ø§Ø¬Ø¹ØªÙ‡");
     }
 
     public async Task<(bool Success, string Message)> ApproveRefundAsync(int refundId, string? adminNotes)
     {
         var refund = await _refundRepo.GetByIdAsync(refundId);
-        if (refund == null) return (false, "الطلب غير موجود");
-        if (refund.Status != RefundStatus.Pending) return (false, "الطلب ليس قيد المراجعة");
+        if (refund == null) return (false, "Ø§Ù„Ø·Ù„Ø¨ ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯");
+        if (refund.Status != RefundStatus.Pending) return (false, "Ø§Ù„Ø·Ù„Ø¨ Ù„ÙŠØ³ Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©");
 
-        var payment = await _paymentRepo.GetQueryable()
-            .Include(p => p.Course)
-            .FirstOrDefaultAsync(p => p.Id == refund.PaymentId);
-        if (payment == null) return (false, "عملية الدفع غير موجودة");
+        var payment = await _paymentRepo.GetByIdAsync(refund.PaymentId);
+        if (payment == null) return (false, "Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¯ÙØ¹ ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©");
 
         // 1. Update Payment Status
         payment.Status = PaymentStatus.Refunded;
@@ -112,10 +110,7 @@ public class RefundService : IRefundService
             await _walletService.ProcessRefundDeductionAsync(payment.Course.TeacherId, payment.TeacherAmount);
             
             // Log negative transaction
-            if (payment.TeacherAmount > 0 && wallet != null)
-            {
-                await _walletService.CreateTransactionAsync(wallet.Id, -payment.TeacherAmount, TransactionType.Refund, $"استرداد للطالب عن كورس: {payment.Course.Title}", payment.Id);
-            }
+            await _walletService.CreateTransactionAsync(wallet.Id, -payment.TeacherAmount, TransactionType.Refund, $"Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ù„Ù„Ø·Ø§Ù„Ø¨ Ø¹Ù† ÙƒÙˆØ±Ø³: {payment.Course.Title}", payment.Id);
         }
 
         // 4. Update Refund Request
@@ -125,14 +120,14 @@ public class RefundService : IRefundService
         _refundRepo.Update(refund);
         await _refundRepo.SaveChangesAsync();
 
-        return (true, "تم الموافقة على الاسترداد بنجاح");
+        return (true, "ØªÙ… Ø§Ù„Ù…ÙˆØ§ÙÙ‚Ø© Ø¹Ù„Ù‰ Ø§Ù„Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ø¨Ù†Ø¬Ø§Ø­");
     }
 
     public async Task<(bool Success, string Message)> RejectRefundAsync(int refundId, string? adminNotes)
     {
         var refund = await _refundRepo.GetByIdAsync(refundId);
-        if (refund == null) return (false, "الطلب غير موجود");
-        if (refund.Status != RefundStatus.Pending) return (false, "الطلب ليس قيد المراجعة");
+        if (refund == null) return (false, "Ø§Ù„Ø·Ù„Ø¨ ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯");
+        if (refund.Status != RefundStatus.Pending) return (false, "Ø§Ù„Ø·Ù„Ø¨ Ù„ÙŠØ³ Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©");
 
         refund.Status = RefundStatus.Rejected;
         refund.AdminNotes = adminNotes;
@@ -141,7 +136,7 @@ public class RefundService : IRefundService
         _refundRepo.Update(refund);
         await _refundRepo.SaveChangesAsync();
 
-        return (true, "تم رفض طلب الاسترداد");
+        return (true, "ØªÙ… Ø±ÙØ¶ Ø·Ù„Ø¨ Ø§Ù„Ø§Ø³ØªØ±Ø¯Ø§Ø¯");
     }
 
     public async Task<List<OrderHistoryViewModel>> GetStudentOrdersAsync(string studentId)
@@ -174,9 +169,9 @@ public class RefundService : IRefundService
             {
                 vm.RefundStatusMessage = refund.Status switch
                 {
-                    RefundStatus.Pending => "طلب استرداد قيد المراجعة",
-                    RefundStatus.Approved => "تم الاسترداد",
-                    RefundStatus.Rejected => "تم رفض الاسترداد",
+                    RefundStatus.Pending => "Ø·Ù„Ø¨ Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©",
+                    RefundStatus.Approved => "ØªÙ… Ø§Ù„Ø§Ø³ØªØ±Ø¯Ø§Ø¯",
+                    RefundStatus.Rejected => "ØªÙ… Ø±ÙØ¶ Ø§Ù„Ø§Ø³ØªØ±Ø¯Ø§Ø¯",
                     _ => ""
                 };
             }
