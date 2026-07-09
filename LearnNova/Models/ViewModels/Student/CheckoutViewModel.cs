@@ -17,8 +17,8 @@ public class CheckoutViewModel
     public decimal FinalTotal { get; set; }
     public string? CouponCode { get; set; }
     public string? CouponError { get; set; }
+    public int? RemainingUsage { get; set; }
     public string Currency { get; set; } = "EGP";
 
     public string PaymentMethod { get; set; } = "CreditCard";
 }
-

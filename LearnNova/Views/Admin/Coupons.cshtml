@@ -10,16 +10,33 @@
     </a>
 </div>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="card-box p-4">
     <div class="table-responsive">
         <table class="table align-middle">
             <thead>
                 <tr class="text-muted small">
                     <th>الكود</th>
-                    <th>النوع</th>
-                    <th>القيمة</th>
+                    <th>الخصم</th>
                     <th>الصلاحية</th>
-                    <th>الاستخدام</th>
+                    <th>حد الاستخدام</th>
+                    <th>الحالي</th>
+                    <th>المتبقي</th>
                     <th>الهدف</th>
                     <th>الحالة</th>
                     <th>إجراءات</th>
@@ -30,22 +47,29 @@
                 {
                     <tr>
                         <td class="fw-bold" style="color:var(--color-primary);">@c.Code</td>
-                        <td>
-                            @if (c.DiscountType == LearnNova.Models.Enums.DiscountType.Percentage) { <span>نسبة مئوية</span> }
-                            else if (c.DiscountType == LearnNova.Models.Enums.DiscountType.FixedAmount) { <span>مبلغ ثابت</span> }
-                            else { <span>كورس مجاني</span> }
-                        </td>
                         <td class="fw-bold">
                             @if (c.DiscountType == LearnNova.Models.Enums.DiscountType.Percentage) { <span>@c.DiscountValue.ToString("0.##")%</span> }
                             else if (c.DiscountType == LearnNova.Models.Enums.DiscountType.FixedAmount) { <span>@c.DiscountValue.ToString("N2") EGP</span> }
-                            else { <span>-</span> }
+                            else { <span>مجاني</span> }
                         </td>
                         <td class="small">
                             @if(c.StartDate.HasValue) { <div>من: @c.StartDate.Value.ToString("yyyy-MM-dd")</div> }
                             @if(c.EndDate.HasValue) { <div>إلى: @c.EndDate.Value.ToString("yyyy-MM-dd")</div> }
+                            @if(!c.StartDate.HasValue && !c.EndDate.HasValue) { <span class="text-muted">دائم</span> }
                         </td>
                         <td>
-                            @c.UsageCount @(c.UsageLimit.HasValue ? "/ " + c.UsageLimit.Value : "غير محدود")
+                            @(c.UsageLimit.HasValue ? c.UsageLimit.Value.ToString() : "غير محدود")
+                        </td>
+                        <td class="fw-bold">
+                            @c.UsageCount
+                        </td>
+                        <td>
+                            @if(c.UsageLimit.HasValue) {
+                                var remaining = c.UsageLimit.Value - c.UsageCount;
+                                <span class="@(remaining <= 0 ? "text-danger fw-bold" : "")">@remaining</span>
+                            } else {
+                                <span class="text-muted">--</span>
+                            }
                         </td>
                         <td class="small">
                             @if (!string.IsNullOrEmpty(c.CourseTitle)) { <div class="text-primary"><i class="bi bi-book"></i> @c.CourseTitle</div> }

@@ -1,4 +1,4 @@
-﻿using LearnNova.Models.Entities;
+using LearnNova.Models.Entities;
 using LearnNova.Models.Enums;
 using LearnNova.Models.ViewModels;
 using LearnNova.Models.ViewModels.Admin;
@@ -332,15 +332,25 @@ public class AdminController : Controller
             IsActive = vm.IsActive
         };
 
-        var result = await couponService!.CreateCouponAsync(coupon);
-        if (result.Success)
+        try
         {
-            TempData["SuccessMessage"] = result.Message;
-            return RedirectToAction(nameof(Coupons));
-        }
+            var result = await couponService!.CreateCouponAsync(coupon);
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+                return RedirectToAction(nameof(Coupons));
+            }
 
-        ModelState.AddModelError("", result.Message);
-        return View("CouponForm", vm);
+            ModelState.AddModelError("", result.Message);
+            return View("CouponForm", vm);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception (ILogger should ideally be used here)
+            Console.WriteLine($"Error creating coupon: {ex.Message}");
+            ModelState.AddModelError("", "حدث خطأ غير متوقع أثناء حفظ الكوبون. يرجى المحاولة مرة أخرى.");
+            return View("CouponForm", vm);
+        }
     }
 
     [HttpPost]

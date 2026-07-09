@@ -98,6 +98,13 @@ public class CheckoutService : ICheckoutService
         decimal vatAmount = (discountedPrice + platformFee) * (vatPercentage / 100m);
         decimal total = discountedPrice + platformFee + vatAmount;
 
+        int? remainingUsage = null;
+        if (appliedCoupon != null && appliedCoupon.UsageLimit.HasValue)
+        {
+            var usageCount = await _couponService.GetCouponUsageCountAsync(appliedCoupon.Id);
+            remainingUsage = appliedCoupon.UsageLimit.Value - usageCount;
+        }
+
         return new CheckoutViewModel
         {
             CourseId = courseId,
@@ -110,7 +117,8 @@ public class CheckoutService : ICheckoutService
             PlatformFee = platformFee,
             VatAmount = vatAmount,
             CouponCode = appliedCoupon?.Code,
-            CouponError = couponError
+            CouponError = couponError,
+            RemainingUsage = remainingUsage
         };
     }
 

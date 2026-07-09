@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -88,6 +88,7 @@ public class CouponService : ICouponService
             UsedAt = DateTime.UtcNow
         };
         await _usageRepository.AddAsync(usage);
+        await _usageRepository.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<Coupon>> GetAllCouponsAsync()
@@ -114,10 +115,17 @@ public class CouponService : ICouponService
 
     public async Task<(bool Success, string Message)> CreateCouponAsync(Coupon coupon)
     {
+        if (string.IsNullOrWhiteSpace(coupon.Code)) return (false, "كود الكوبون مطلوب");
+        if (coupon.DiscountValue <= 0) return (false, "يجب أن تكون قيمة الخصم أكبر من صفر");
+        if (coupon.DiscountType == DiscountType.Percentage && coupon.DiscountValue > 100) return (false, "نسبة الخصم لا يمكن أن تتجاوز 100%");
+        if (coupon.StartDate.HasValue && coupon.EndDate.HasValue && coupon.EndDate.Value <= coupon.StartDate.Value) return (false, "تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء");
+        if (coupon.UsageLimit.HasValue && coupon.UsageLimit.Value <= 0) return (false, "حد الاستخدام يجب أن يكون أكبر من صفر");
+
         var existing = await GetCouponByCodeAsync(coupon.Code);
         if (existing != null) return (false, "كود الكوبون موجود بالفعل");
 
         await _couponRepository.AddAsync(coupon);
+        await _couponRepository.SaveChangesAsync();
         return (true, "تم إضافة هذا الكوبون بنجاح");
     }
 
