@@ -1,8 +1,12 @@
-using LearnNova.Models.Entities;
+﻿using LearnNova.Models.Entities;
 using LearnNova.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using LearnNova.Repositories;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace LearnNova.Controllers;
 
@@ -39,7 +43,10 @@ public class EnrollmentController : Controller
         ViewBag.ActiveNav = "my-courses";
 
         var studentId = _userManager.GetUserId(User)!;
+        
+        // Load active enrollments with Course and Teacher loaded
         var enrollments = await _enrollmentService.GetStudentCoursesAsync(studentId);
+
         return View(enrollments);
     }
 }

@@ -24,4 +24,5 @@ public class Course
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
     public ICollection<StudentQuestion> Questions { get; set; } = new List<StudentQuestion>();
     public ICollection<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

@@ -1,6 +1,7 @@
 using LearnNova.Models.Entities;
 using LearnNova.Models.Enums;
 using LearnNova.Models.ViewModels;
+using LearnNova.Models.ViewModels.Admin;
 using LearnNova.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,12 +15,18 @@ public class AdminController : Controller
     private readonly IUserService _userService;
     private readonly ICourseService _courseService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IWalletService _walletService;
+    private readonly IWithdrawalService _withdrawalService;
+    private readonly IFinanceAnalyticsService _financeAnalyticsService;
 
-    public AdminController(IUserService userService, ICourseService courseService, UserManager<ApplicationUser> userManager)
+    public AdminController(IUserService userService, ICourseService courseService, UserManager<ApplicationUser> userManager, IWalletService walletService, IWithdrawalService withdrawalService, IFinanceAnalyticsService financeAnalyticsService)
     {
         _userService = userService;
         _courseService = courseService;
         _userManager = userManager;
+        _walletService = walletService;
+        _withdrawalService = withdrawalService;
+        _financeAnalyticsService = financeAnalyticsService;
     }
 
     public async Task<IActionResult> Dashboard()
@@ -28,6 +35,8 @@ public class AdminController : Controller
         ViewBag.ActiveNav = "dashboard";
 
         var courses = (await _courseService.GetAllCoursesAsync()).ToList();
+        var stats = await _walletService.GetPlatformRevenueStatsAsync();
+
         var vm = new AdminDashboardViewModel
         {
             TotalStudents = (await _userService.GetUsersByRoleAsync(UserRole.Student)).Count(),
@@ -36,6 +45,9 @@ public class AdminController : Controller
             PendingTeachersCount = (await _userService.SearchUsersAsync(null, UserRole.Teacher, false)).Count(),
             TotalCourses = courses.Count,
             PublishedCoursesCount = courses.Count(c => c.IsPublished),
+            TotalPlatformRevenue = stats.PlatformRevenue,
+            TotalTeacherEarnings = stats.TeacherEarnings,
+            PendingRevenue = stats.PendingRevenue
         };
 
         return View(vm);
@@ -169,5 +181,232 @@ public class AdminController : Controller
             return Redirect(returnUrl);
         }
         return RedirectToAction(defaultAction);
+    }
+
+    // --- Withdrawals ----------------------------------------------------------
+
+    [HttpGet]
+    public async Task<IActionResult> Withdrawals(WithdrawalStatus? status)
+    {
+        ViewData["Title"] = "????? ?????";
+        ViewBag.ActiveNav = "withdrawals";
+
+        var requests = await _withdrawalService.GetAllWithdrawalsAsync(status);
+        ViewBag.CurrentStatusFilter = status;
+        
+        return View(requests);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApproveWithdrawal(WithdrawalActionViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "?????? ??? ?????.";
+            return RedirectToAction(nameof(Withdrawals));
+        }
+
+        var adminId = _userManager.GetUserId(User)!;
+        var result = await _withdrawalService.ApproveRequestAsync(model.RequestId, adminId, model.AdminNotes);
+
+        if (result.Success)
+            TempData["SuccessMessage"] = result.Message;
+        else
+            TempData["ErrorMessage"] = result.Message;
+
+        return RedirectToAction(nameof(Withdrawals));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RejectWithdrawal(WithdrawalActionViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "?????? ??? ?????.";
+            return RedirectToAction(nameof(Withdrawals));
+        }
+
+        var adminId = _userManager.GetUserId(User)!;
+        var result = await _withdrawalService.RejectRequestAsync(model.RequestId, adminId, model.AdminNotes);
+
+        if (result.Success)
+            TempData["SuccessMessage"] = result.Message;
+        else
+            TempData["ErrorMessage"] = result.Message;
+
+        return RedirectToAction(nameof(Withdrawals));
+    }
+
+    // --- Finance Analytics ----------------------------------------------------
+
+    [HttpGet]
+    public async Task<IActionResult> Finance(string dateFilter = "This Month")
+    {
+        ViewData["Title"] = "???????? ???????";
+        ViewBag.ActiveNav = "finance";
+
+        var vm = await _financeAnalyticsService.GetAdminFinanceDashboardAsync(dateFilter);
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportFinanceReport(string format = "csv", string dateFilter = "This Month")
+    {
+        if (format.ToLower() == "csv")
+        {
+            var csv = await _financeAnalyticsService.GenerateRevenueReportCsvAsync(dateFilter);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+            return File(bytes, "text/csv", $"Admin_Revenue_{dateFilter.Replace(" ", "")}.csv");
+        }
+        
+        // Fallback or JS handled
+        return BadRequest("Unsupported format from backend. Use CSV.");
+    }
+
+    // --- Coupons Management --------------------------------------------------
+
+    [HttpGet]
+    public async Task<IActionResult> Coupons()
+    {
+        ViewData["Title"] = "????? ?????????";
+        ViewBag.ActiveNav = "coupons";
+
+        var couponService = HttpContext.RequestServices.GetService(typeof(ICouponService)) as ICouponService;
+        var coupons = await couponService!.GetAllCouponsAsync();
+        
+        var list = new List<LearnNova.Models.ViewModels.Admin.CouponListViewModel>();
+        foreach (var c in coupons)
+        {
+            list.Add(new LearnNova.Models.ViewModels.Admin.CouponListViewModel
+            {
+                Id = c.Id,
+                Code = c.Code,
+                DiscountType = c.DiscountType,
+                DiscountValue = c.DiscountValue,
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+                UsageLimit = c.UsageLimit,
+                IsActive = c.IsActive,
+                UsageCount = await couponService.GetCouponUsageCountAsync(c.Id),
+                CourseTitle = c.Course?.Title,
+                TeacherName = c.Teacher?.FullName
+            });
+        }
+
+        return View(list);
+    }
+
+    [HttpGet]
+    public IActionResult CreateCoupon()
+    {
+        ViewData["Title"] = "????? ????? ????";
+        ViewBag.ActiveNav = "coupons";
+        return View("CouponForm", new LearnNova.Models.ViewModels.Admin.CouponFormViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateCoupon(LearnNova.Models.ViewModels.Admin.CouponFormViewModel vm)
+    {
+        ViewData["Title"] = "????? ????? ????";
+        ViewBag.ActiveNav = "coupons";
+
+        if (!ModelState.IsValid) return View("CouponForm", vm);
+
+        var couponService = HttpContext.RequestServices.GetService(typeof(ICouponService)) as ICouponService;
+        
+        var coupon = new Coupon
+        {
+            Code = vm.Code,
+            DiscountType = vm.DiscountType,
+            DiscountValue = vm.DiscountValue,
+            StartDate = vm.StartDate,
+            EndDate = vm.EndDate,
+            MinimumOrder = vm.MinimumOrder,
+            MaximumDiscount = vm.MaximumDiscount,
+            UsageLimit = vm.UsageLimit,
+            CourseId = vm.CourseId,
+            TeacherId = vm.TeacherId,
+            IsActive = vm.IsActive
+        };
+
+        var result = await couponService!.CreateCouponAsync(coupon);
+        if (result.Success)
+        {
+            TempData["SuccessMessage"] = result.Message;
+            return RedirectToAction(nameof(Coupons));
+        }
+
+        ModelState.AddModelError("", result.Message);
+        return View("CouponForm", vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleCouponStatus(int id)
+    {
+        var couponService = HttpContext.RequestServices.GetService(typeof(ICouponService)) as ICouponService;
+        var result = await couponService!.ToggleCouponStatusAsync(id);
+        
+        if (result.Success) TempData["SuccessMessage"] = result.Message;
+        else TempData["ErrorMessage"] = result.Message;
+        
+        return RedirectToAction(nameof(Coupons));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteCoupon(int id)
+    {
+        var couponService = HttpContext.RequestServices.GetService(typeof(ICouponService)) as ICouponService;
+        var result = await couponService!.DeleteCouponAsync(id);
+        
+        if (result.Success) TempData["SuccessMessage"] = result.Message;
+        else TempData["ErrorMessage"] = result.Message;
+        
+        return RedirectToAction(nameof(Coupons));
+    }
+
+    // --- Refunds & Disputes --------------------------------------------------
+
+    [HttpGet]
+    public async Task<IActionResult> Refunds(LearnNova.Models.Enums.RefundStatus? statusFilter)
+    {
+        ViewData["Title"] = "????? ????????? ??????????";
+        ViewBag.ActiveNav = "refunds";
+
+        var refundService = HttpContext.RequestServices.GetService(typeof(IRefundService)) as IRefundService;
+        var refunds = await refundService!.GetAllRefundsAsync(statusFilter);
+
+        ViewBag.CurrentFilter = statusFilter;
+        return View(refunds);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApproveRefund(int id, string? adminNotes)
+    {
+        var refundService = HttpContext.RequestServices.GetService(typeof(IRefundService)) as IRefundService;
+        var result = await refundService!.ApproveRefundAsync(id, adminNotes);
+
+        if (result.Success) TempData["SuccessMessage"] = result.Message;
+        else TempData["ErrorMessage"] = result.Message;
+
+        return RedirectToAction(nameof(Refunds));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RejectRefund(int id, string? adminNotes)
+    {
+        var refundService = HttpContext.RequestServices.GetService(typeof(IRefundService)) as IRefundService;
+        var result = await refundService!.RejectRefundAsync(id, adminNotes);
+
+        if (result.Success) TempData["SuccessMessage"] = result.Message;
+        else TempData["ErrorMessage"] = result.Message;
+
+        return RedirectToAction(nameof(Refunds));
     }
 }

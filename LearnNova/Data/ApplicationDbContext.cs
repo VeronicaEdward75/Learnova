@@ -21,6 +21,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
     public DbSet<StudentQuestion> StudentQuestions => Set<StudentQuestion>();
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+    
+    // Payment System DbSets
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<Wallet> Wallets => Set<Wallet>();
+    public DbSet<WalletTransaction> WalletTransactions => Set<WalletTransaction>();
+    public DbSet<WithdrawalRequest> WithdrawalRequests => Set<WithdrawalRequest>();
+    public DbSet<Coupon> Coupons => Set<Coupon>();
+    public DbSet<CouponUsage> CouponUsages => Set<CouponUsage>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<SystemSettings> SystemSettings => Set<SystemSettings>();
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder builder)
+    {
+        builder.Properties<decimal>().HavePrecision(18, 2);
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -142,5 +157,114 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Course>()
             .Property(c => c.Price)
             .HasPrecision(10, 2);
+
+        // Payment System Configurations
+
+        builder.Entity<SystemSettings>()
+            .Property(s => s.PlatformCommissionPercentage).HasPrecision(5, 2);
+        builder.Entity<SystemSettings>()
+            .Property(s => s.MinimumWithdrawal).HasPrecision(10, 2);
+        builder.Entity<SystemSettings>()
+            .Property(s => s.VatPercentage).HasPrecision(5, 2);
+
+        builder.Entity<Payment>()
+            .HasOne(p => p.Student)
+            .WithMany(u => u.Payments)
+            .HasForeignKey(p => p.StudentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Payment>()
+            .HasOne(p => p.Course)
+            .WithMany(c => c.Payments)
+            .HasForeignKey(p => p.CourseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Payment>().Property(p => p.StudentPaid).HasPrecision(18, 4);
+        builder.Entity<Payment>().Property(p => p.TeacherAmount).HasPrecision(18, 4);
+        builder.Entity<Payment>().Property(p => p.PlatformFee).HasPrecision(18, 4);
+        builder.Entity<Payment>().Property(p => p.GatewayFee).HasPrecision(18, 4);
+
+        builder.Entity<Wallet>()
+            .HasOne(w => w.User)
+            .WithOne(u => u.Wallet)
+            .HasForeignKey<Wallet>(w => w.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Wallet>().Property(w => w.AvailableBalance).HasPrecision(18, 4);
+        builder.Entity<Wallet>().Property(w => w.PendingBalance).HasPrecision(18, 4);
+        builder.Entity<Wallet>().Property(w => w.TotalEarned).HasPrecision(18, 4);
+        builder.Entity<Wallet>().Property(w => w.TotalWithdrawn).HasPrecision(18, 4);
+
+        builder.Entity<WalletTransaction>()
+            .HasOne(wt => wt.Wallet)
+            .WithMany()
+            .HasForeignKey(wt => wt.WalletId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<WalletTransaction>()
+            .HasOne(wt => wt.Payment)
+            .WithMany(p => p.WalletTransactions)
+            .HasForeignKey(wt => wt.PaymentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<WalletTransaction>().Property(wt => wt.Amount).HasPrecision(18, 4);
+
+        builder.Entity<WithdrawalRequest>()
+            .HasOne(wr => wr.User)
+            .WithMany(u => u.WithdrawalRequests)
+            .HasForeignKey(wr => wr.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<WithdrawalRequest>().Property(wr => wr.Amount).HasPrecision(18, 4);
+
+        builder.Entity<Coupon>()
+            .HasOne(c => c.Course)
+            .WithMany()
+            .HasForeignKey(c => c.CourseId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Coupon>()
+            .HasOne(c => c.Teacher)
+            .WithMany()
+            .HasForeignKey(c => c.TeacherId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Coupon>().Property(c => c.DiscountValue).HasPrecision(18, 4);
+        builder.Entity<Coupon>().Property(c => c.MinimumOrder).HasPrecision(18, 4);
+        builder.Entity<Coupon>().Property(c => c.MaximumDiscount).HasPrecision(18, 4);
+        builder.Entity<Coupon>().HasIndex(c => c.Code).IsUnique();
+
+        builder.Entity<CouponUsage>()
+            .HasOne(cu => cu.Coupon)
+            .WithMany()
+            .HasForeignKey(cu => cu.CouponId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CouponUsage>()
+            .HasOne(cu => cu.Student)
+            .WithMany(u => u.CouponUsages)
+            .HasForeignKey(cu => cu.StudentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<CouponUsage>()
+            .HasOne(cu => cu.Payment)
+            .WithMany()
+            .HasForeignKey(cu => cu.PaymentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Invoice>()
+            .HasOne(i => i.Payment)
+            .WithOne(p => p.Invoice)
+            .HasForeignKey<Invoice>(i => i.PaymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invoice>().Property(i => i.Subtotal).HasPrecision(18, 4);
+        builder.Entity<Invoice>().Property(i => i.PlatformFee).HasPrecision(18, 4);
+        builder.Entity<Invoice>().Property(i => i.VAT).HasPrecision(18, 4);
+        builder.Entity<Invoice>().Property(i => i.Total).HasPrecision(18, 4);
+        builder.Entity<Invoice>().HasIndex(i => i.InvoiceNumber).IsUnique();
     }
 }
+
+
+

@@ -1,0 +1,152 @@
+﻿@model IEnumerable<LearnNova.Models.ViewModels.Admin.AdminWithdrawalListViewModel>
+@{
+    ViewData["Title"] = "طلبات السحب";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">طلبات السحب</h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Withdrawals" asp-route-status="" class="btn @(ViewBag.CurrentStatusFilter == null ? "btn-primary-custom" : "btn-outline-custom")">الكل</a>
+        <a asp-action="Withdrawals" asp-route-status="0" class="btn @(ViewBag.CurrentStatusFilter?.ToString() == "0" ? "btn-primary-custom" : "btn-outline-custom")">قيد المراجعة</a>
+        <a asp-action="Withdrawals" asp-route-status="1" class="btn @(ViewBag.CurrentStatusFilter?.ToString() == "1" ? "btn-primary-custom" : "btn-outline-custom")">موافق عليها</a>
+        <a asp-action="Withdrawals" asp-route-status="2" class="btn @(ViewBag.CurrentStatusFilter?.ToString() == "2" ? "btn-primary-custom" : "btn-outline-custom")">مرفوضة</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success"><i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]</div>
+}
+
+<div class="card-box p-4">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr style="color:var(--color-text-primary); font-size:14px;">
+                    <th>المدرس</th>
+                    <th>المبلغ</th>
+                    <th>التاريخ</th>
+                    <th>طريقة الدفع</th>
+                    <th>حالة الطلب</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-bold" style="color:var(--color-text-primary); font-size:14px;">@r.TeacherName</div>
+                            <div class="text-muted" style="font-size:12px;">@r.TeacherEmail</div>
+                        </td>
+                        <td class="fw-bold text-dark">@r.Amount.ToString("N2") <small style="color:var(--color-muted);">EGP</small></td>
+                        <td class="text-muted" style="font-size:14px;">@r.RequestedAt.ToString("yyyy-MM-dd hh:mm tt")</td>
+                        <td>
+                            <span class="badge bg-secondary">@r.PaymentMethod</span>
+                        </td>
+                        <td>
+                            @if (r.Status == "Pending")
+                            {
+                                <span class="badge" style="background:#FEF3C7; color:#D97706;">قيد المراجعة</span>
+                            }
+                            else if (r.Status == "Approved")
+                            {
+                                <span class="badge" style="background:#D1FAE5; color:#059669;">مكتمل</span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:#FEE2E2; color:#DC2626;">مرفوض</span>
+                            }
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-@r.Id">
+                                تفاصيل
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Details Modal -->
+                    <div class="modal fade" id="modal-@r.Id" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0" style="border-radius:var(--radius-lg); overflow:hidden;">
+                                <div class="modal-header border-bottom-0 pb-0">
+                                    <h5 class="modal-title fw-bold" style="color:var(--color-text-primary);">تفاصيل طلب السحب #@r.Id</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body pt-3">
+                                    <ul class="list-group list-group-flush mb-4">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">المدرس:</span>
+                                            <span class="fw-bold text-dark">@r.TeacherName</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">المبلغ:</span>
+                                            <span class="fw-bold text-success fs-5">@r.Amount.ToString("N2") EGP</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">طريقة التحويل:</span>
+                                            <span class="fw-bold text-dark">@r.PaymentMethod</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">اسم الحساب:</span>
+                                            <span class="fw-bold text-dark">@r.AccountName</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">رقم الحساب/المحفظة:</span>
+                                            <span class="fw-bold text-dark">@r.AccountNumber</span>
+                                        </li>
+                                        @if(!string.IsNullOrEmpty(r.BankName))
+                                        {
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-muted">البنك:</span>
+                                                <span class="fw-bold text-dark">@r.BankName</span>
+                                            </li>
+                                        }
+                                        @if(!string.IsNullOrEmpty(r.IBAN))
+                                        {
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-muted">IBAN:</span>
+                                                <span class="fw-bold text-dark">@r.IBAN</span>
+                                            </li>
+                                        }
+                                    </ul>
+
+                                    @if (r.Status == "Pending")
+                                    {
+                                        <form method="post" class="d-flex flex-column gap-2">
+                                            <input type="hidden" name="RequestId" value="@r.Id" />
+                                            <label class="form-label text-muted fw-bold mb-1">ملاحظات الإدارة (تظهر للمدرس)</label>
+                                            <textarea name="AdminNotes" class="form-control mb-3" rows="2" placeholder="أدخل أي ملاحظات هنا..."></textarea>
+                                            
+                                            <div class="d-flex gap-2">
+                                                <button type="submit" asp-action="ApproveWithdrawal" class="btn btn-success flex-grow-1">
+                                                    <i class="bi bi-check-lg me-1"></i> موافقة
+                                                </button>
+                                                <button type="submit" asp-action="RejectWithdrawal" class="btn btn-danger flex-grow-1">
+                                                    <i class="bi bi-x-lg me-1"></i> رفض
+                                                </button>
+                                            </div>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        if(!string.IsNullOrEmpty(r.AdminNotes))
+                                        {
+                                            <div class="alert alert-secondary mt-2">
+                                                <strong>ملاحظات الإدارة:</strong> @r.AdminNotes
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

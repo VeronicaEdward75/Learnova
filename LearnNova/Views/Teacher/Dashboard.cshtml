@@ -1,111 +1,104 @@
+﻿@model LearnNova.Models.ViewModels.Analytics.TeacherFinanceDashboardViewModel
 @{
     ViewData["Title"] = "لوحة المدرس";
 }
 
-<!-- Hero Banner -->
-<div class="hero-banner hero-teacher animate-in">
-    <div class="hero-orb"></div>
-    <div class="hero-orb hero-orb-2"></div>
-    <div class="hero-banner-content">
-        <div class="d-flex align-items-center gap-3 mb-3">
-            <div style="width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);">
-                <i class="bi bi-person-workspace text-white fs-4"></i>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">نظرة عامة على نشاطك</h2>
+    <a asp-action="Revenue" class="btn btn-outline-custom">
+        <i class="bi bi-graph-up-arrow me-2"></i> تقرير الأرباح المفصل
+    </a>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-12 col-md-4">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(79,70,229,0.1), transparent);">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="text-muted fw-bold" style="font-size:14px;">أرباح هذا الشهر</div>
+                <div style="width:40px; height:40px; border-radius:10px; background:var(--color-primary-light); color:var(--color-primary); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-wallet2"></i>
+                </div>
             </div>
-            <div>
-                <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;">منصتك التعليمية</div>
-                <h2 class="fw-bold text-white mb-0" style="font-size:22px;letter-spacing:-0.5px;">أهلاً بك في منصتك 👋</h2>
-            </div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.MonthlyRevenue.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
+            <div class="text-muted" style="font-size:12px;">مجموع مبيعات الكورسات</div>
         </div>
-        <p style="opacity:.8;font-size:14px;font-weight:500;margin:0;">قم بإدارة كورساتك ومتابعة أداء طلابك بكل سهولة.</p>
+    </div>
+    
+    <div class="col-12 col-md-4">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), transparent);">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="text-muted fw-bold" style="font-size:14px;">إجمالي الطلاب</div>
+                <div style="width:40px; height:40px; border-radius:10px; background:var(--color-success-light); color:var(--color-success); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.StudentsCount</h3>
+            <div class="text-muted" style="font-size:12px;">طالب مسجل في كورساتك</div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(245,158,11,0.1), transparent);">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="text-muted fw-bold" style="font-size:14px;">متوسط التقييم</div>
+                <div style="width:40px; height:40px; border-radius:10px; background:#FEF3C7; color:#D97706; display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.AverageRating.ToString("0.0")</h3>
+            <div class="text-muted" style="font-size:12px;">من إجمالي التقييمات</div>
+        </div>
     </div>
 </div>
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success animate-in">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>@TempData["SuccessMessage"]</span>
-    </div>
-}
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger animate-in">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>@TempData["ErrorMessage"]</span>
-    </div>
-}
-
-<!-- KPI Cards -->
-<div class="row g-4 mb-6 animate-in animate-in-delay-1">
-    <div class="col-12 col-md-4">
-        <a asp-action="MyCourses" class="text-decoration-none d-block">
-            <div class="stat-card clickable" style="--from:#7C3AED;--to:#6D28D9">
-                <div class="stat-bg-shape"></div>
-                <div class="stat-header">
-                    <div class="stat-ico-wrap">
-                        <i class="bi bi-journals stat-ico"></i>
-                    </div>
-                    <i class="bi bi-arrow-up-right stat-arrow"></i>
-                </div>
-                <div>
-                    <div class="stat-lbl">إجمالي الكورسات</div>
-                    <div class="stat-val">@ViewBag.TotalCourses</div>
-                </div>
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4" style="color:var(--color-text-primary);">إحصائيات الكورسات</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr style="color:var(--color-text-primary); font-size:14px;">
+                            <th>الكورس</th>
+                            <th>المبيعات</th>
+                            <th>الأرباح</th>
+                            <th>الطلاب</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var c in Model.CourseAnalytics)
+                        {
+                            <tr>
+                                <td class="fw-bold">@c.Title</td>
+                                <td>@c.Sales</td>
+                                <td class="fw-bold text-success">@c.Revenue.ToString("N2") <small style="color:var(--color-muted);">EGP</small></td>
+                                <td>@c.Students</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-        </a>
-    </div>
-    <div class="col-12 col-md-4">
-        <a asp-action="MyCourses" class="text-decoration-none d-block">
-            <div class="stat-card clickable" style="--from:#0369A1;--to:#0284C7">
-                <div class="stat-bg-shape"></div>
-                <div class="stat-header">
-                    <div class="stat-ico-wrap">
-                        <i class="bi bi-globe2 stat-ico"></i>
-                    </div>
-                    <i class="bi bi-arrow-up-right stat-arrow"></i>
-                </div>
-                <div>
-                    <div class="stat-lbl">كورسات منشورة</div>
-                    <div class="stat-val">@ViewBag.PublishedCount</div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-12 col-md-4">
-        <a asp-action="MyCourses" class="text-decoration-none d-block">
-            <div class="stat-card clickable" style="--from:#B45309;--to:#D97706">
-                <div class="stat-bg-shape"></div>
-                <div class="stat-header">
-                    <div class="stat-ico-wrap">
-                        <i class="bi bi-pencil-square stat-ico"></i>
-                    </div>
-                    <i class="bi bi-arrow-up-right stat-arrow"></i>
-                </div>
-                <div>
-                    <div class="stat-lbl">مسودات</div>
-                    <div class="stat-val">@ViewBag.UnpublishedCount</div>
-                </div>
-            </div>
-        </a>
-    </div>
-</div>
-
-<!-- Quick Actions -->
-<div class="section-card animate-in animate-in-delay-2">
-    <div class="section-card-header">
-        <div class="section-card-title">
-            <i class="bi bi-lightning-charge-fill"></i>
-            إجراءات سريعة
         </div>
     </div>
-    <div class="section-card-body">
-        <div class="d-flex flex-wrap gap-3">
-            <a asp-action="MyCourses" class="btn-primary-custom" style="height:48px;padding:0 var(--space-7);">
-                <i class="bi bi-journals"></i> إدارة الكورسات
-            </a>
-            <a asp-action="CreateCourse" class="btn-outline-custom" style="height:48px;padding:0 var(--space-7);">
-                <i class="bi bi-plus-lg"></i> كورس جديد
-            </a>
+    <div class="col-12 col-lg-4">
+        <div class="card-box p-4 h-100 d-flex flex-column justify-content-center">
+            <h5 class="fw-bold mb-4 border-bottom pb-2" style="color:var(--color-text-primary);">ملخص عام</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">إجمالي الكورسات</span>
+                <span class="fw-bold">@Model.TotalCourses</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">الكورسات المنشورة</span>
+                <span class="fw-bold text-success">@Model.PublishedCount</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">الكورسات المسودة</span>
+                <span class="fw-bold text-warning">@Model.UnpublishedCount</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">نسبة إكمال الطلاب للكورسات</span>
+                <span class="fw-bold text-primary">@Model.CompletionRate.ToString("0.0")%</span>
+            </div>
         </div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-@model IEnumerable<LearnNova.Models.Entities.Enrollment>
+﻿@model IEnumerable<LearnNova.Models.Entities.Enrollment>
 @{
     ViewData["Title"] = "كورساتي";
 }
@@ -29,6 +29,8 @@
     </a>
 </div>
 
+<h4 class="fw-bold mb-4 animate-in">مواصلة التعلم</h4>
+
 @if (!Model.Any())
 {
     <div class="empty-state animate-in animate-in-delay-1">
@@ -44,7 +46,7 @@
 }
 else
 {
-    <div class="row g-4 animate-in animate-in-delay-1">
+    <div class="row g-4 animate-in animate-in-delay-1 mb-5">
         @foreach (var enrollment in Model)
         {
             var course = enrollment.Course;
@@ -53,16 +55,13 @@ else
 
             <div class="col-12 col-md-6 col-xl-4">
                 <div class="course-card">
-                    <!-- Cover -->
                     <div class="course-cover" style="background:@gradient;">
                         <i class="bi bi-journal-richtext course-cover-icon"></i>
-                        <!-- Enrolled badge -->
                         <span class="course-status-badge badge-success">
                             <i class="bi bi-check-circle-fill" style="font-size:9px;"></i> مسجل
                         </span>
                     </div>
 
-                    <!-- Body -->
                     <div class="course-body">
                         <div class="course-meta">
                             <span class="badge-status badge-indigo" style="font-size:11px;">@course.Subject</span>
@@ -75,7 +74,6 @@ else
                         </div>
                     </div>
 
-                    <!-- Footer actions -->
                     <div class="course-footer">
                         <a asp-controller="Learning" asp-action="Index" asp-route-courseId="@course.Id"
                            class="btn-primary-custom w-100 mb-2 justify-content-center" style="height:44px;">
@@ -95,9 +93,5 @@ else
                 </div>
             </div>
         }
-    </div>
-
-    <div class="mt-5 pt-3" style="border-top:1px solid var(--color-border);font-size:13px;color:var(--color-text-muted);font-weight:600;">
-        مسجل في <strong style="color:var(--color-text-primary)">@Model.Count()</strong> كورس
     </div>
 }

@@ -162,11 +162,10 @@
                 }
                 else
                 {
-                    <form asp-controller="Enrollment" asp-action="Enroll" method="post">
-                        @Html.AntiForgeryToken()
+                    <form asp-controller="Checkout" asp-action="Index" method="get">
                         <input type="hidden" name="courseId" value="@Model.Id" />
                         <button type="submit" class="btn-primary-custom w-100" style="height:48px; justify-content:center; font-size:14px; font-weight:600; box-shadow:0 4px 12px rgba(111,78,55,0.2);">
-                            <i class="bi bi-lightning-charge-fill me-2"></i> اشترك الآن في الكورس
+                            <i class="bi bi-cart-fill me-2"></i> اشترِ الآن
                         </button>
                     </form>
                 }

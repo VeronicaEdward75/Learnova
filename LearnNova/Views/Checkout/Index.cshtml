@@ -1,0 +1,159 @@
+﻿@model LearnNova.Models.ViewModels.Student.CheckoutViewModel
+@{
+    ViewData["Title"] = "الدفع والتأكيد";
+}
+
+<div class="row g-4 mt-2">
+    <div class="col-12 col-lg-8">
+        <div class="card-box p-4">
+            <h4 class="fw-bold mb-4" style="color:var(--color-text-primary);">اختيار طريقة الدفع</h4>
+            
+            @if(!string.IsNullOrEmpty(Model.CouponError))
+            {
+                <div class="alert alert-danger fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @Model.CouponError
+                </div>
+            }
+
+            <form id="checkoutForm" asp-controller="Checkout" asp-action="Process" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="courseId" value="@Model.CourseId" />
+                <input type="hidden" name="couponCode" value="@Model.CouponCode" />
+                
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <label class="p-3 border rounded" style="cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)';" onmouseout="if(!this.querySelector('input').checked) this.style.borderColor='var(--color-border)';">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="paymentMethod" value="CreditCard" class="form-check-input me-3" checked onchange="updateStyles()">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-credit-card text-primary fs-4"></i>
+                                <div>
+                                    <div class="fw-bold" style="font-size:15px; color:var(--color-text-primary);">بطاقة ائتمانية (Visa / MasterCard)</div>
+                                    <div class="text-muted" style="font-size:13px;">دفع آمن عبر الإنترنت</div>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <label class="p-3 border rounded" style="cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)';" onmouseout="if(!this.querySelector('input').checked) this.style.borderColor='var(--color-border)';">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="paymentMethod" value="Wallet" class="form-check-input me-3" onchange="updateStyles()">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-wallet2 text-success fs-4"></i>
+                                <div>
+                                    <div class="fw-bold" style="font-size:15px; color:var(--color-text-primary);">المحفظة الإلكترونية</div>
+                                    <div class="text-muted" style="font-size:13px;">استخدام رصيد محفظتك</div>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="p-3 border rounded" style="cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)';" onmouseout="if(!this.querySelector('input').checked) this.style.borderColor='var(--color-border)';">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="paymentMethod" value="Cash" class="form-check-input me-3" onchange="updateStyles()">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-cash-stack text-warning fs-4"></i>
+                                <div>
+                                    <div class="fw-bold" style="font-size:15px; color:var(--color-text-primary);">الدفع نقدًا (كاش)</div>
+                                    <div class="text-muted" style="font-size:13px;">عبر منافذ فوري أو أمان</div>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="mt-5 text-center">
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold" style="height:56px; box-shadow:0 8px 20px rgba(79,70,229,0.2);" id="submitBtn">
+                        <i class="bi bi-lock-fill me-2"></i> تأكيد ودفع @Model.FinalTotal.ToString("N2") @Model.Currency
+                    </button>
+                    <div class="text-muted mt-3" style="font-size:12px;">
+                        <i class="bi bi-shield-check text-success"></i> معاملتك مشفرة ومؤمنة بالكامل
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card-box p-4 sticky-top" style="top:20px;">
+            <h5 class="fw-bold mb-4" style="color:var(--color-text-primary);">ملخص الطلب</h5>
+            
+            <div class="d-flex align-items-center gap-3 mb-4 pb-4 border-bottom">
+                <div style="width:60px; height:60px; border-radius:8px; background:var(--color-primary-light); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-journal-text text-primary fs-3"></i>
+                </div>
+                <div>
+                    <div class="fw-bold mb-1" style="color:var(--color-text-primary); font-size:14px;">@Model.CourseTitle</div>
+                    <div class="text-muted" style="font-size:12px;"><i class="bi bi-person me-1"></i> @Model.TeacherName</div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mb-3 text-muted" style="font-size:14px;">
+                <span>سعر الكورس</span>
+                <span class="fw-bold" style="color:var(--color-text-primary);">@Model.Price.ToString("N2") @Model.Currency</span>
+            </div>
+            
+            @if(Model.DiscountAmount > 0)
+            {
+                <div class="d-flex justify-content-between mb-3 text-success" style="font-size:14px;">
+                    <span>الخصم</span>
+                    <span class="fw-bold">- @Model.DiscountAmount.ToString("N2") @Model.Currency</span>
+                </div>
+            }
+
+            <div class="d-flex justify-content-between mb-3 text-muted" style="font-size:14px;">
+                <span>رسوم المنصة</span>
+                <span class="fw-bold" style="color:var(--color-text-primary);">@Model.PlatformFee.ToString("N2") @Model.Currency</span>
+            </div>
+            <div class="d-flex justify-content-between mb-4 pb-4 border-bottom text-muted" style="font-size:14px;">
+                <span>الضريبة (VAT)</span>
+                <span class="fw-bold" style="color:var(--color-text-primary);">@Model.VatAmount.ToString("N2") @Model.Currency</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold" style="font-size:16px; color:var(--color-text-primary);">الإجمالي</span>
+                <span class="fw-bold fs-4" style="color:var(--color-primary);">@Model.FinalTotal.ToString("N2") <small style="font-size:14px;">@Model.Currency</small></span>
+            </div>
+
+            <div class="mt-4 pt-4 border-top">
+                @if (!string.IsNullOrEmpty(Model.CouponCode) && string.IsNullOrEmpty(Model.CouponError))
+                {
+                    <div class="alert alert-success d-flex justify-content-between align-items-center p-2 mb-0">
+                        <div class="fw-bold"><i class="bi bi-check-circle-fill me-2"></i> تم تطبيق كود: @Model.CouponCode</div>
+                        <a asp-action="Index" asp-route-courseId="@Model.CourseId" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-x-lg"></i></a>
+                    </div>
+                }
+                else
+                {
+                    <form asp-action="ApplyCoupon" method="post">
+                        <input type="hidden" name="courseId" value="@Model.CourseId" />
+                        <div class="input-group">
+                            <input type="text" name="couponCode" class="form-control" placeholder="كود الخصم (إن وجد)" style="font-size:13px; text-transform:uppercase;">
+                            <button type="submit" class="btn btn-outline-secondary" style="font-size:13px;">تطبيق</button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateStyles() {
+        document.querySelectorAll('label.p-3').forEach(lbl => {
+            if(lbl.querySelector('input').checked) {
+                lbl.style.borderColor = 'var(--color-primary)';
+                lbl.style.background = 'var(--color-primary-light)';
+            } else {
+                lbl.style.borderColor = 'var(--color-border)';
+                lbl.style.background = 'transparent';
+            }
+        });
+    }
+    updateStyles();
+    
+    document.getElementById('checkoutForm').addEventListener('submit', function() {
+        var btn = document.getElementById('submitBtn');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> جاري معالجة الدفع...';
+        btn.disabled = true;
+    });
+</script>

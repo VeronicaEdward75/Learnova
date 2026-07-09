@@ -1,0 +1,135 @@
+@model LearnNova.Models.ViewModels.Teacher.WalletViewModel
+@{
+    ViewData["Title"] = "المحفظة والأرباح";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">المحفظة والأرباح</h2>
+    <a asp-action="Withdraw" class="btn btn-primary-custom">
+        <i class="bi bi-bank2 me-2"></i> طلب سحب
+    </a>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(79,70,229,0.1), transparent);">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="text-muted fw-bold" style="font-size:14px;">الرصيد المعلق</div>
+                <div style="width:40px; height:40px; border-radius:10px; background:var(--color-primary-light); color:var(--color-primary); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.PendingBalance.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
+            <div class="text-muted" style="font-size:12px;">أرباح مبيعات الكورسات الأخيرة</div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), transparent);">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="text-muted fw-bold" style="font-size:14px;">الرصيد المتاح للسحب</div>
+                <div style="width:40px; height:40px; border-radius:10px; background:var(--color-success-light); color:var(--color-success); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.AvailableBalance.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
+            <div class="text-muted" style="font-size:12px;">رصيد جاهز للتحويل البنكي</div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card-box p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="text-muted fw-bold" style="font-size:14px;">إجمالي الأرباح</div>
+                <div style="width:40px; height:40px; border-radius:10px; background:var(--color-surface-muted); color:var(--color-text-primary); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.TotalEarned.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
+            <div class="text-muted" style="font-size:12px;">إجمالي ما حققته منذ البداية</div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card-box p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="text-muted fw-bold" style="font-size:14px;">إجمالي المسحوبات</div>
+                <div style="width:40px; height:40px; border-radius:10px; background:var(--color-surface-muted); color:var(--color-text-primary); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.TotalWithdrawn.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
+            <div class="text-muted" style="font-size:12px;">المبالغ التي تم سحبها بنجاح</div>
+        </div>
+    </div>
+</div>
+
+<div class="card-box p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0" style="color:var(--color-text-primary);">سجل المعاملات</h5>
+    </div>
+
+    @if (Model.Transactions.Count == 0)
+    {
+        <div class="text-center py-5">
+            <div class="mb-3" style="font-size:40px; color:var(--color-border);">
+                <i class="bi bi-receipt"></i>
+            </div>
+            <h5 class="fw-bold text-muted">لا توجد معاملات بعد</h5>
+            <p class="text-muted" style="font-size:14px;">سوف تظهر مبيعات الكورسات وعمليات السحب هنا.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr style="color:var(--color-text-primary); font-size:14px; font-weight:600;">
+                        <th class="border-bottom pb-3">التاريخ</th>
+                        <th class="border-bottom pb-3">النوع</th>
+                        <th class="border-bottom pb-3">الوصف</th>
+                        <th class="border-bottom pb-3">المبلغ</th>
+                        <th class="border-bottom pb-3">الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.Transactions)
+                    {
+                        <tr>
+                            <td class="text-muted" style="font-size:14px;">
+                                <div>@t.Date.ToString("yyyy-MM-dd")</div>
+                                <div style="font-size:12px;">@t.Date.ToString("hh:mm tt")</div>
+                            </td>
+                            <td>
+                                @if (t.Type == "Sale")
+                                {
+                                    <span class="badge" style="background:var(--color-success-light); color:var(--color-success);">بيع كورس</span>
+                                }
+                                else if (t.Type == "Withdrawal")
+                                {
+                                    <span class="badge" style="background:var(--color-primary-light); color:var(--color-primary);">سحب رصيد</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@t.Type</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="fw-bold" style="font-size:14px; color:var(--color-text-primary);">@t.Description</div>
+                                <div class="text-muted" style="font-size:12px;"><i class="bi bi-person"></i> @t.StudentName</div>
+                            </td>
+                            <td class="fw-bold @(t.Type == "Sale" ? "text-success" : "text-primary")">
+                                @(t.Type == "Sale" ? "+" : "-")@t.Amount.ToString("N2")
+                            </td>
+                            <td>
+                                <span class="badge" style="background:var(--color-surface-muted); color:var(--color-text-primary);">
+                                    <i class="bi bi-check-circle-fill text-success me-1"></i> مكتمل
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

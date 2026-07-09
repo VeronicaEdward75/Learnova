@@ -1,0 +1,69 @@
+@model IEnumerable<LearnNova.Models.ViewModels.Student.OrderHistoryViewModel>
+@{
+    ViewData["Title"] = "سجل الطلبات والمشتريات";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">سجل الطلبات</h2>
+</div>
+
+<div class="card-box p-0 overflow-hidden">
+    @if(Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">رقم الطلب / الفاتورة</th>
+                        <th>الكورس</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                        <th class="text-end pe-4">المبلغ</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold">#@item.PaymentId</div>
+                                @if(!string.IsNullOrEmpty(item.InvoiceNumber))
+                                {
+                                    <div class="text-muted small"><i class="bi bi-receipt"></i> @item.InvoiceNumber</div>
+                                }
+                            </td>
+                            <td>
+                                <div class="fw-bold text-truncate" style="max-width:200px;">@item.CourseTitle</div>
+                                @if(!string.IsNullOrEmpty(item.CouponCode))
+                                {
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-tag-fill text-primary"></i> @item.CouponCode</span>
+                                }
+                            </td>
+                            <td class="text-muted">@item.PurchaseDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @if(item.Status == LearnNova.Models.Enums.PaymentStatus.Succeeded) { <span class="badge bg-success">ناجح</span> }
+                                else if(item.Status == LearnNova.Models.Enums.PaymentStatus.Refunded) { <span class="badge bg-secondary">مسترد</span> }
+                                else if(item.Status == LearnNova.Models.Enums.PaymentStatus.Failed) { <span class="badge bg-danger">فشل</span> }
+                                else { <span class="badge bg-warning text-dark">@item.Status</span> }
+                            </td>
+                            <td class="text-end fw-bold pe-4">
+                                @item.AmountPaid.ToString("N2") <small class="text-muted fw-normal">@item.Currency</small>
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.PaymentId" class="btn btn-sm btn-outline-custom">تفاصيل</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="p-5 text-center text-muted">
+            <i class="bi bi-cart-x fs-1 d-block mb-3"></i>
+            ليس لديك أي طلبات أو مشتريات حتى الآن
+        </div>
+    }
+</div>

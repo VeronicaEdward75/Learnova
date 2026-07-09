@@ -45,4 +45,16 @@ public class EnrollmentService : IEnrollmentService
 
     public async Task<bool> IsEnrolledAsync(string studentId, int courseId) =>
         await _enrollmentRepository.GetByStudentAndCourseAsync(studentId, courseId) is not null;
+
+    public async Task<ServiceResult> UnenrollAsync(string studentId, int courseId)
+    {
+        var enrollment = (await _enrollmentRepository.FindAsync(e => e.StudentId == studentId && e.CourseId == courseId)).FirstOrDefault();
+        if (enrollment == null) return ServiceResult.Fail("?????? ??? ???? ?? ??????.");
+        
+        _enrollmentRepository.Remove(enrollment);
+        await _enrollmentRepository.SaveChangesAsync();
+        
+        return ServiceResult.Success();
+    }
 }
+

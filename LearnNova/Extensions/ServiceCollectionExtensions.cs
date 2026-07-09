@@ -21,6 +21,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
         services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IWalletRepository, WalletRepository>();
+        services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
+        services.AddScoped<IWithdrawalRequestRepository, WithdrawalRequestRepository>();
+        services.AddScoped<ICouponRepository, CouponRepository>();
+        services.AddScoped<ICouponUsageRepository, CouponUsageRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+        services.AddScoped<ISystemSettingsRepository, SystemSettingsRepository>();
 
         // Services
         services.AddScoped<IUserService, UserService>();
@@ -36,7 +44,22 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQuizAttemptService, QuizAttemptService>();
         services.AddScoped<IDateTimeService, SystemDateTimeService>();
         services.AddScoped<IEmailService, EmailService>();
+        
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
+        services.AddScoped<IPaymentGateway, FakePaymentGateway>();
+        services.AddScoped<IWalletService, WalletService>();
+        services.AddScoped<ICheckoutService, CheckoutService>();
+        services.AddScoped<IWithdrawalService, WithdrawalService>();
+        services.AddScoped<IFinanceAnalyticsService, FinanceAnalyticsService>();
+        services.AddScoped<ICouponService, CouponService>();
+        services.AddScoped<IRefundService, RefundService>();
+        services.AddScoped<IDocumentService, DocumentService>();
+        services.AddScoped<ICertificateService, CertificateService>();
 
         return services;
     }
 }
+
+
+

@@ -1,3 +1,4 @@
+﻿using System.Linq;
 using System.Linq.Expressions;
 
 namespace LearnNova.Repositories;
@@ -7,6 +8,7 @@ public interface IGenericRepository<T, TKey> where T : class
 {
     Task<T?> GetByIdAsync(TKey id);
     Task<IEnumerable<T>> GetAllAsync();
+    IQueryable<T> GetQueryable();
     Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
     Task AddAsync(T entity);
     void Update(T entity);
@@ -18,3 +20,5 @@ public interface IGenericRepository<T, TKey> where T : class
 public interface IGenericRepository<T> : IGenericRepository<T, int> where T : class
 {
 }
+
+

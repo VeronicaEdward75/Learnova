@@ -1,0 +1,69 @@
+@model LearnNova.Models.Entities.Wallet
+@{
+    ViewData["Title"] = "محفظتي";
+    var transactions = ViewBag.Transactions as List<LearnNova.Models.ViewModels.Teacher.WalletTransactionViewModel>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">المحفظة</h2>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-12 col-md-6">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(79,70,229,0.1), transparent);">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="text-muted fw-bold" style="font-size:14px;">الرصيد المتاح (للمرتجعات)</div>
+                <div style="width:40px; height:40px; border-radius:10px; background:var(--color-primary-light); color:var(--color-primary); display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold mb-0" style="color:var(--color-text-primary);">@Model.AvailableBalance.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
+        </div>
+    </div>
+</div>
+
+<div class="card-box p-0 overflow-hidden mt-4">
+    <div class="p-4 border-bottom bg-light">
+        <h5 class="fw-bold mb-0">المعاملات المالية</h5>
+    </div>
+    @if(transactions != null && transactions.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">التاريخ</th>
+                        <th>النوع</th>
+                        <th>الوصف</th>
+                        <th class="text-end pe-4">المبلغ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var t in transactions)
+                    {
+                        <tr>
+                            <td class="ps-4 text-muted">@t.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                @if (t.Type == "Deposit") { <span class="badge bg-success">إيداع</span> }
+                                else if (t.Type == "Withdrawal") { <span class="badge bg-danger">سحب</span> }
+                                else if (t.Type == "Refund") { <span class="badge bg-warning text-dark">استرداد</span> }
+                                else { <span class="badge bg-secondary">@t.Type</span> }
+                            </td>
+                            <td>@t.Description</td>
+                            <td class="text-end pe-4 fw-bold @(t.Type == "Deposit" || t.Type == "Refund" ? "text-success" : "text-danger")">
+                                @(t.Type == "Deposit" || t.Type == "Refund" ? "+" : "-") @t.Amount.ToString("N2") EGP
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="p-5 text-center text-muted">
+            <i class="bi bi-receipt fs-1 mb-3 d-block"></i>
+            لا توجد معاملات مالية حتى الآن
+        </div>
+    }
+</div>

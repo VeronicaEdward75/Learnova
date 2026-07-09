@@ -1,0 +1,173 @@
+﻿@model LearnNova.Models.ViewModels.Analytics.AdminFinanceDashboardViewModel
+@{
+    ViewData["Title"] = "التقارير المالية والأعمال";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">التقارير المالية والأعمال</h2>
+    <div class="d-flex gap-2">
+        <form method="get" class="d-flex gap-2">
+            <select name="dateFilter" class="form-select" onchange="this.form.submit()">
+                <option value="Today" selected="@(Model.DateFilter == "Today")">اليوم</option>
+                <option value="Last 7 Days" selected="@(Model.DateFilter == "Last 7 Days")">آخر 7 أيام</option>
+                <option value="This Month" selected="@(Model.DateFilter == "This Month")">هذا الشهر</option>
+                <option value="Last 30 Days" selected="@(Model.DateFilter == "Last 30 Days")">آخر 30 يوم</option>
+                <option value="This Year" selected="@(Model.DateFilter == "This Year")">هذا العام</option>
+            </select>
+        </form>
+        <a href="@Url.Action("ExportFinanceReport", new { format = "csv", dateFilter = Model.DateFilter })" class="btn btn-outline-custom">
+            <i class="bi bi-file-earmark-excel me-2"></i>تصدير CSV
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(79,70,229,0.1), transparent);">
+            <div class="text-muted fw-bold mb-2">إجمالي المبيعات (@Model.DateFilter)</div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.TotalRevenue.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
+            <div class="text-muted small">@Model.NumberOfSales عملية ناجحة</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), transparent);">
+            <div class="text-muted fw-bold mb-2">أرباح المنصة</div>
+            <h3 class="fw-bold mb-1 text-success">@Model.PlatformRevenue.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(245,158,11,0.1), transparent);">
+            <div class="text-muted fw-bold mb-2">أرباح المدرسين</div>
+            <h3 class="fw-bold mb-1 text-warning">@Model.TeacherRevenue.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-lg-8">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4">تحليل الإيرادات</h5>
+            <canvas id="revenueChart" height="100"></canvas>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card-box p-4 h-100 d-flex flex-column justify-content-center">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <span class="text-muted">متوسط قيمة الطلب</span>
+                <span class="fw-bold">@Model.AverageOrderValue.ToString("N2") EGP</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <span class="text-muted">عملاء جدد</span>
+                <span class="fw-bold">@Model.NewCustomers</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <span class="text-muted">مبالغ مستردة</span>
+                <span class="fw-bold text-danger">@Model.RefundedAmount.ToString("N2") EGP</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <span class="text-muted">أرباح معلقة</span>
+                <span class="fw-bold text-warning">@Model.PendingRevenue.ToString("N2") EGP</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted">طلبات سحب (الكل)</span>
+                <span class="fw-bold text-primary">@Model.WithdrawalRequests</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-6">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4">الكورسات الأعلى مبيعاً</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr class="text-muted small">
+                            <th>الكورس</th>
+                            <th>المدرس</th>
+                            <th>المبيعات</th>
+                            <th>الإيرادات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var c in Model.TopSellingCourses)
+                        {
+                            <tr>
+                                <td class="fw-bold">@c.Title</td>
+                                <td class="text-muted small">@c.TeacherName</td>
+                                <td>@c.Sales</td>
+                                <td class="fw-bold text-success">@c.Revenue.ToString("N2") <small>EGP</small></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-xl-6">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4">المدرسون الأعلى تحقيقاً للأرباح</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr class="text-muted small">
+                            <th>المدرس</th>
+                            <th>عدد الكورسات المباعة</th>
+                            <th>الطلاب</th>
+                            <th>الإيرادات الإجمالية</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var t in Model.HighestRevenueTeachers)
+                        {
+                            <tr>
+                                <td class="fw-bold">@t.Name</td>
+                                <td>@t.Sales</td>
+                                <td>@t.Students</td>
+                                <td class="fw-bold text-success">@t.Revenue.ToString("N2") <small>EGP</small></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var ctx = document.getElementById('revenueChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartLabels)),
+                datasets: [
+                    {
+                        label: 'أرباح المنصة',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PlatformRevenueChartData)),
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'أرباح المدرسين',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TeacherRevenueChartData)),
+                        backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true }
+                }
+            }
+        });
+    });
+</script>
+

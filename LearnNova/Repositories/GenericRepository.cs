@@ -1,3 +1,4 @@
+﻿using System.Linq;
 using System.Linq.Expressions;
 using LearnNova.Data;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,8 @@ public class GenericRepository<T, TKey> : IGenericRepository<T, TKey> where T : 
 
     public virtual async Task<IEnumerable<T>> GetAllAsync() => await _set.ToListAsync();
 
+    public virtual IQueryable<T> GetQueryable() => _set.AsQueryable();
+
     public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate) =>
         await _set.Where(predicate).ToListAsync();
 
@@ -42,3 +45,6 @@ public class GenericRepository<T> : GenericRepository<T, int>, IGenericRepositor
     {
     }
 }
+
+
+

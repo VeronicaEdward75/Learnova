@@ -28,4 +28,10 @@ public class ApplicationUser : IdentityUser
     public ICollection<StudentQuestion> Questions { get; set; } = new List<StudentQuestion>();
     public ICollection<ChatMessage> SentMessages { get; set; } = new List<ChatMessage>();
     public ICollection<ChatMessage> ReceivedMessages { get; set; } = new List<ChatMessage>();
+
+    // Payment System Navigation Properties
+    public Wallet? Wallet { get; set; }
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public ICollection<WithdrawalRequest> WithdrawalRequests { get; set; } = new List<WithdrawalRequest>();
+    public ICollection<CouponUsage> CouponUsages { get; set; } = new List<CouponUsage>();
 }

@@ -103,7 +103,7 @@
                 <div class="stat-bg-shape"></div>
                 <div class="stat-header">
                     <div class="stat-ico-wrap">
-                        <i class="bi bi-hourglass-split stat-ico"></i>
+                        <i class="bi bi-person-exclamation stat-ico"></i>
                     </div>
                     <i class="bi bi-arrow-up-right stat-arrow"></i>
                 </div>
@@ -113,6 +113,54 @@
                 </div>
             </div>
         </a>
+    </div>
+
+    <!-- Platform Revenue -->
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="stat-card" style="--from:#047857;--to:#10B981">
+            <div class="stat-bg-shape"></div>
+            <div class="stat-header">
+                <div class="stat-ico-wrap">
+                    <i class="bi bi-cash-coin stat-ico"></i>
+                </div>
+            </div>
+            <div>
+                <div class="stat-lbl">أرباح المنصة</div>
+                <div class="stat-val">@Model.TotalPlatformRevenue.ToString("N0") <small>EGP</small></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Earnings -->
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="stat-card" style="--from:#EA580C;--to:#F97316">
+            <div class="stat-bg-shape"></div>
+            <div class="stat-header">
+                <div class="stat-ico-wrap">
+                    <i class="bi bi-wallet2 stat-ico"></i>
+                </div>
+            </div>
+            <div>
+                <div class="stat-lbl">أرباح المدرسين</div>
+                <div class="stat-val">@Model.TotalTeacherEarnings.ToString("N0") <small>EGP</small></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Revenue -->
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="stat-card" style="--from:#64748B;--to:#94A3B8">
+            <div class="stat-bg-shape"></div>
+            <div class="stat-header">
+                <div class="stat-ico-wrap">
+                    <i class="bi bi-hourglass-split stat-ico"></i>
+                </div>
+            </div>
+            <div>
+                <div class="stat-lbl">أرباح معلقة</div>
+                <div class="stat-val">@Model.PendingRevenue.ToString("N0") <small>EGP</small></div>
+            </div>
+        </div>
     </div>
 
     <!-- Total Courses -->
