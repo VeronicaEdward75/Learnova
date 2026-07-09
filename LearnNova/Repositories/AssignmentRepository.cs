@@ -17,6 +17,15 @@ public class AssignmentRepository : GenericRepository<Assignment>, IAssignmentRe
             .OrderByDescending(a => a.DueDate)
             .ToListAsync();
 
+    public async Task<IEnumerable<Assignment>> GetByEnrolledStudentAsync(string studentId) =>
+        await _set
+            .Include(a => a.Course)
+                .ThenInclude(c => c.Teacher)
+            .Where(a => _context.Set<Enrollment>().Any(e => e.StudentId == studentId && e.CourseId == a.CourseId))
+            .AsNoTracking()
+            .OrderByDescending(a => a.DueDate)
+            .ToListAsync();
+
     public async Task<Assignment?> GetByIdWithCourseAsync(int id) =>
         await _set
             .Include(a => a.Course)

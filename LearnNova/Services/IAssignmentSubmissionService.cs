@@ -8,6 +8,7 @@ namespace LearnNova.Services;
 public interface IAssignmentSubmissionService
 {
     Task<IEnumerable<AssignmentItemViewModel>> GetStudentAssignmentsWithStatusAsync(int courseId, string studentId);
+    Task<IEnumerable<AssignmentItemViewModel>> GetAllStudentAssignmentsAsync(string studentId);
     Task<AssignmentSubmitViewModel?> GetAssignmentForSubmissionAsync(int assignmentId, string studentId);
     Task<ServiceResult> SubmitAssignmentAsync(int assignmentId, string studentId, IFormFile? file, string? textAnswer, string webRootPath);
     

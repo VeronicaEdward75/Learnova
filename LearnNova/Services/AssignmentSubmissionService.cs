@@ -57,6 +57,24 @@ public class AssignmentSubmissionService : IAssignmentSubmissionService
         return result;
     }
 
+    public async Task<IEnumerable<AssignmentItemViewModel>> GetAllStudentAssignmentsAsync(string studentId)
+    {
+        var assignments = await _assignmentRepository.GetByEnrolledStudentAsync(studentId);
+        var result = new List<AssignmentItemViewModel>();
+
+        foreach (var assignment in assignments)
+        {
+            var submission = await _submissionRepository.GetSubmissionAsync(assignment.Id, studentId);
+            result.Add(new AssignmentItemViewModel
+            {
+                Assignment = assignment,
+                Submission = submission
+            });
+        }
+
+        return result;
+    }
+
     public async Task<AssignmentSubmitViewModel?> GetAssignmentForSubmissionAsync(int assignmentId, string studentId)
     {
         var assignment = await _assignmentRepository.GetByIdAsync(assignmentId);

@@ -28,6 +28,16 @@ public class StudentAssignmentController : Controller
         _env = env;
     }
 
+    public async Task<IActionResult> Center()
+    {
+        var studentId = _userManager.GetUserId(User)!;
+        ViewBag.ActiveNav = "assignments";
+
+        var assignments = await _submissionService.GetAllStudentAssignmentsAsync(studentId);
+        
+        return View(assignments);
+    }
+
     public async Task<IActionResult> Index(int courseId)
     {
         var studentId = _userManager.GetUserId(User)!;

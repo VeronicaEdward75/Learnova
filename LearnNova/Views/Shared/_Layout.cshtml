@@ -135,6 +135,11 @@
                     <i class="bi bi-mortarboard" aria-hidden="true"></i>
                     <span>كورساتي</span>
                 </a>
+                <a class="nav-link-item @(activeNav == "assignments" ? "active" : "")"
+                   asp-controller="StudentAssignment" asp-action="Center">
+                    <i class="bi bi-journal-text" aria-hidden="true"></i>
+                    <span>مهامي</span>
+                </a>
 
                 <div class="nav-section-title">المدفوعات والمشتريات</div>
                 <a class="nav-link-item @(activeNav == "orders" ? "active" : "")" asp-controller="Order" asp-action="History">
