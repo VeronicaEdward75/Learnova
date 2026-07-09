@@ -1,0 +1,253 @@
+@model LearnNova.Models.ViewModels.Student.OrderDetailsViewModel
+@{
+    ViewData["Title"] = "الفاتورة الضريبية";
+    Layout = "_Layout";
+}
+
+<style>
+    .invoice-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 1px solid var(--color-border);
+    }
+    .invoice-header {
+        background: var(--color-primary);
+        color: white;
+        padding: var(--space-6);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+    .invoice-body {
+        padding: var(--space-6);
+    }
+    .invoice-table th {
+        background-color: var(--color-grey-light) !important;
+        color: var(--color-text-primary);
+        font-weight: bold;
+        border-bottom: 2px solid var(--color-primary);
+    }
+    .invoice-table td, .invoice-table th {
+        padding: var(--space-3);
+        vertical-align: middle;
+    }
+    .invoice-footer {
+        background: var(--color-grey-light);
+        padding: var(--space-4) var(--space-6);
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        border-top: 1px solid var(--color-border);
+        text-align: center;
+        color: var(--color-text-muted);
+    }
+</style>
+
+<div class="mb-4 text-end" style="max-width: 900px; margin: 0 auto;">
+    <a asp-action="Details" asp-route-id="@Model.PaymentId" class="btn btn-outline-secondary me-2">العودة للطلب</a>
+    <a asp-controller="Document" asp-action="DownloadInvoice" asp-route-id="@Model.PaymentId" class="btn btn-primary-custom">
+        <i class="bi bi-printer me-2"></i> طباعة / تحميل PDF
+    </a>
+</div>
+
+<div class="invoice-container mb-5">
+    
+    <!-- SECTION 1: Invoice Header -->
+    <div class="invoice-header d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-start">
+        <div class="d-flex align-items-center mb-4 mb-md-0">
+            <div class="bg-white rounded p-2 me-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" fill="var(--color-primary-light)" stroke="var(--color-primary)" stroke-width="1.5"/>
+                    <path d="M8 10L12 13L16 10" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 13V18" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="9" r="2" fill="var(--color-primary)"/>
+                </svg>
+            </div>
+            <div>
+                <h2 class="fw-bold mb-0 text-white">LearnNova</h2>
+                <div style="opacity: 0.8; font-size: 14px;">منصة التعليم الإلكتروني الذكية</div>
+            </div>
+        </div>
+        
+        <div class="text-center text-md-end">
+            <h3 class="fw-bold mb-2 text-white">فاتورة ضريبية (INVOICE)</h3>
+            <div style="opacity: 0.9; font-size: 15px;">رقم الفاتورة: <span class="font-monospace">@(Model.InvoiceNumber ?? "N/A")</span></div>
+            <div style="opacity: 0.9; font-size: 15px;">تاريخ الإصدار: <span dir="ltr">@Model.PurchaseDate.ToString("yyyy-MM-dd")</span></div>
+            <div style="opacity: 0.9; font-size: 15px;">تاريخ الدفع: <span dir="ltr">@Model.PurchaseDate.ToString("yyyy-MM-dd HH:mm")</span></div>
+            <div style="opacity: 0.9; font-size: 15px;">رقم الطلب: <span class="font-monospace">#@Model.PaymentId</span></div>
+        </div>
+    </div>
+
+    <div class="invoice-body">
+        
+        <div class="row g-4 mb-5 border-bottom pb-4">
+            <!-- SECTION 2: Student Information -->
+            <div class="col-md-6">
+                <h5 class="fw-bold text-primary mb-3">بيانات الطالب (Billed To)</h5>
+                <div class="fw-bold fs-5 text-dark mb-1">@Model.StudentName</div>
+                <div class="text-muted mb-1"><i class="bi bi-envelope me-2"></i>@Model.StudentEmail</div>
+                <div class="text-muted"><i class="bi bi-person-badge me-2"></i>طالب مسجل في منصة LearnNova</div>
+            </div>
+
+            <!-- SECTION 4: Payment Information -->
+            <div class="col-md-6 text-md-end">
+                <h5 class="fw-bold text-primary mb-3">معلومات الدفع (Payment Info)</h5>
+                <div class="mb-1"><span class="text-muted">طريقة الدفع:</span> <span class="fw-bold text-dark">@Model.PaymentMethod</span></div>
+                <div class="mb-1"><span class="text-muted">رقم المعاملة:</span> <span class="fw-bold text-dark font-monospace">@(Model.TransactionId ?? "N/A")</span></div>
+                <div class="mb-1">
+                    <span class="text-muted">حالة الدفع:</span> 
+                    @if(Model.PaymentStatus == LearnNova.Models.Enums.PaymentStatus.Succeeded) { <span class="badge bg-success">ناجح</span> }
+                    else if(Model.PaymentStatus == LearnNova.Models.Enums.PaymentStatus.Refunded) { <span class="badge bg-secondary">مسترد</span> }
+                    else { <span class="badge bg-warning text-dark">@Model.PaymentStatus</span> }
+                </div>
+                <div class="mb-1"><span class="text-muted">العملة:</span> <span class="fw-bold text-dark">@Model.Currency</span></div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Course Information -->
+        <div class="mb-5">
+            <h5 class="fw-bold text-primary mb-3">تفاصيل الخدمة (Service Details)</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered invoice-table">
+                    <thead>
+                        <tr>
+                            <th>اسم الكورس</th>
+                            <th>المدرس</th>
+                            <th>التصنيف / المستوى</th>
+                            <th>تاريخ التسجيل</th>
+                            <th>نوع الوصول</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">@Model.CourseTitle</td>
+                            <td>@Model.TeacherName</td>
+                            <td>@Model.CourseCategory - @Model.CourseLevel</td>
+                            <td dir="ltr">@Model.PurchaseDate.ToString("yyyy-MM-dd")</td>
+                            <td>@Model.AccessType</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row g-5 mb-4">
+            <div class="col-lg-6">
+                <!-- SECTION 6: Coupon -->
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted mb-3">تفاصيل الكوبون (Coupon Details)</h6>
+                    <div class="card bg-light border-0 p-3">
+                        @if(!string.IsNullOrEmpty(Model.CouponCode))
+                        {
+                            <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                                <span>كود الكوبون:</span>
+                                <span class="fw-bold font-monospace text-primary">@Model.CouponCode</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                                <span>نوع الخصم:</span>
+                                <span class="fw-bold">@Model.CouponDiscountType</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                                <span>قيمة الخصم:</span>
+                                <span class="fw-bold text-danger">@Model.CouponDiscountValue.ToString("N2")</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>المبلغ الموفر:</span>
+                                <span class="fw-bold text-success">@Model.DiscountAmount.ToString("N2") @Model.Currency</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-muted text-center py-2">
+                                No Coupon Applied (لم يتم تطبيق كوبون)
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- SECTION 7: Refund Information -->
+                <div>
+                    <h6 class="fw-bold text-muted mb-3">معلومات الاسترداد (Refund Information)</h6>
+                    <div class="card bg-light border-0 p-3">
+                        @if(Model.HasRefundRequest)
+                        {
+                            <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                                <span>حالة الاسترداد:</span>
+                                <span class="fw-bold @(Model.RefundStatus == LearnNova.Models.Enums.RefundStatus.Approved ? "text-success" : Model.RefundStatus == LearnNova.Models.Enums.RefundStatus.Rejected ? "text-danger" : "text-warning")">@Model.RefundStatus</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                                <span>تاريخ القرار:</span>
+                                <span dir="ltr" class="fw-bold">@(Model.RefundDate?.ToString("yyyy-MM-dd") ?? "N/A")</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                                <span>المبلغ المسترد:</span>
+                                <span class="fw-bold">@Model.RefundAmount.ToString("N2") @Model.Currency</span>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <span class="mb-1">قرار الإدارة:</span>
+                                <span class="fw-bold text-muted small">@(string.IsNullOrEmpty(Model.RefundAdminNotes) ? "لا توجد ملاحظات" : Model.RefundAdminNotes)</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-muted text-center py-2">
+                                No refund requested. (لم يتم طلب استرداد)
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: Financial Breakdown -->
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-primary mb-3">التحليل المالي (Financial Breakdown)</h6>
+                <div class="table-responsive">
+                    <table class="table table-borderless table-sm">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted py-2">سعر الكورس الأساسي (Course Price)</td>
+                                <td class="text-end fw-bold py-2">@Model.OriginalPrice.ToString("N2")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">الخصم المطبق (Coupon Discount)</td>
+                                <td class="text-end fw-bold text-success py-2">- @Model.DiscountAmount.ToString("N2")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">المدفوع من المحفظة (Wallet Used)</td>
+                                <td class="text-end fw-bold py-2">@Model.WalletPaid.ToString("N2")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">المدفوع بالبطاقة (Gateway Payment)</td>
+                                <td class="text-end fw-bold py-2">@Model.GatewayPaid.ToString("N2")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">الضرائب (Taxes / VAT)</td>
+                                <td class="text-end fw-bold py-2">@Model.VatAmount.ToString("N2")</td>
+                            </tr>
+                            <tr class="border-bottom">
+                                <td class="text-muted py-2">رسوم المنصة (Platform Fees)</td>
+                                <td class="text-end fw-bold py-2">@Model.PlatformFee.ToString("N2")</td>
+                            </tr>
+                            <tr style="background-color: var(--color-grey-light);">
+                                <td class="py-3 px-3 fw-bold fs-5 text-primary">الإجمالي النهائي (Final Paid)</td>
+                                <td class="text-end py-3 px-3 fw-bold fs-5 text-primary">@Model.TotalPaid.ToString("N2") <span style="font-size: 14px;">@Model.Currency</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SECTION 8: Invoice Footer -->
+    <div class="invoice-footer">
+        <div class="fw-bold mb-2 text-dark">Thank you for choosing LearnNova. (شكراً لاختيارك منصة LearnNova)</div>
+        <div class="mb-2">
+            <span class="me-3"><i class="bi bi-envelope me-1"></i> support@learnnova.com</span>
+            <span><i class="bi bi-globe me-1"></i> www.learnnova.com</span>
+        </div>
+        <div class="small mt-3 text-muted" style="font-style: italic;">
+            Invoice generated automatically. This is a computer generated document and does not require a physical signature.
+        </div>
+    </div>
+</div>

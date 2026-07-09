@@ -82,8 +82,21 @@ public class OrderController : Controller
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
-        ViewData["Title"] = "عرض الفاتورة";
+        ViewData["Title"] = "تفاصيل الطلب";
         ViewBag.ActiveNav = "orders";
+        var studentId = _userManager.GetUserId(User)!;
+
+        var details = await _refundService.GetOrderDetailsAsync(id, studentId);
+        if (details == null) return NotFound();
+
+        return View(details);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Invoice(int id)
+    {
+        ViewData["Title"] = "الفاتورة";
+        ViewBag.ActiveNav = "invoices";
         var studentId = _userManager.GetUserId(User)!;
 
         var details = await _refundService.GetOrderDetailsAsync(id, studentId);

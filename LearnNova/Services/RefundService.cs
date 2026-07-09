@@ -296,6 +296,7 @@ public class RefundService : IRefundService
         {
             PaymentId = payment.Id,
             StudentName = payment.Student?.FullName ?? "",
+            StudentEmail = payment.Student?.Email ?? "",
             TeacherName = payment.Course?.Teacher?.FullName ?? "",
             CourseId = payment.CourseId,
             CourseTitle = payment.Course?.Title ?? "",
@@ -319,11 +320,14 @@ public class RefundService : IRefundService
             
             CouponCode = coupon?.Code,
             CouponDiscountPercentage = discountPercentage,
+            CouponDiscountType = coupon?.DiscountType.ToString(),
+            CouponDiscountValue = coupon?.DiscountValue ?? 0,
             
             CanRequestRefund = canRequestRefund.Success,
             HasRefundRequest = refund != null,
             RefundRequestedAt = refund?.RequestedAt,
             RefundDate = refund?.ResolvedAt,
+            RefundAmount = refund != null ? (payment.WalletUsedAmount + payment.GatewayUsedAmount) : 0, // Fallback if no exact sum stored in refund row
             RefundStatus = refund?.Status,
             RefundReason = refund?.Reason,
             RefundAdminNotes = refund?.AdminNotes

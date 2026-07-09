@@ -30,6 +30,7 @@ public class OrderDetailsViewModel
 {
     public int PaymentId { get; set; }
     public string StudentName { get; set; } = string.Empty;
+    public string StudentEmail { get; set; } = string.Empty;
     public string TeacherName { get; set; } = string.Empty;
     public int CourseId { get; set; }
     public string CourseTitle { get; set; } = string.Empty;
@@ -52,6 +53,8 @@ public class OrderDetailsViewModel
     
     public string? CouponCode { get; set; }
     public decimal CouponDiscountPercentage { get; set; }
+    public string? CouponDiscountType { get; set; }
+    public decimal CouponDiscountValue { get; set; }
     
     // Course Info
     public string? CourseCategory { get; set; }
@@ -64,6 +67,7 @@ public class OrderDetailsViewModel
     public bool HasRefundRequest { get; set; }
     public DateTime? RefundRequestedAt { get; set; }
     public DateTime? RefundDate { get; set; }
+    public decimal RefundAmount { get; set; }
     public bool CanRequestRefund { get; set; }
     public RefundStatus? RefundStatus { get; set; }
     public string? RefundReason { get; set; }
