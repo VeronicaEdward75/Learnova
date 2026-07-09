@@ -83,6 +83,80 @@ public class WalletService : IWalletService
         return vms;
     }
 
+    public async Task<LearnNova.Models.ViewModels.PagedResult<WalletTransactionViewModel>> GetTransactionsPagedAsync(int walletId, LearnNova.Models.ViewModels.Student.Filters.WalletFilterParameters filters)
+    {
+        var query = _walletTransactionRepository.GetQueryable()
+            .Where(t => t.WalletId == walletId);
+
+        if (filters.StartDate.HasValue)
+        {
+            query = query.Where(t => t.CreatedAt >= filters.StartDate.Value);
+        }
+
+        if (filters.EndDate.HasValue)
+        {
+            query = query.Where(t => t.CreatedAt <= filters.EndDate.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filters.Type))
+        {
+            if (Enum.TryParse<TransactionType>(filters.Type, true, out var typeEnum))
+            {
+                query = query.Where(t => t.Type == typeEnum);
+            }
+        }
+
+        query = filters.SortBy switch
+        {
+            "oldest" => query.OrderBy(t => t.CreatedAt),
+            "amount_desc" => query.OrderByDescending(t => t.Amount),
+            "amount_asc" => query.OrderBy(t => t.Amount),
+            _ => query.OrderByDescending(t => t.CreatedAt)
+        };
+
+        var totalCount = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(query);
+        
+        int pageNumber = filters.PageNumber > 0 ? filters.PageNumber : 1;
+        int pageSize = filters.PageSize > 0 ? filters.PageSize : 20;
+
+        var pagedTransactions = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(query.Skip((pageNumber - 1) * pageSize).Take(pageSize));
+
+        var vms = new List<WalletTransactionViewModel>();
+        foreach(var t in pagedTransactions)
+        {
+            var p = t.PaymentId.HasValue ? await _paymentRepository.GetByIdAsync(t.PaymentId.Value) : null;
+            // Ensure Payment has course loaded, we might need a better query but this matches existing logic
+            if (p != null)
+            {
+                p = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                    Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(
+                        Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(_paymentRepository.GetQueryable(), x => x.Course), 
+                        x => x.Student), 
+                    x => x.Id == p.Id);
+            }
+
+            vms.Add(new WalletTransactionViewModel
+            {
+                Id = t.Id,
+                Date = t.CreatedAt,
+                Amount = t.Amount,
+                Type = t.Type.ToString(),
+                Description = t.Description ?? string.Empty,
+                Status = "Completed",
+                CourseName = p?.Course?.Title ?? "N/A",
+                StudentName = p?.Student?.FullName ?? "N/A"
+            });
+        }
+
+        return new LearnNova.Models.ViewModels.PagedResult<WalletTransactionViewModel>
+        {
+            Items = vms,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
     public async Task<TeacherRevenueSummaryViewModel> GetRevenueSummaryAsync(string userId)
     {
         var wallet = await GetWalletAsync(userId);

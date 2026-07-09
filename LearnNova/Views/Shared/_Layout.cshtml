@@ -140,6 +140,11 @@
                     <i class="bi bi-journal-text" aria-hidden="true"></i>
                     <span>مهامي</span>
                 </a>
+                <a class="nav-link-item @(activeNav == "quizzes" ? "active" : "")"
+                   asp-controller="QuizEngine" asp-action="Center">
+                    <i class="bi bi-ui-checks" aria-hidden="true"></i>
+                    <span>اختباراتي</span>
+                </a>
 
                 <div class="nav-section-title">المدفوعات والمشتريات</div>
                 <a class="nav-link-item @(activeNav == "orders" ? "active" : "")" asp-controller="Order" asp-action="History">

@@ -1,4 +1,4 @@
-@model IEnumerable<LearnNova.Models.ViewModels.Student.AssignmentItemViewModel>
+@model LearnNova.Models.ViewModels.PagedResult<LearnNova.Models.ViewModels.Student.AssignmentItemViewModel>
 @{
     ViewData["Title"] = "مهامي";
     Layout = "_Layout";
@@ -12,7 +12,11 @@
         </div>
     </div>
 
-    @if (!Model.Any())
+    <div class="animate-in animate-in-delay-1">
+        <partial name="_FilterBarPartial" model="ViewBag.Filters" />
+    </div>
+
+    @if (!Model.Items.Any())
     {
         <div class="card-box p-5 text-center my-4" style="background:var(--color-surface-muted); box-shadow:none; border:1px dashed var(--color-border);">
             <div class="d-inline-flex align-items-center justify-content-center mb-4" style="width:80px; height:80px; background:white; color:var(--color-text-secondary); border-radius:var(--radius-xl); box-shadow:var(--shadow-sm);">
@@ -25,7 +29,7 @@
     else
     {
         <div class="row g-4">
-            @foreach (var item in Model)
+            @foreach (var item in Model.Items)
             {
                 var assignment = item.Assignment;
                 var submission = item.Submission;
@@ -105,6 +109,10 @@
                     </div>
                 </div>
             }
+        </div>
+        
+        <div class="animate-in animate-in-delay-1 mt-4">
+            <partial name="_PaginationPartial" model="Model" />
         </div>
     }
 </div>

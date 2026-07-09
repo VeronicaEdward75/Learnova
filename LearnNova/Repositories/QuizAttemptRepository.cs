@@ -78,4 +78,13 @@ public class QuizAttemptRepository : GenericRepository<QuizAttempt>, IQuizAttemp
 
         return (totalAttempts, uniqueStudents, highest, lowest, avg, passedCount, failedCount);
     }
+
+    public async Task<IEnumerable<QuizAttempt>> GetAllStudentAttemptsAsync(string studentId)
+    {
+        return await _set
+            .AsNoTracking()
+            .Where(a => a.StudentId == studentId)
+            .OrderByDescending(a => a.SubmittedAt)
+            .ToListAsync();
+    }
 }

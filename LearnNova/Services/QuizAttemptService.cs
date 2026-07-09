@@ -260,4 +260,56 @@ public class QuizAttemptService : IQuizAttemptService
 
         return ServiceResult<QuizAnalyticsViewModel>.Success(vm);
     }
+
+    public async Task<MyQuizzesViewModel> GetMyQuizzesDashboardAsync(string studentId, LearnNova.Models.ViewModels.Student.Filters.QuizFilterParameters filters)
+    {
+        var pagedResult = await _quizRepository.GetMyQuizzesDashboardPagedAsync(studentId, filters);
+        
+        var viewModel = new MyQuizzesViewModel
+        {
+            Quizzes = pagedResult,
+            TotalQuizzes = pagedResult.TotalCount
+        };
+        
+        foreach (var card in pagedResult.Items)
+        {
+            if (card.Passed) viewModel.PassedCount++;
+            else if (card.CompletedAttempts > 0 && card.RemainingAttempts == 0) viewModel.FailedCount++;
+        }
+        
+        if (pagedResult.Items.Any(q => q.CompletedAttempts > 0))
+        {
+            var attemptedQuizzes = pagedResult.Items.Where(q => q.CompletedAttempts > 0).ToList();
+            viewModel.AverageScore = attemptedQuizzes.Average(q => 
+                q.QuestionCount > 0 ? ((double)q.BestScore / (q.QuestionCount * 10)) * 100 : 0);
+        }
+        
+        return viewModel;
+    }
+
+    public async Task<ServiceResult<QuizDetailsViewModel>> GetQuizDetailsAsync(int quizId, string studentId)
+    {
+        var quiz = await _quizRepository.GetByIdWithCourseAsync(quizId);
+        if (quiz == null || !quiz.IsPublished)
+            return ServiceResult<QuizDetailsViewModel>.Fail("الاختبار غير موجود أو غير متاح.");
+
+        var enrollment = await _enrollmentRepository.GetByStudentAndCourseAsync(studentId, quiz.CourseId);
+        if (enrollment == null)
+            return ServiceResult<QuizDetailsViewModel>.Fail("غير مصرح لك بدخول هذا الاختبار لأنك لست مسجلاً في الكورس.");
+            
+        var attemptHistory = (await _attemptRepository.GetAllStudentAttemptsAsync(studentId))
+            .Where(a => a.QuizId == quizId)
+            .OrderByDescending(a => a.StartedAt)
+            .ToList();
+            
+        var vm = new QuizDetailsViewModel
+        {
+            Quiz = quiz,
+            AttemptHistory = attemptHistory,
+            AttemptsUsed = attemptHistory.Count,
+            HasUncompletedAttempt = attemptHistory.Any(a => !a.IsCompleted)
+        };
+        
+        return ServiceResult<QuizDetailsViewModel>.Success(vm);
+    }
 }

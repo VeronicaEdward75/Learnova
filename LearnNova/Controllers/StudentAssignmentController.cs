@@ -28,13 +28,32 @@ public class StudentAssignmentController : Controller
         _env = env;
     }
 
-    public async Task<IActionResult> Center()
+    public async Task<IActionResult> Center([FromQuery] LearnNova.Models.ViewModels.Student.Filters.AssignmentFilterParameters filters)
     {
         var studentId = _userManager.GetUserId(User)!;
         ViewBag.ActiveNav = "assignments";
 
-        var assignments = await _submissionService.GetAllStudentAssignmentsAsync(studentId);
+        filters.SortOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("الأقرب تسليماً", "oldest"),
+            new("الأحدث", "newest"),
+            new("الاسم (أ-ي)", "name_asc"),
+            new("الاسم (ي-أ)", "name_desc")
+        };
         
+        filters.StatusOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("قيد الانتظار", "pending"),
+            new("تم التسليم", "submitted"),
+            new("تم التقييم", "graded"),
+            new("متأخر", "late"),
+            new("مفقود", "missing")
+        };
+
+        var assignments = await _submissionService.GetAllStudentAssignmentsPagedAsync(studentId, filters);
+        
+        ViewBag.Filters = filters;
+
         return View(assignments);
     }
 

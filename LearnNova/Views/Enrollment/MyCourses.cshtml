@@ -1,4 +1,4 @@
-﻿@model IEnumerable<LearnNova.Models.Entities.Enrollment>
+@model LearnNova.Models.ViewModels.PagedResult<LearnNova.Models.Entities.Enrollment>
 @{
     ViewData["Title"] = "كورساتي";
 }
@@ -29,9 +29,13 @@
     </a>
 </div>
 
+<div class="animate-in animate-in-delay-1">
+    <partial name="_FilterBarPartial" model="ViewBag.Filters" />
+</div>
+
 <h4 class="fw-bold mb-4 animate-in">مواصلة التعلم</h4>
 
-@if (!Model.Any())
+@if (!Model.Items.Any())
 {
     <div class="empty-state animate-in animate-in-delay-1">
         <div class="es-icon-wrap">
@@ -47,7 +51,7 @@
 else
 {
     <div class="row g-4 animate-in animate-in-delay-1 mb-5">
-        @foreach (var enrollment in Model)
+        @foreach (var enrollment in Model.Items)
         {
             var course = enrollment.Course;
             var gradient = coverGradients[Math.Abs(course.Title.GetHashCode()) % coverGradients.Length];
@@ -93,5 +97,9 @@ else
                 </div>
             </div>
         }
+    </div>
+    
+    <div class="animate-in animate-in-delay-1">
+        <partial name="_PaginationPartial" model="Model" />
     </div>
 }

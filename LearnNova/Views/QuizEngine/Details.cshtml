@@ -1,0 +1,185 @@
+@model LearnNova.Models.ViewModels.Student.QuizDetailsViewModel
+@using LearnNova.Services.DateTimeService
+@inject IDateTimeService DateTimeService
+@{
+    ViewData["Title"] = "تفاصيل الاختبار - " + Model.Quiz.Title;
+    Layout = "_Layout";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <a asp-action="Center" class="btn btn-sm btn-light" style="font-size:13px; font-weight:600; border:1px solid var(--color-border); background:white;">
+            <i class="bi bi-arrow-right me-1"></i> العودة إلى اختباراتي
+        </a>
+    </div>
+
+    <div class="d-flex align-items-end mb-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary); letter-spacing:-0.5px;">@Model.Quiz.Title</h3>
+            <p class="text-muted mb-0" style="font-size:14px;"><i class="bi bi-journal-bookmark me-1"></i> @Model.Quiz.Course.Title</p>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger small mb-4 d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Quiz Info -->
+        <div class="col-lg-4">
+            <div class="card-box p-4 mb-4" style="background:white; border:1px solid var(--color-border); box-shadow:var(--shadow-sm);">
+                <h5 class="fw-bold mb-4 pb-3 border-bottom" style="color:var(--color-text-primary);"><i class="bi bi-info-circle me-2 text-primary"></i>معلومات الاختبار</h5>
+                
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted" style="font-size:13px; font-weight:600;"><i class="bi bi-person me-2"></i>المعلم</span>
+                        <span class="fw-bold" style="font-size:14px;">@Model.Quiz.Course.Teacher.FullName</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted" style="font-size:13px; font-weight:600;"><i class="bi bi-clock me-2"></i>المدة</span>
+                        <span class="fw-bold" style="font-size:14px;">@Model.Quiz.TimeLimitMinutes دقيقة</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted" style="font-size:13px; font-weight:600;"><i class="bi bi-patch-check me-2"></i>درجة النجاح</span>
+                        <span class="fw-bold" style="font-size:14px;">@Model.Quiz.PassingScore%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted" style="font-size:13px; font-weight:600;"><i class="bi bi-arrow-repeat me-2"></i>المحاولات المسموحة</span>
+                        <span class="fw-bold" style="font-size:14px;">@Model.Quiz.MaxAttempts</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pb-3 border-bottom">
+                        <span class="text-muted" style="font-size:13px; font-weight:600;"><i class="bi bi-battery-half me-2"></i>المحاولات المتبقية</span>
+                        <span class="fw-bold @(Model.RemainingAttempts == 0 ? "text-danger" : "text-success")" style="font-size:14px;">@Model.RemainingAttempts</span>
+                    </div>
+                    
+                    <div>
+                        <div class="text-muted mb-2" style="font-size:13px; font-weight:600;"><i class="bi bi-card-text me-2"></i>الوصف</div>
+                        <p class="text-muted mb-0" style="font-size:13px; line-height:1.6; background:var(--color-surface-muted); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--color-border-light);">
+                            @(string.IsNullOrWhiteSpace(Model.Quiz.Description) ? "لا يوجد وصف." : Model.Quiz.Description)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 text-center border-top">
+                    @if (Model.HasUncompletedAttempt)
+                    {
+                        <a asp-action="TakeQuiz" asp-route-quizId="@Model.Quiz.Id" class="btn btn-warning w-100 text-dark fw-bold" style="height:48px; display:flex; align-items:center; justify-content:center;">
+                            <i class="bi bi-play-fill me-2 fs-5"></i> إكمال المحاولة الحالية
+                        </a>
+                    }
+                    else if (Model.RemainingAttempts > 0)
+                    {
+                        <a asp-action="TakeQuiz" asp-route-quizId="@Model.Quiz.Id" class="btn-primary-custom w-100" style="height:48px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(111,78,55,0.2);">
+                            <i class="bi bi-play-circle me-2 fs-5"></i> @(Model.AttemptsUsed > 0 ? "بدء محاولة جديدة" : "بدء الاختبار")
+                        </a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary w-100 fw-bold" disabled style="height:48px; display:flex; align-items:center; justify-content:center;">
+                            <i class="bi bi-lock me-2 fs-5"></i> استنفدت المحاولات المسموحة
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Attempts History -->
+        <div class="col-lg-8">
+            <div class="card-box p-4" style="background:white; border:1px solid var(--color-border); box-shadow:var(--shadow-sm);">
+                <h5 class="fw-bold mb-4 pb-3 border-bottom" style="color:var(--color-text-primary);"><i class="bi bi-clock-history me-2 text-primary"></i>سجل المحاولات</h5>
+
+                @if (!Model.AttemptHistory.Any())
+                {
+                    <div class="text-center py-5">
+                        <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width:64px; height:64px; background:var(--color-surface-muted); color:var(--color-text-secondary); border-radius:50%;">
+                            <i class="bi bi-journal-x fs-2"></i>
+                        </div>
+                        <h6 class="fw-bold">لم تقم بأي محاولة بعد</h6>
+                        <p class="text-muted small">ابدأ الاختبار لتسجيل محاولتك الأولى.</p>
+                    </div>
+                }
+                else
+                {
+                    var bestScore = Model.AttemptHistory.Where(a => a.IsCompleted).Select(a => a.Score).DefaultIfEmpty(-1).Max();
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size:13px;">
+                            <thead class="table-light text-muted" style="font-weight:600;">
+                                <tr>
+                                    <th class="py-3 ps-3">المحاولة</th>
+                                    <th class="py-3">التاريخ</th>
+                                    <th class="py-3">المدة</th>
+                                    <th class="py-3 text-center">الدرجة</th>
+                                    <th class="py-3 text-center">النتيجة</th>
+                                    <th class="py-3 pe-3 text-end">التفاصيل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var attempt in Model.AttemptHistory)
+                                {
+                                    var isBest = attempt.IsCompleted && attempt.Score == bestScore && bestScore >= 0;
+                                    
+                                    <tr style="@(isBest ? "background:var(--color-success-light);" : "")">
+                                        <td class="ps-3 fw-bold @(isBest ? "text-success-dark" : "text-dark")">
+                                            مـ @attempt.AttemptNumber
+                                            @if(isBest) { <i class="bi bi-star-fill text-warning ms-1" title="أفضل محاولة"></i> }
+                                        </td>
+                                        <td class="text-muted">
+                                            @DateTimeService.ToLocal(attempt.StartedAt).ToString("yyyy-MM-dd")<br>
+                                            <span style="font-size:11px;">@DateTimeService.ToLocal(attempt.StartedAt).ToString("hh:mm tt")</span>
+                                        </td>
+                                        <td class="text-muted">
+                                            @if (attempt.IsCompleted)
+                                            {
+                                                var ts = TimeSpan.FromSeconds(attempt.DurationSeconds);
+                                                <span>@(ts.Minutes)د @(ts.Seconds)ث</span>
+                                            }
+                                            else
+                                            {
+                                                <span>-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center fw-bold @(attempt.IsCompleted ? "text-dark" : "text-muted")">
+                                            @(attempt.IsCompleted ? attempt.Score.ToString() : "-")
+                                        </td>
+                                        <td class="text-center">
+                                            @if (!attempt.IsCompleted)
+                                            {
+                                                <span class="badge" style="background:var(--color-warning-light); color:var(--color-warning-dark); border:1px solid rgba(245,158,11,0.2);">قيد التنفيذ</span>
+                                            }
+                                            else if (attempt.Passed)
+                                            {
+                                                <span class="badge" style="background:var(--color-success-light); color:var(--color-success-dark); border:1px solid rgba(16,185,129,0.2);">ناجح</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge" style="background:var(--color-danger-light); color:var(--color-danger-dark); border:1px solid rgba(225,29,72,0.2);">راسب</span>
+                                            }
+                                        </td>
+                                        <td class="pe-3 text-end">
+                                            @if (attempt.IsCompleted)
+                                            {
+                                                <a asp-action="Result" asp-route-attemptId="@attempt.Id" class="btn btn-sm btn-outline-primary" style="font-weight:600; font-size:11px;">
+                                                    عرض النتيجة
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-action="TakeQuiz" asp-route-quizId="@Model.Quiz.Id" class="btn btn-sm btn-warning text-dark" style="font-weight:600; font-size:11px;">
+                                                    إكمال
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

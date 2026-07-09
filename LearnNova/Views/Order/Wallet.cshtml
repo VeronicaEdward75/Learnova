@@ -1,7 +1,7 @@
 @model LearnNova.Models.Entities.Wallet
 @{
     ViewData["Title"] = "محفظتي";
-    var transactions = ViewBag.Transactions as List<LearnNova.Models.ViewModels.Teacher.WalletTransactionViewModel>;
+    var transactions = ViewBag.Transactions as LearnNova.Models.ViewModels.PagedResult<LearnNova.Models.ViewModels.Teacher.WalletTransactionViewModel>;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -22,11 +22,15 @@
     </div>
 </div>
 
+<div class="mb-4">
+    <partial name="_FilterBarPartial" model="ViewBag.Filters" />
+</div>
+
 <div class="card-box p-0 overflow-hidden mt-4">
     <div class="p-4 border-bottom bg-light">
         <h5 class="fw-bold mb-0">المعاملات المالية</h5>
     </div>
-    @if(transactions != null && transactions.Any())
+    @if(transactions != null && transactions.Items.Any())
     {
         <div class="table-responsive">
             <table class="table table-hover mb-0 align-middle">
@@ -39,7 +43,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(var t in transactions)
+                    @foreach(var t in transactions.Items)
                     {
                         <tr>
                             <td class="ps-4 text-muted">@t.Date.ToString("yyyy-MM-dd HH:mm")</td>
@@ -57,6 +61,9 @@
                     }
                 </tbody>
             </table>
+        </div>
+        <div class="p-4 border-top bg-white">
+            <partial name="_PaginationPartial" model="transactions" />
         </div>
     }
     else

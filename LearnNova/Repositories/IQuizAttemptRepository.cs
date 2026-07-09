@@ -12,4 +12,7 @@ public interface IQuizAttemptRepository : IGenericRepository<QuizAttempt>
     Task<IEnumerable<QuizAttempt>> GetStudentAttemptsHistoryAsync(int quizId, string studentId);
     Task<IEnumerable<QuizAttempt>> GetTeacherQuizResultsAsync(int quizId, string searchTerm, string sortBy);
     Task<(int TotalAttempts, int UniqueStudents, int HighestScore, int LowestScore, double AverageScore, int PassedCount, int FailedCount)> GetQuizAggregateStatsAsync(int quizId);
+    
+    // Sprint My Quizzes
+    Task<IEnumerable<QuizAttempt>> GetAllStudentAttemptsAsync(string studentId);
 }

@@ -194,6 +194,71 @@ public class RefundService : IRefundService
         }).ToList();
     }
 
+    public async Task<LearnNova.Models.ViewModels.PagedResult<StudentRefundViewModel>> GetStudentRefundRequestsPagedAsync(string studentId, LearnNova.Models.ViewModels.Student.Filters.RefundFilterParameters filters)
+    {
+        var query = _refundRepo.GetQueryable()
+            .Include(r => r.Payment)
+            .ThenInclude(p => p.Course)
+            .Where(r => r.StudentId == studentId);
+
+        if (!string.IsNullOrWhiteSpace(filters.SearchTerm))
+        {
+            query = query.Where(r => r.Payment != null && r.Payment.Course != null && r.Payment.Course.Title.Contains(filters.SearchTerm));
+        }
+
+        if (filters.StartDate.HasValue)
+        {
+            query = query.Where(r => r.RequestedAt >= filters.StartDate.Value);
+        }
+
+        if (filters.EndDate.HasValue)
+        {
+            query = query.Where(r => r.RequestedAt <= filters.EndDate.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filters.Status))
+        {
+            if (Enum.TryParse<RefundStatus>(filters.Status, true, out var statusEnum))
+            {
+                query = query.Where(r => r.Status == statusEnum);
+            }
+        }
+
+        query = filters.SortBy switch
+        {
+            "oldest" => query.OrderBy(r => r.RequestedAt),
+            "amount_desc" => query.OrderByDescending(r => r.Payment != null ? r.Payment.StudentPaid : 0),
+            "amount_asc" => query.OrderBy(r => r.Payment != null ? r.Payment.StudentPaid : 0),
+            _ => query.OrderByDescending(r => r.RequestedAt)
+        };
+
+        var totalCount = await query.CountAsync();
+        
+        int pageNumber = filters.PageNumber > 0 ? filters.PageNumber : 1;
+        int pageSize = filters.PageSize > 0 ? filters.PageSize : 20;
+
+        var pagedRequests = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        var list = pagedRequests.Select(r => new StudentRefundViewModel
+        {
+            RefundId = r.Id,
+            CourseTitle = r.Payment?.Course?.Title ?? "N/A",
+            RequestDate = r.RequestedAt,
+            RefundAmount = r.Payment?.StudentPaid ?? 0,
+            Reason = r.Reason,
+            AdminNotes = r.AdminNotes,
+            Status = r.Status
+        }).ToList();
+
+        return new LearnNova.Models.ViewModels.PagedResult<StudentRefundViewModel>
+        {
+            Items = list,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
     public async Task<List<OrderHistoryViewModel>> GetStudentOrdersAsync(string studentId)
     {
         var payments = await _paymentRepo.GetQueryable()
@@ -241,6 +306,101 @@ public class RefundService : IRefundService
         }
 
         return list;
+    }
+
+    public async Task<LearnNova.Models.ViewModels.PagedResult<OrderHistoryViewModel>> GetStudentOrdersPagedAsync(string studentId, LearnNova.Models.ViewModels.Student.Filters.OrderFilterParameters filters)
+    {
+        var query = _paymentRepo.GetQueryable()
+            .Include(p => p.Course)
+            .Include(p => p.Invoice)
+            .Where(p => p.StudentId == studentId);
+
+        if (!string.IsNullOrWhiteSpace(filters.SearchTerm))
+        {
+            query = query.Where(p => p.Course != null && p.Course.Title.Contains(filters.SearchTerm) || (p.Invoice != null && p.Invoice.InvoiceNumber.Contains(filters.SearchTerm)));
+        }
+
+        if (filters.StartDate.HasValue)
+        {
+            query = query.Where(p => p.CreatedAt >= filters.StartDate.Value);
+        }
+
+        if (filters.EndDate.HasValue)
+        {
+            query = query.Where(p => p.CreatedAt <= filters.EndDate.Value);
+        }
+
+        if (filters.HasInvoice.HasValue && filters.HasInvoice.Value)
+        {
+            query = query.Where(p => p.Invoice != null && p.Invoice.InvoiceNumber != null);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filters.Status))
+        {
+            if (Enum.TryParse<PaymentStatus>(filters.Status, true, out var statusEnum))
+            {
+                query = query.Where(p => p.Status == statusEnum);
+            }
+        }
+
+        query = filters.SortBy switch
+        {
+            "oldest" => query.OrderBy(p => p.CreatedAt),
+            "amount_desc" => query.OrderByDescending(p => p.StudentPaid),
+            "amount_asc" => query.OrderBy(p => p.StudentPaid),
+            _ => query.OrderByDescending(p => p.CreatedAt)
+        };
+
+        var totalCount = await query.CountAsync();
+        
+        int pageNumber = filters.PageNumber > 0 ? filters.PageNumber : 1;
+        int pageSize = filters.PageSize > 0 ? filters.PageSize : 20;
+
+        var pagedPayments = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        var list = new List<OrderHistoryViewModel>();
+        foreach (var p in pagedPayments)
+        {
+            var vm = new OrderHistoryViewModel
+            {
+                PaymentId = p.Id,
+                CourseId = p.CourseId,
+                CourseTitle = p.Course?.Title ?? "N/A",
+                PurchaseDate = p.CreatedAt,
+                AmountPaid = p.StudentPaid,
+                Status = p.Status,
+                InvoiceNumber = p.Invoice?.InvoiceNumber
+            };
+
+            var existingRefunds = await _refundRepo.FindAsync(r => r.PaymentId == p.Id);
+            var refund = existingRefunds.FirstOrDefault(r => r.Status == RefundStatus.Pending || r.Status == RefundStatus.Approved || r.Status == RefundStatus.Rejected);
+            
+            if (refund != null)
+            {
+                vm.RefundStatusMessage = refund.Status switch
+                {
+                    RefundStatus.Pending => "طلب استرداد قيد المراجعة",
+                    RefundStatus.Approved => "تم الاسترداد",
+                    RefundStatus.Rejected => "تم رفض الاسترداد",
+                    _ => ""
+                };
+            }
+            else
+            {
+                var canReq = await CanRequestRefundAsync(p.Id, studentId);
+                vm.CanRequestRefund = canReq.Success;
+            }
+
+            list.Add(vm);
+        }
+
+        return new LearnNova.Models.ViewModels.PagedResult<OrderHistoryViewModel>
+        {
+            Items = list,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
 
     public async Task<OrderDetailsViewModel?> GetOrderDetailsAsync(int paymentId, string studentId)

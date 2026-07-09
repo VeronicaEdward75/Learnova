@@ -12,6 +12,7 @@ public interface IWalletService
     Task AddPendingBalanceAsync(string userId, decimal amount);
     Task CreateTransactionAsync(int walletId, decimal amount, TransactionType type, string description, int? paymentId = null);
     Task<List<WalletTransactionViewModel>> GetTransactionsAsync(int walletId);
+    Task<LearnNova.Models.ViewModels.PagedResult<WalletTransactionViewModel>> GetTransactionsPagedAsync(int walletId, LearnNova.Models.ViewModels.Student.Filters.WalletFilterParameters filters);
     Task<TeacherRevenueSummaryViewModel> GetRevenueSummaryAsync(string userId);
     Task<(decimal PlatformRevenue, decimal TeacherEarnings, decimal PendingRevenue)> GetPlatformRevenueStatsAsync();
     

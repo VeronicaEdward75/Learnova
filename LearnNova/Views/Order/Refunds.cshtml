@@ -1,5 +1,5 @@
-﻿@using LearnNova.Models.Enums
-@model IEnumerable<LearnNova.Models.ViewModels.Student.StudentRefundViewModel>
+@using LearnNova.Models.Enums
+@model LearnNova.Models.ViewModels.PagedResult<LearnNova.Models.ViewModels.Student.StudentRefundViewModel>
 @{
     ViewData["Title"] = "طلبات الاسترداد";
 }
@@ -8,7 +8,11 @@
     <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">طلبات الاسترداد</h2>
 </div>
 
-@if(Model == null || !Model.Any())
+<div class="mb-4">
+    <partial name="_FilterBarPartial" model="ViewBag.Filters" />
+</div>
+
+@if(Model == null || !Model.Items.Any())
 {
     <div class="card-box p-5 text-center d-flex flex-column align-items-center justify-content-center" style="min-height: 400px; border: 2px dashed var(--color-border);">
         <div class="mb-4" style="width: 100px; height: 100px; background: rgba(79, 70, 229, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -36,7 +40,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var r in Model)
+                @foreach (var r in Model.Items)
                 {
                     <tr>
                         <td class="fw-bold text-primary">#@r.RefundId</td>
@@ -72,5 +76,9 @@ else
                 }
             </tbody>
         </table>
+    </div>
+    
+    <div class="mt-4">
+        <partial name="_PaginationPartial" model="Model" />
     </div>
 }

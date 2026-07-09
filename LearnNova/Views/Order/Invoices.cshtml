@@ -1,4 +1,4 @@
-@model IEnumerable<LearnNova.Models.ViewModels.Student.OrderHistoryViewModel>
+@model LearnNova.Models.ViewModels.PagedResult<LearnNova.Models.ViewModels.Student.OrderHistoryViewModel>
 @{
     ViewData["Title"] = "الفواتير";
 }
@@ -15,8 +15,12 @@
     <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">@ViewData["Title"]</h2>
 </div>
 
+<div class="mb-4">
+    <partial name="_FilterBarPartial" model="ViewBag.Filters" />
+</div>
+
 <div class="card-box p-0 overflow-hidden">
-    @if(Model != null && Model.Any(m => !string.IsNullOrEmpty(m.InvoiceNumber)))
+    @if(Model != null && Model.Items.Any(m => !string.IsNullOrEmpty(m.InvoiceNumber)))
     {
         <div class="table-responsive">
             <table class="table table-hover mb-0 align-middle">
@@ -29,7 +33,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(var item in Model.Where(m => !string.IsNullOrEmpty(m.InvoiceNumber)))
+                    @foreach(var item in Model.Items.Where(m => !string.IsNullOrEmpty(m.InvoiceNumber)))
                     {
                         <tr>
                             <td class="ps-4">
@@ -51,6 +55,9 @@
                     }
                 </tbody>
             </table>
+        </div>
+        <div class="p-4 border-top bg-white">
+            <partial name="_PaginationPartial" model="Model" />
         </div>
     }
     else

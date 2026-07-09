@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using LearnNova.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -61,13 +61,13 @@ public class CertificateController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Student")]
-    public async Task<IActionResult> MyCertificates([FromServices] IGenericRepository<Enrollment> enrollmentRepo)
+    public async Task<IActionResult> MyCertificates([FromServices] IGenericRepository<Enrollment> enrollmentRepo, [FromQuery] LearnNova.Models.ViewModels.Student.Filters.CertificateFilterParameters filters)
     {
         ViewData["Title"] = "شهاداتي";
         ViewBag.ActiveNav = "certificates";
         var studentId = _userManager.GetUserId(User)!;
 
-        // 1. Fetch all enrollments
+        // 1. Fetch all enrollments for missing requirements check
         var enrollments = await enrollmentRepo.GetQueryable()
             .Include(e => e.Course)
             .Where(e => e.StudentId == studentId && e.IsActive)
@@ -84,9 +84,18 @@ public class CertificateController : Controller
             }
         }
 
-        var certs = await _certificateService.GetStudentCertificatesAsync(studentId);
+        filters.SortOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("الأحدث", "newest"),
+            new("الأقدم", "oldest"),
+            new("اسم الكورس (أ-ي)", "name_asc"),
+            new("اسم الكورس (ي-أ)", "name_desc")
+        };
+
+        var certs = await _certificateService.GetStudentCertificatesPagedAsync(studentId, filters);
         
         ViewBag.MissingRequirements = missingRequirements;
+        ViewBag.Filters = filters;
 
         return View(certs);
     }

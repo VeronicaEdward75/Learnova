@@ -28,6 +28,42 @@ public class QuizEngineController : Controller
         _userManager = userManager;
     }
 
+    public async Task<IActionResult> Center([FromQuery] LearnNova.Models.ViewModels.Student.Filters.QuizFilterParameters filters)
+    {
+        var studentId = _userManager.GetUserId(User)!;
+        ViewBag.ActiveNav = "quizzes";
+
+        filters.SortOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("الأحدث", "newest"),
+            new("الأقدم", "oldest"),
+            new("الاسم (أ-ي)", "name_asc"),
+            new("الاسم (ي-أ)", "name_desc")
+        };
+        
+        var viewModel = await _attemptService.GetMyQuizzesDashboardAsync(studentId, filters);
+        
+        ViewBag.Filters = filters;
+
+        return View(viewModel);
+    }
+
+    public async Task<IActionResult> Details(int quizId)
+    {
+        var studentId = _userManager.GetUserId(User)!;
+        ViewBag.ActiveNav = "quizzes";
+
+        var result = await _attemptService.GetQuizDetailsAsync(quizId, studentId);
+        
+        if (!result.Succeeded)
+        {
+            TempData["ErrorMessage"] = string.Join(" ", result.Errors);
+            return RedirectToAction(nameof(Center));
+        }
+
+        return View(result.Data);
+    }
+
     public async Task<IActionResult> Index(int courseId)
     {
         var studentId = _userManager.GetUserId(User)!;

@@ -75,6 +75,10 @@ public class AssignmentSubmissionService : IAssignmentSubmissionService
         return result;
     }
 
+    public Task<LearnNova.Models.ViewModels.PagedResult<AssignmentItemViewModel>> GetAllStudentAssignmentsPagedAsync(string studentId, LearnNova.Models.ViewModels.Student.Filters.AssignmentFilterParameters filters) =>
+        _assignmentRepository.GetStudentAssignmentsPagedAsync(studentId, filters);
+
+
     public async Task<AssignmentSubmitViewModel?> GetAssignmentForSubmissionAsync(int assignmentId, string studentId)
     {
         var assignment = await _assignmentRepository.GetByIdAsync(assignmentId);

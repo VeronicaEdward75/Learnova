@@ -133,4 +133,50 @@ public class CertificateService : ICertificateService
     {
         return await _certRepo.GetQueryable().Include(c => c.Course).ThenInclude(c => c.Teacher).Where(c => c.StudentId == studentId).ToListAsync();
     }
+
+    public async Task<LearnNova.Models.ViewModels.PagedResult<Certificate>> GetStudentCertificatesPagedAsync(string studentId, LearnNova.Models.ViewModels.Student.Filters.CertificateFilterParameters filters)
+    {
+        var query = _certRepo.GetQueryable()
+            .Include(c => c.Course)
+            .ThenInclude(c => c.Teacher)
+            .Where(c => c.StudentId == studentId);
+
+        if (!string.IsNullOrWhiteSpace(filters.SearchTerm))
+        {
+            query = query.Where(c => (c.Course != null && c.Course.Title.Contains(filters.SearchTerm)) || c.CertificateNumber.Contains(filters.SearchTerm));
+        }
+
+        if (filters.StartDate.HasValue)
+        {
+            query = query.Where(c => c.IssueDate >= filters.StartDate.Value);
+        }
+
+        if (filters.EndDate.HasValue)
+        {
+            query = query.Where(c => c.IssueDate <= filters.EndDate.Value);
+        }
+
+        query = filters.SortBy switch
+        {
+            "oldest" => query.OrderBy(c => c.IssueDate),
+            "name_asc" => query.OrderBy(c => c.Course != null ? c.Course.Title : ""),
+            "name_desc" => query.OrderByDescending(c => c.Course != null ? c.Course.Title : ""),
+            _ => query.OrderByDescending(c => c.IssueDate)
+        };
+
+        var totalCount = await query.CountAsync();
+        
+        int pageNumber = filters.PageNumber > 0 ? filters.PageNumber : 1;
+        int pageSize = filters.PageSize > 0 ? filters.PageSize : 20;
+
+        var pagedCertificates = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        return new LearnNova.Models.ViewModels.PagedResult<Certificate>
+        {
+            Items = pagedCertificates,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 }

@@ -1,4 +1,4 @@
-﻿using LearnNova.Models.Entities;
+using LearnNova.Models.Entities;
 using LearnNova.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -37,15 +37,24 @@ public class EnrollmentController : Controller
         return RedirectToAction("Details", "Course", new { id = courseId });
     }
 
-    public async Task<IActionResult> MyCourses()
+    public async Task<IActionResult> MyCourses([FromQuery] LearnNova.Models.ViewModels.Student.Filters.CourseFilterParameters filters)
     {
         ViewData["Title"] = "كورساتي";
         ViewBag.ActiveNav = "my-courses";
 
         var studentId = _userManager.GetUserId(User)!;
         
-        // Load active enrollments with Course and Teacher loaded
-        var enrollments = await _enrollmentService.GetStudentCoursesAsync(studentId);
+        filters.SortOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("الأحدث أولاً", "newest"),
+            new("الأقدم أولاً", "oldest"),
+            new("الاسم (أ-ي)", "name_asc"),
+            new("الاسم (ي-أ)", "name_desc")
+        };
+
+        var enrollments = await _enrollmentService.GetStudentCoursesPagedAsync(studentId, filters);
+        
+        ViewBag.Filters = filters;
 
         return View(enrollments);
     }

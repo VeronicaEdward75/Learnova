@@ -1,4 +1,4 @@
-﻿using LearnNova.Models.Entities;
+using LearnNova.Models.Entities;
 using LearnNova.Repositories;
 using LearnNova.Services.DateTimeService;
 
@@ -42,6 +42,9 @@ public class EnrollmentService : IEnrollmentService
 
     public Task<IEnumerable<Enrollment>> GetStudentCoursesAsync(string studentId) =>
         _enrollmentRepository.GetStudentEnrollmentsAsync(studentId);
+
+    public Task<LearnNova.Models.ViewModels.PagedResult<Enrollment>> GetStudentCoursesPagedAsync(string studentId, LearnNova.Models.ViewModels.Student.Filters.CourseFilterParameters filters) =>
+        _enrollmentRepository.GetStudentEnrollmentsPagedAsync(studentId, filters);
 
     public async Task<bool> IsEnrolledAsync(string studentId, int courseId) =>
         await _enrollmentRepository.GetByStudentAndCourseAsync(studentId, courseId) is not null;

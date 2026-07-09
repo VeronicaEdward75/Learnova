@@ -1,0 +1,48 @@
+@model dynamic
+@{
+    var request = Context.Request;
+    var queryParams = request.Query.ToDictionary(q => q.Key, q => q.Value.ToString());
+    
+    int currentPage = Model.PageNumber;
+    int totalPages = Model.TotalPages;
+
+    string GetPageUrl(int page)
+    {
+        queryParams["PageNumber"] = page.ToString();
+        var queryString = string.Join("&", queryParams.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+        return $"{request.Path}?{queryString}";
+    }
+}
+
+@if (totalPages > 1)
+{
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="@(currentPage > 1 ? GetPageUrl(currentPage - 1) : "#")" tabindex="-1" aria-disabled="@(currentPage == 1)">
+                    السابق
+                </a>
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                if (i == 1 || i == totalPages || Math.Abs(i - currentPage) <= 2)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                    </li>
+                }
+                else if (Math.Abs(i - currentPage) == 3)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="@(currentPage < totalPages ? GetPageUrl(currentPage + 1) : "#")">
+                    التالي
+                </a>
+            </li>
+        </ul>
+    </nav>
+}

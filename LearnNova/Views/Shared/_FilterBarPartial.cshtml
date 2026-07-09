@@ -1,0 +1,77 @@
+@model LearnNova.Models.ViewModels.Student.Filters.BaseFilterParameters
+@{
+    var request = Context.Request;
+    var queryParams = request.Query.ToDictionary(q => q.Key, q => q.Value.ToString());
+    
+    // Remove known parameters so we can handle them explicitly via inputs
+    queryParams.Remove("SearchTerm");
+    queryParams.Remove("SortBy");
+    queryParams.Remove("StartDate");
+    queryParams.Remove("EndDate");
+    queryParams.Remove("PageNumber");
+    
+    var statusKey = "Status";
+    if (Model.StatusOptions.Any())
+    {
+        // Try to find the actual property name if derived class changed it, but we use "Status" conventionally
+        queryParams.Remove(statusKey);
+    }
+}
+
+<form method="get" class="card-box p-3 mb-4 d-flex flex-wrap gap-3 align-items-end bg-white" style="border:1px solid var(--color-border-light);">
+    
+    <!-- Preserve other unknown query params -->
+    @foreach (var param in queryParams)
+    {
+        <input type="hidden" name="@param.Key" value="@param.Value" />
+    }
+
+    <div class="flex-grow-1" style="min-width: 250px;">
+        <label class="form-label text-muted small fw-bold mb-1">بحث</label>
+        <div class="input-group">
+            <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" name="SearchTerm" class="form-control border-start-0 ps-0" placeholder="اكتب للبحث..." value="@Model.SearchTerm">
+        </div>
+    </div>
+    
+    @if (Model.StatusOptions != null && Model.StatusOptions.Any())
+    {
+        <div style="min-width: 150px;">
+            <label class="form-label text-muted small fw-bold mb-1">الحالة</label>
+            <select name="Status" class="form-select">
+                <option value="">الكل</option>
+                @foreach (var opt in Model.StatusOptions)
+                {
+                    <option value="@opt.Value" selected="@(Model.GetStatus() == opt.Value)">@opt.Text</option>
+                }
+            </select>
+        </div>
+    }
+
+    @if (Model.SortOptions != null && Model.SortOptions.Any())
+    {
+        <div style="min-width: 150px;">
+            <label class="form-label text-muted small fw-bold mb-1">ترتيب حسب</label>
+            <select name="SortBy" class="form-select">
+                @foreach (var opt in Model.SortOptions)
+                {
+                    <option value="@opt.Value" selected="@(Model.SortBy == opt.Value)">@opt.Text</option>
+                }
+            </select>
+        </div>
+    }
+
+    <div style="min-width: 140px;">
+        <label class="form-label text-muted small fw-bold mb-1">من تاريخ</label>
+        <input type="date" name="StartDate" class="form-control" value="@(Model.StartDate?.ToString("yyyy-MM-dd"))">
+    </div>
+    <div style="min-width: 140px;">
+        <label class="form-label text-muted small fw-bold mb-1">إلى تاريخ</label>
+        <input type="date" name="EndDate" class="form-control" value="@(Model.EndDate?.ToString("yyyy-MM-dd"))">
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary-custom px-4" style="height: 38px;">تطبيق</button>
+        <a href="@request.Path" class="btn btn-light border px-3" style="height: 38px;">إلغاء</a>
+    </div>
+</form>

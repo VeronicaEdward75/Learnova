@@ -24,58 +24,147 @@ public class OrderController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Wallet()
+    public async Task<IActionResult> Wallet([FromQuery] LearnNova.Models.ViewModels.Student.Filters.WalletFilterParameters filters)
     {
-        ViewData["Title"] = "سجل الطلبات";
+        ViewData["Title"] = "المحفظة";
         ViewBag.ActiveNav = "student-wallet";
         var studentId = _userManager.GetUserId(User)!;
         var wallet = await _walletService.GetWalletAsync(studentId);
-        var transactions = await _walletService.GetTransactionsAsync(wallet.Id);
+
+        filters.SortOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("الأحدث", "newest"),
+            new("الأقدم", "oldest"),
+            new("الأعلى قيمة", "amount_desc"),
+            new("الأقل قيمة", "amount_asc")
+        };
+        
+        filters.StatusOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("إيداع", "Deposit"),
+            new("سحب", "Withdrawal"),
+            new("مبيعات", "Sale"),
+            new("استرداد", "Refund"),
+            new("شراء", "Purchase")
+        };
+
+        var transactions = await _walletService.GetTransactionsPagedAsync(wallet.Id, filters);
         ViewBag.Transactions = transactions;
+        ViewBag.Filters = filters;
         return View(wallet);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Refunds()
+    public async Task<IActionResult> Refunds([FromQuery] LearnNova.Models.ViewModels.Student.Filters.RefundFilterParameters filters)
     {
         ViewData["Title"] = "طلبات الاسترداد";
         ViewBag.ActiveNav = "refunds";
         var studentId = _userManager.GetUserId(User)!;
 
-        var refunds = await _refundService.GetStudentRefundRequestsAsync(studentId);
+        filters.SortOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("الأحدث", "newest"),
+            new("الأقدم", "oldest"),
+            new("الأعلى قيمة", "amount_desc"),
+            new("الأقل قيمة", "amount_asc")
+        };
+        
+        filters.StatusOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("قيد المراجعة", "Pending"),
+            new("مقبول", "Approved"),
+            new("مرفوض", "Rejected")
+        };
+
+        var refunds = await _refundService.GetStudentRefundRequestsPagedAsync(studentId, filters);
+        ViewBag.Filters = filters;
         return View(refunds);
     }
 
     [HttpGet]
-    public async Task<IActionResult> History()
+    public async Task<IActionResult> History([FromQuery] LearnNova.Models.ViewModels.Student.Filters.OrderFilterParameters filters)
     {
         ViewData["Title"] = "سجل الطلبات";
         ViewBag.ActiveNav = "orders";
         var studentId = _userManager.GetUserId(User)!;
 
-        var orders = await _refundService.GetStudentOrdersAsync(studentId);
+        filters.SortOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("الأحدث", "newest"),
+            new("الأقدم", "oldest"),
+            new("الأعلى قيمة", "amount_desc"),
+            new("الأقل قيمة", "amount_asc")
+        };
+        
+        filters.StatusOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("ناجحة", "Succeeded"),
+            new("قيد الانتظار", "Pending"),
+            new("فاشلة", "Failed"),
+            new("مستردة", "Refunded")
+        };
+
+        var orders = await _refundService.GetStudentOrdersPagedAsync(studentId, filters);
+        ViewBag.Filters = filters;
+        
         return View(orders);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Payments()
+    public async Task<IActionResult> Payments([FromQuery] LearnNova.Models.ViewModels.Student.Filters.OrderFilterParameters filters)
     {
         ViewData["Title"] = "المدفوعات";
         ViewBag.ActiveNav = "payments";
         var studentId = _userManager.GetUserId(User)!;
 
-        var orders = await _refundService.GetStudentOrdersAsync(studentId);
+        filters.SortOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("الأحدث", "newest"),
+            new("الأقدم", "oldest"),
+            new("الأعلى قيمة", "amount_desc"),
+            new("الأقل قيمة", "amount_asc")
+        };
+        
+        filters.StatusOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("ناجحة", "Succeeded"),
+            new("قيد الانتظار", "Pending"),
+            new("فاشلة", "Failed"),
+            new("مستردة", "Refunded")
+        };
+
+        var orders = await _refundService.GetStudentOrdersPagedAsync(studentId, filters);
+        ViewBag.Filters = filters;
         return View(orders);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Invoices()
+    public async Task<IActionResult> Invoices([FromQuery] LearnNova.Models.ViewModels.Student.Filters.OrderFilterParameters filters)
     {
         ViewData["Title"] = "الفواتير";
         ViewBag.ActiveNav = "invoices";
         var studentId = _userManager.GetUserId(User)!;
 
-        var orders = await _refundService.GetStudentOrdersAsync(studentId);
+        filters.SortOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("الأحدث", "newest"),
+            new("الأقدم", "oldest"),
+            new("الأعلى قيمة", "amount_desc"),
+            new("الأقل قيمة", "amount_asc")
+        };
+        
+        filters.StatusOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+        {
+            new("ناجحة", "Succeeded"),
+            new("قيد الانتظار", "Pending"),
+            new("فاشلة", "Failed"),
+            new("مستردة", "Refunded")
+        };
+        
+        filters.HasInvoice = true;
+
+        var orders = await _refundService.GetStudentOrdersPagedAsync(studentId, filters);
+        ViewBag.Filters = filters;
         return View(orders);
     }
 
