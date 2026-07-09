@@ -254,8 +254,43 @@ public class RefundService : IRefundService
         if (payment == null) return null;
 
         var refund = (await _refundRepo.FindAsync(r => r.PaymentId == paymentId)).FirstOrDefault();
-        var coupon = (await _couponUsageRepo.FindAsync(u => u.PaymentId == paymentId)).FirstOrDefault()?.Coupon?.Code;
+        var couponUsage = (await _couponUsageRepo.GetQueryable().Include(cu => cu.Coupon).FirstOrDefaultAsync(u => u.PaymentId == paymentId));
+        var coupon = couponUsage?.Coupon;
         var canRequestRefund = await CanRequestRefundAsync(paymentId, studentId);
+
+        decimal originalPrice = payment.Course?.Price ?? 0;
+        decimal discountAmount = 0;
+        decimal discountPercentage = 0;
+        
+        if (coupon != null)
+        {
+            if (coupon.DiscountType == LearnNova.Models.Enums.DiscountType.Percentage)
+            {
+                discountPercentage = coupon.DiscountValue;
+                discountAmount = originalPrice * (discountPercentage / 100m);
+            }
+            else
+            {
+                discountAmount = coupon.DiscountValue;
+                if (originalPrice > 0)
+                    discountPercentage = (discountAmount / originalPrice) * 100m;
+            }
+        }
+        else
+        {
+            // Fallback backward calculation if coupon is lost but price was discounted
+            decimal expectedTotalWithoutVat = originalPrice + payment.PlatformFee;
+            if (payment.StudentPaid < expectedTotalWithoutVat && originalPrice > 0)
+            {
+                discountAmount = expectedTotalWithoutVat - payment.StudentPaid; // Approximation if no vat was applied
+            }
+        }
+
+        // Assuming VAT isn't stored, we can approximate or set to 0.
+        // Actually, if StudentPaid = OriginalPrice - Discount + PlatformFee + VAT
+        // VAT = StudentPaid - OriginalPrice + Discount - PlatformFee
+        decimal vatAmount = payment.StudentPaid - originalPrice + discountAmount - payment.PlatformFee;
+        if (vatAmount < 0) vatAmount = 0;
 
         return new OrderDetailsViewModel
         {
@@ -264,6 +299,9 @@ public class RefundService : IRefundService
             TeacherName = payment.Course?.Teacher?.FullName ?? "",
             CourseId = payment.CourseId,
             CourseTitle = payment.Course?.Title ?? "",
+            CourseCategory = payment.Course?.Subject ?? "غير محدد",
+            CourseLevel = payment.Course?.Stage ?? "غير محدد",
+            AccessType = "مدى الحياة", // Example default
             
             InvoiceNumber = payment.Invoice?.InvoiceNumber,
             PurchaseDate = payment.CreatedAt,
@@ -271,14 +309,24 @@ public class RefundService : IRefundService
             TransactionId = payment.TransactionId,
             
             PaymentStatus = payment.Status,
-            OriginalPrice = payment.Course?.Price ?? 0,
-            DiscountAmount = (payment.Course?.Price ?? 0) - payment.TeacherAmount - payment.PlatformFee, 
+            OriginalPrice = originalPrice,
+            DiscountAmount = discountAmount, 
+            PlatformFee = payment.PlatformFee,
+            VatAmount = vatAmount,
+            WalletPaid = payment.WalletUsedAmount,
+            GatewayPaid = payment.GatewayUsedAmount,
             TotalPaid = payment.StudentPaid,
             
-            CouponCode = coupon,
+            CouponCode = coupon?.Code,
+            CouponDiscountPercentage = discountPercentage,
             
             CanRequestRefund = canRequestRefund.Success,
-            RefundStatus = refund?.Status
+            HasRefundRequest = refund != null,
+            RefundRequestedAt = refund?.RequestedAt,
+            RefundDate = refund?.ResolvedAt,
+            RefundStatus = refund?.Status,
+            RefundReason = refund?.Reason,
+            RefundAdminNotes = refund?.AdminNotes
         };
     }
 

@@ -40,20 +40,30 @@ public class OrderDetailsViewModel
     public string PaymentMethod { get; set; } = string.Empty;
     public string? TransactionId { get; set; }
     
+    // Financial Breakdown
     public decimal OriginalPrice { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal PlatformFee { get; set; }
     public decimal VatAmount { get; set; }
+    public decimal WalletPaid { get; set; }
+    public decimal GatewayPaid { get; set; }
     public decimal TotalPaid { get; set; }
     public string Currency { get; set; } = "EGP";
     
     public string? CouponCode { get; set; }
+    public decimal CouponDiscountPercentage { get; set; }
+    
+    // Course Info
+    public string? CourseCategory { get; set; }
+    public string? CourseLevel { get; set; }
+    public string? AccessType { get; set; }
     
     public PaymentStatus PaymentStatus { get; set; }
     
     // Refund
     public bool HasRefundRequest { get; set; }
     public DateTime? RefundRequestedAt { get; set; }
+    public DateTime? RefundDate { get; set; }
     public bool CanRequestRefund { get; set; }
     public RefundStatus? RefundStatus { get; set; }
     public string? RefundReason { get; set; }
