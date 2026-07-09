@@ -6,4 +6,5 @@ public interface IContentProgressRepository : IGenericRepository<ContentProgress
 {
     Task<ContentProgress?> GetProgressAsync(string studentId, int contentId);
     Task<IEnumerable<ContentProgress>> GetStudentProgressInCourseAsync(string studentId, int courseId);
+    Task<Dictionary<int, int>> GetCompletedContentCountsByCoursesAsync(string studentId, IEnumerable<int> courseIds);
 }

@@ -1,0 +1,443 @@
+@model LearnNova.Models.ViewModels.Student.StudentDashboardViewModel
+@{
+    ViewData["Title"] = "لوحة التحكم";
+}
+
+<!-- 1. Welcome Banner -->
+<div class="card-box mb-4 bg-primary text-white border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);">
+    <div class="position-absolute top-0 end-0 h-100 opacity-25" style="width:300px; background:radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%); transform: translate(30%, -30%);"></div>
+    <div class="row align-items-center position-relative z-index-1">
+        <div class="col-md-8 p-4 p-md-5">
+            <h3 class="fw-bold mb-2">أهلاً بك مرة أخرى، @Model.StudentName! 👋</h3>
+            <p class="mb-4 text-white-50 fs-5">استمر في التعلم وحقق أهدافك اليوم.</p>
+            @if (Model.LastActiveCourse != null)
+            {
+                <a asp-controller="Enrollment" asp-action="MyCourses" class="btn btn-light fw-bold px-4 py-2 hover-lift text-primary shadow-sm" style="border-radius:var(--radius-md);">
+                    <i class="bi bi-play-circle-fill me-2"></i> استكمال التعلم
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Course" asp-action="Catalog" class="btn btn-light fw-bold px-4 py-2 hover-lift text-primary shadow-sm" style="border-radius:var(--radius-md);">
+                    <i class="bi bi-compass-fill me-2"></i> تصفح الكورسات
+                </a>
+            }
+        </div>
+        <div class="col-md-4 text-center d-none d-md-block p-4">
+            <i class="bi bi-mortarboard-fill text-white opacity-50" style="font-size: 8rem; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.2));"></i>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Statistics Cards & 8. Learning Progress -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-md-8">
+        <div class="row g-4 h-100">
+            <!-- Stat Card 1 -->
+            <div class="col-sm-6 col-lg-4">
+                <div class="card-box h-100 p-4 d-flex flex-column hover-lift">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div style="width:48px;height:48px;border-radius:12px;background:rgba(79,70,229,0.1);color:var(--color-primary);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-journal-bookmark fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.EnrolledCoursesCount</h3>
+                    </div>
+                    <h6 class="text-muted fw-normal mb-0 mt-auto">الكورسات المسجلة</h6>
+                </div>
+            </div>
+            <!-- Stat Card 2 -->
+            <div class="col-sm-6 col-lg-4">
+                <div class="card-box h-100 p-4 d-flex flex-column hover-lift">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div style="width:48px;height:48px;border-radius:12px;background:rgba(16,185,129,0.1);color:var(--color-success);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-check-circle fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.CompletedCoursesCount</h3>
+                    </div>
+                    <h6 class="text-muted fw-normal mb-0 mt-auto">الكورسات المكتملة</h6>
+                </div>
+            </div>
+            <!-- Stat Card 3 -->
+            <div class="col-sm-6 col-lg-4">
+                <div class="card-box h-100 p-4 d-flex flex-column hover-lift">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div style="width:48px;height:48px;border-radius:12px;background:rgba(245,158,11,0.1);color:var(--color-warning-dark);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-award fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.CertificatesCount</h3>
+                    </div>
+                    <h6 class="text-muted fw-normal mb-0 mt-auto">الشهادات المكتسبة</h6>
+                </div>
+            </div>
+            <!-- Stat Card 4 -->
+            <div class="col-sm-6 col-lg-4">
+                <div class="card-box h-100 p-4 d-flex flex-column hover-lift border-start border-4 border-info">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div style="width:48px;height:48px;border-radius:12px;background:rgba(14,165,233,0.1);color:var(--color-info);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-wallet2 fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.WalletBalance.ToString("N0")</h3>
+                    </div>
+                    <h6 class="text-muted fw-normal mb-0 mt-auto">الرصيد المتاح (EGP)</h6>
+                </div>
+            </div>
+            <!-- Stat Card 5 -->
+            <div class="col-sm-6 col-lg-4">
+                <div class="card-box h-100 p-4 d-flex flex-column hover-lift">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div style="width:48px;height:48px;border-radius:12px;background:rgba(239,68,68,0.1);color:var(--color-danger);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-journal-text fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.PendingAssignmentsCount</h3>
+                    </div>
+                    <h6 class="text-muted fw-normal mb-0 mt-auto">المهام المعلقة</h6>
+                </div>
+            </div>
+            <!-- Stat Card 6 -->
+            <div class="col-sm-6 col-lg-4">
+                <div class="card-box h-100 p-4 d-flex flex-column hover-lift">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div style="width:48px;height:48px;border-radius:12px;background:rgba(139,92,246,0.1);color:#8b5cf6;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-ui-checks fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.AvailableQuizzesCount</h3>
+                    </div>
+                    <h6 class="text-muted fw-normal mb-0 mt-auto">الاختبارات المتاحة</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-md-4">
+        <!-- 8. Learning Progress -->
+        <div class="card-box p-4 h-100 d-flex flex-column">
+            <h5 class="fw-bold mb-4">التقدم العام</h5>
+            <div class="d-flex align-items-center justify-content-center mb-4 relative" style="height:150px;">
+                <div class="position-absolute d-flex flex-column align-items-center justify-content-center">
+                    <span class="fs-2 fw-bold text-dark">@Model.OverallCompletionPercentage%</span>
+                    <span class="text-muted" style="font-size:12px;">مكتمل</span>
+                </div>
+                <svg width="150" height="150" viewBox="0 0 150 150" class="position-absolute">
+                    <circle cx="75" cy="75" r="65" fill="none" stroke="var(--color-border)" stroke-width="12" />
+                    <circle cx="75" cy="75" r="65" fill="none" stroke="var(--color-primary)" stroke-width="12" stroke-dasharray="@(Model.OverallCompletionPercentage * 4.08), 408" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 75 75)" style="transition: stroke-dasharray 1s ease-out;" />
+                </svg>
+            </div>
+            <div class="mt-auto">
+                <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                    <span class="text-muted"><i class="bi bi-check-all me-1"></i> مهام مكتملة</span>
+                    <span class="fw-bold">@Model.TotalAssignmentsCompleted</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted"><i class="bi bi-check-all me-1"></i> اختبارات مجتازة</span>
+                    <span class="fw-bold">@Model.TotalQuizzesPassed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-lg-8">
+        <!-- 3. Continue Learning -->
+        @if (Model.LastActiveCourse != null)
+        {
+            <div class="card-box p-0 overflow-hidden mb-4 hover-lift" style="border: 1px solid var(--color-border);">
+                <div class="row g-0">
+                    <div class="col-12 p-4 d-flex flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary-subtle text-primary mb-2">آخر كورس نشط</span>
+                            <span class="text-muted small"><i class="bi bi-person me-1"></i>@(Model.LastActiveCourse.Teacher?.FullName ?? "N/A")</span>
+                        </div>
+                        <h4 class="fw-bold mb-3 text-dark">@Model.LastActiveCourse.Title</h4>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between text-muted small mb-1">
+                                <span>التقدم</span>
+                                <span>@Model.LastActiveCourseProgress%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: @Model.LastActiveCourseProgress%" aria-valuenow="@Model.LastActiveCourseProgress" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <a asp-controller="Enrollment" asp-action="MyCourses" class="btn btn-primary-custom w-100">
+                                <i class="bi bi-play-circle me-1"></i> استكمال التعلم
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- 4. Upcoming Tasks -->
+        <div class="card-box p-4 h-100" style="min-height:300px;">
+            <h5 class="fw-bold mb-4">المهام القادمة</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3"><i class="bi bi-journal-text me-2"></i>المهام المطلوبة</h6>
+                    @if (Model.UpcomingAssignments.Any())
+                    {
+                        <div class="d-flex flex-column gap-2">
+                            @foreach (var task in Model.UpcomingAssignments)
+                            {
+                                <div class="p-3 border rounded hover-bg-light transition">
+                                    <div class="fw-bold text-dark mb-1 text-truncate" title="@task.Title">@task.Title</div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-danger small"><i class="bi bi-clock me-1"></i>@task.DueDate.ToString("dd MMM")</span>
+                                        <a asp-controller="StudentAssignment" asp-action="Details" asp-route-id="@task.Id" class="btn btn-sm btn-outline-custom py-0 px-2" style="font-size:12px;">عرض</a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center p-3 text-muted border rounded border-dashed">
+                            <i class="bi bi-check-circle d-block mb-2 fs-4 text-success"></i>
+                            لا توجد مهام معلقة
+                        </div>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3"><i class="bi bi-ui-checks me-2"></i>الاختبارات المتاحة</h6>
+                    @if (Model.AvailableQuizzes.Any())
+                    {
+                        <div class="d-flex flex-column gap-2">
+                            @foreach (var quiz in Model.AvailableQuizzes)
+                            {
+                                <div class="p-3 border rounded hover-bg-light transition">
+                                    <div class="fw-bold text-dark mb-1 text-truncate" title="@quiz.QuizTitle">@quiz.QuizTitle</div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-primary small"><i class="bi bi-journal-bookmark me-1"></i>@(quiz.CourseName)</span>
+                                        <a asp-controller="QuizEngine" asp-action="Center" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:12px;">ذهاب</a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center p-3 text-muted border rounded border-dashed">
+                            <i class="bi bi-check-circle d-block mb-2 fs-4 text-success"></i>
+                            لا توجد اختبارات متاحة
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <!-- 5. Recent Activity -->
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4">أحدث النشاطات</h5>
+            @if (Model.TimelineEvents.Any())
+            {
+                <div class="position-relative ms-3 border-start border-2 pb-2 border-muted" style="border-color: var(--color-border) !important;">
+                    @foreach (var ev in Model.TimelineEvents)
+                    {
+                        <div class="position-relative mb-4 ps-4">
+                            <div class="position-absolute bg-white border border-2 border-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                 style="width: 32px; height: 32px; left: -17px; top: 0;">
+                                <i class="bi @ev.IconClass @ev.ColorClass" style="font-size:14px;"></i>
+                            </div>
+                            <div class="ms-2">
+                                <div class="text-muted small mb-1">@ev.Date.ToString("dd MMM yyyy, HH:mm")</div>
+                                <h6 class="fw-bold mb-1 text-dark">@ev.Title</h6>
+                                <p class="text-muted small mb-0">@ev.Description</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-4 text-muted">
+                    <i class="bi bi-clock-history d-block mb-3 fs-1 opacity-50"></i>
+                    لا توجد نشاطات حديثة
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- 6. Recent Certificates -->
+    <div class="col-12 col-md-6">
+        <div class="card-box p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">أحدث الشهادات</h5>
+                <a asp-controller="Certificate" asp-action="MyCertificates" class="text-primary small fw-bold text-decoration-none hover-lift">عرض الكل <i class="bi bi-chevron-left ms-1" style="font-size:10px;"></i></a>
+            </div>
+            @if (Model.RecentCertificates.Any())
+            {
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var cert in Model.RecentCertificates)
+                    {
+                        <div class="d-flex align-items-center p-3 border rounded hover-bg-light transition">
+                            <div class="bg-warning-subtle text-warning-dark p-2 rounded me-3" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+                                <i class="bi bi-award-fill fs-5"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <h6 class="fw-bold mb-1 text-truncate text-dark" title="@(cert.Course?.Title)">@(cert.Course?.Title ?? "N/A")</h6>
+                                <div class="text-muted small">@cert.IssueDate.ToString("dd MMM yyyy")</div>
+                            </div>
+                            <a href="/Document/DownloadCertificate/@cert.Id" class="btn btn-sm btn-light ms-2 px-2" title="تحميل">
+                                <i class="bi bi-download text-primary"></i>
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-4 text-muted border rounded border-dashed">
+                    <i class="bi bi-award d-block mb-3 fs-2 opacity-50 text-warning"></i>
+                    لم تحصل على شهادات بعد
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- 7. Wallet Summary -->
+    <div class="col-12 col-md-6">
+        <div class="card-box p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">المحفظة</h5>
+                <a asp-controller="Order" asp-action="Wallet" class="text-primary small fw-bold text-decoration-none hover-lift">عرض المحفظة <i class="bi bi-chevron-left ms-1" style="font-size:10px;"></i></a>
+            </div>
+            
+            <div class="bg-primary-subtle text-primary p-3 rounded d-flex justify-content-between align-items-center mb-4">
+                <span class="fw-bold">الرصيد الحالي</span>
+                <span class="fw-bold fs-5">@Model.WalletBalance.ToString("N0") <small>EGP</small></span>
+            </div>
+            
+            <h6 class="text-muted mb-3 small fw-bold">آخر المعاملات</h6>
+            @if (Model.RecentTransactions.Any())
+            {
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var t in Model.RecentTransactions)
+                    {
+                        <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size:14px;">@t.Description</div>
+                                <div class="text-muted" style="font-size:12px;">@t.Date.ToString("dd MMM yyyy")</div>
+                            </div>
+                            <div class="fw-bold @(t.Type == "Deposit" || t.Type == "Refund" ? "text-success" : "text-danger")" style="font-size:14px;">
+                                @(t.Type == "Deposit" || t.Type == "Refund" ? "+" : "-") @t.Amount.ToString("N0") EGP
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-3 text-muted">
+                    لا توجد معاملات
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 9. Achievements & 10. Quick Actions -->
+<div class="row g-4 mb-4">
+    <!-- Achievements -->
+    <div class="col-12 col-md-6">
+        <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(245,158,11,0.05) 0%, rgba(245,158,11,0.15) 100%); border:1px solid rgba(245,158,11,0.2);">
+            <h5 class="fw-bold mb-4 text-warning-dark"><i class="bi bi-trophy me-2"></i>الإنجازات</h5>
+            <div class="d-flex flex-wrap gap-3">
+                @if (Model.EnrolledCoursesCount > 0)
+                {
+                    <div class="text-center" style="width:70px;" title="أول كورس">
+                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center mb-2 mx-auto" style="width:50px;height:50px;border:2px solid var(--color-primary);">
+                            <i class="bi bi-rocket-takeoff-fill text-primary fs-4"></i>
+                        </div>
+                        <div class="small fw-bold text-dark" style="font-size:11px;">البداية</div>
+                    </div>
+                }
+                
+                @if (Model.CompletedCoursesCount > 0)
+                {
+                    <div class="text-center" style="width:70px;" title="إكمال كورس">
+                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center mb-2 mx-auto" style="width:50px;height:50px;border:2px solid var(--color-success);">
+                            <i class="bi bi-check-all text-success fs-4"></i>
+                        </div>
+                        <div class="small fw-bold text-dark" style="font-size:11px;">الخريج</div>
+                    </div>
+                }
+
+                @if (Model.CertificatesCount > 0)
+                {
+                    <div class="text-center" style="width:70px;" title="الحصول على شهادة">
+                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center mb-2 mx-auto" style="width:50px;height:50px;border:2px solid var(--color-warning-dark);">
+                            <i class="bi bi-award-fill text-warning-dark fs-4"></i>
+                        </div>
+                        <div class="small fw-bold text-dark" style="font-size:11px;">معتمد</div>
+                    </div>
+                }
+                
+                @if (Model.TotalAssignmentsCompleted > 5)
+                {
+                    <div class="text-center" style="width:70px;" title="إكمال 5 مهام">
+                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center mb-2 mx-auto" style="width:50px;height:50px;border:2px solid #8b5cf6;">
+                            <i class="bi bi-pen-fill text-purple fs-4" style="color:#8b5cf6;"></i>
+                        </div>
+                        <div class="small fw-bold text-dark" style="font-size:11px;">مجتهد</div>
+                    </div>
+                }
+                
+                @if (Model.EnrolledCoursesCount == 0)
+                {
+                    <div class="text-muted small w-100 text-center py-3">ابدأ التعلم لفتح الإنجازات!</div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-12 col-md-6">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4">إجراءات سريعة</h5>
+            <div class="row g-3">
+                <div class="col-4">
+                    <a asp-controller="Course" asp-action="Catalog" class="btn btn-light w-100 d-flex flex-column align-items-center p-3 hover-bg-primary-subtle border text-decoration-none">
+                        <i class="bi bi-search mb-2 fs-4 text-primary"></i>
+                        <span class="small fw-bold text-dark">تصفح الكورسات</span>
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a asp-controller="Enrollment" asp-action="MyCourses" class="btn btn-light w-100 d-flex flex-column align-items-center p-3 hover-bg-primary-subtle border text-decoration-none">
+                        <i class="bi bi-play-btn mb-2 fs-4 text-primary"></i>
+                        <span class="small fw-bold text-dark">كورساتي</span>
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a asp-controller="StudentAssignment" asp-action="Center" class="btn btn-light w-100 d-flex flex-column align-items-center p-3 hover-bg-primary-subtle border text-decoration-none">
+                        <i class="bi bi-journal-text mb-2 fs-4 text-primary"></i>
+                        <span class="small fw-bold text-dark">مهامي</span>
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a asp-controller="QuizEngine" asp-action="Center" class="btn btn-light w-100 d-flex flex-column align-items-center p-3 hover-bg-primary-subtle border text-decoration-none">
+                        <i class="bi bi-ui-checks mb-2 fs-4 text-primary"></i>
+                        <span class="small fw-bold text-dark">اختباراتي</span>
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a asp-controller="Certificate" asp-action="MyCertificates" class="btn btn-light w-100 d-flex flex-column align-items-center p-3 hover-bg-primary-subtle border text-decoration-none">
+                        <i class="bi bi-award mb-2 fs-4 text-primary"></i>
+                        <span class="small fw-bold text-dark">شهاداتي</span>
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a asp-controller="Order" asp-action="Wallet" class="btn btn-light w-100 d-flex flex-column align-items-center p-3 hover-bg-primary-subtle border text-decoration-none">
+                        <i class="bi bi-wallet2 mb-2 fs-4 text-primary"></i>
+                        <span class="small fw-bold text-dark">محفظتي</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

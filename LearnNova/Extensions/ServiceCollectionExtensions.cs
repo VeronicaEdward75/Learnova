@@ -56,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRefundService, RefundService>();
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<ICertificateService, CertificateService>();
+        services.AddScoped<IStudentDashboardService, StudentDashboardService>();
 
         return services;
     }

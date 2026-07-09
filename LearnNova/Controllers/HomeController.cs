@@ -28,7 +28,7 @@ namespace LearnNova.Controllers
                     return RedirectToAction("Dashboard", "Teacher");
 
                 if (User.IsInRole("Student"))
-                    return RedirectToAction("Catalog", "Course");
+                    return RedirectToAction("Index", "StudentDashboard");
             }
 
             return View("LandingPage");

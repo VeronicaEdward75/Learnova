@@ -124,6 +124,13 @@
             }
                                     else if (User.IsInRole("Student"))
             {
+                <div class="nav-section-title">الرئيسية</div>
+                <a class="nav-link-item @(activeNav == "dashboard" ? "active" : "")"
+                   asp-controller="StudentDashboard" asp-action="Index">
+                    <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                    <span>لوحة التحكم</span>
+                </a>
+
                 <div class="nav-section-title">التعليم</div>
                 <a class="nav-link-item @(activeNav == "catalog" ? "active" : "")"
                    asp-controller="Course" asp-action="Catalog">

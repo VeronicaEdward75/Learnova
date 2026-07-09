@@ -68,4 +68,29 @@ public class ProgressService : IProgressService
         double percentage = (double)completedList.Count / totalContentsCount * 100;
         return (int)Math.Round(percentage);
     }
+
+    public async Task<Dictionary<int, int>> GetCourseProgressPercentagesAsync(string studentId, IReadOnlyDictionary<int, int> contentCountsByCourse)
+    {
+        if (contentCountsByCourse.Count == 0)
+            return new Dictionary<int, int>();
+
+        var completedCounts = await _progressRepository.GetCompletedContentCountsByCoursesAsync(
+            studentId,
+            contentCountsByCourse.Keys);
+
+        var result = new Dictionary<int, int>(contentCountsByCourse.Count);
+        foreach (var (courseId, totalContentsCount) in contentCountsByCourse)
+        {
+            if (totalContentsCount == 0)
+            {
+                result[courseId] = 0;
+                continue;
+            }
+
+            var completedCount = completedCounts.GetValueOrDefault(courseId, 0);
+            result[courseId] = (int)Math.Round((double)completedCount / totalContentsCount * 100);
+        }
+
+        return result;
+    }
 }
