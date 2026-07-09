@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using LearnNova.Models.Entities;
 using LearnNova.Models.Enums;
@@ -15,6 +15,7 @@ public interface IRefundService
     Task<(bool Success, string Message)> RejectRefundAsync(int refundId, string? adminNotes);
     
     Task<List<OrderHistoryViewModel>> GetStudentOrdersAsync(string studentId);
+    Task<List<StudentRefundViewModel>> GetStudentRefundRequestsAsync(string studentId);
     Task<OrderDetailsViewModel?> GetOrderDetailsAsync(int paymentId, string studentId);
     Task<List<AdminRefundViewModel>> GetAllRefundsAsync(RefundStatus? statusFilter = null);
 }

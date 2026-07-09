@@ -35,6 +35,18 @@ public class OrderController : Controller
         return View(wallet);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Refunds()
+    {
+        ViewData["Title"] = "طلبات الاسترداد";
+        ViewBag.ActiveNav = "refunds";
+        var studentId = _userManager.GetUserId(User)!;
+
+        var refunds = await _refundService.GetStudentRefundRequestsAsync(studentId);
+        return View(refunds);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> History()
     {
         ViewData["Title"] = "سجل الطلبات";

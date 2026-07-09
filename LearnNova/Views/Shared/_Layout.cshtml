@@ -149,7 +149,7 @@
                 <a class="nav-link-item @(activeNav == "wallet" ? "active" : "")" asp-controller="Order" asp-action="Wallet">
                     <i class="bi bi-wallet2"></i><span>المحفظة</span>
                 </a>
-                <a class="nav-link-item" asp-controller="Order" asp-action="History">
+                <a class="nav-link-item @(activeNav == "refunds" ? "active" : "")" asp-controller="Order" asp-action="Refunds">
                     <i class="bi bi-arrow-counterclockwise"></i><span>طلبات الاسترداد</span>
                 </a>
                 <a class="nav-link-item @(activeNav == "certificates" ? "active" : "")" asp-controller="Certificate" asp-action="MyCertificates">

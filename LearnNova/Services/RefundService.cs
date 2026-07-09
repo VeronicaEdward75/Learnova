@@ -144,6 +144,27 @@ public class RefundService : IRefundService
         return (true, "تم رفض طلب الاسترداد");
     }
 
+    public async Task<List<StudentRefundViewModel>> GetStudentRefundRequestsAsync(string studentId)
+    {
+        var requests = await _refundRepo.GetQueryable()
+            .Include(r => r.Payment)
+            .ThenInclude(p => p.Course)
+            .Where(r => r.StudentId == studentId)
+            .OrderByDescending(r => r.RequestedAt)
+            .ToListAsync();
+
+        return requests.Select(r => new StudentRefundViewModel
+        {
+            RefundId = r.Id,
+            CourseTitle = r.Payment?.Course?.Title ?? "N/A",
+            RequestDate = r.RequestedAt,
+            RefundAmount = r.Payment?.StudentPaid ?? 0,
+            Reason = r.Reason,
+            Status = r.Status,
+            AdminNotes = r.AdminNotes
+        }).ToList();
+    }
+
     public async Task<List<OrderHistoryViewModel>> GetStudentOrdersAsync(string studentId)
     {
         var payments = await _paymentRepo.GetQueryable().Include(p => p.Course).Include(p => p.Invoice).Where(p => p.StudentId == studentId).ToListAsync();

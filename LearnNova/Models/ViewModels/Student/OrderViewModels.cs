@@ -76,4 +76,15 @@ public class RefundRequestViewModel
     public string? Description { get; set; }
 }
 
+public class StudentRefundViewModel
+{
+    public int RefundId { get; set; }
+    public string CourseTitle { get; set; } = string.Empty;
+    public DateTime RequestDate { get; set; }
+    public decimal RefundAmount { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public RefundStatus Status { get; set; }
+    public string? AdminNotes { get; set; }
+}
+
 
