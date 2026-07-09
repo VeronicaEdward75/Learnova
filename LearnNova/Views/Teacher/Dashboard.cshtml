@@ -1,4 +1,4 @@
-﻿@model LearnNova.Models.ViewModels.Analytics.TeacherFinanceDashboardViewModel
+@model LearnNova.Models.ViewModels.Analytics.TeacherFinanceDashboardViewModel
 @{
     ViewData["Title"] = "لوحة المدرس";
 }
@@ -10,7 +10,8 @@
     </a>
 </div>
 
-<div class="row g-4 mb-5">
+<!-- Main Stats -->
+<div class="row g-4 mb-4">
     <div class="col-12 col-md-4">
         <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(79,70,229,0.1), transparent);">
             <div class="d-flex align-items-center justify-content-between mb-3">
@@ -40,49 +41,54 @@
     <div class="col-12 col-md-4">
         <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(245,158,11,0.1), transparent);">
             <div class="d-flex align-items-center justify-content-between mb-3">
-                <div class="text-muted fw-bold" style="font-size:14px;">متوسط التقييم</div>
+                <div class="text-muted fw-bold" style="font-size:14px;">إجمالي المبيعات</div>
                 <div style="width:40px; height:40px; border-radius:10px; background:#FEF3C7; color:#D97706; display:flex; align-items:center; justify-content:center;">
-                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-cart-check-fill"></i>
                 </div>
             </div>
-            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.AverageRating.ToString("0.0")</h3>
-            <div class="text-muted" style="font-size:12px;">من إجمالي التقييمات</div>
+            <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.CoursesSold</h3>
+            <div class="text-muted" style="font-size:12px;">عملية شراء ناجحة</div>
         </div>
     </div>
 </div>
 
-<div class="row g-4">
+<!-- Wallet & General Summary -->
+<div class="row g-4 mb-4">
     <div class="col-12 col-lg-8">
         <div class="card-box p-4 h-100">
-            <h5 class="fw-bold mb-4" style="color:var(--color-text-primary);">إحصائيات الكورسات</h5>
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr style="color:var(--color-text-primary); font-size:14px;">
-                            <th>الكورس</th>
-                            <th>المبيعات</th>
-                            <th>الأرباح</th>
-                            <th>الطلاب</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach(var c in Model.CourseAnalytics)
-                        {
-                            <tr>
-                                <td class="fw-bold">@c.Title</td>
-                                <td>@c.Sales</td>
-                                <td class="fw-bold text-success">@c.Revenue.ToString("N2") <small style="color:var(--color-muted);">EGP</small></td>
-                                <td>@c.Students</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+            <h5 class="fw-bold mb-4" style="color:var(--color-text-primary);"><i class="bi bi-safe me-2"></i>ملخص المحفظة</h5>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="p-3 border rounded bg-light">
+                        <div class="text-muted small mb-1">الرصيد المتاح للسحب</div>
+                        <h4 class="fw-bold text-success mb-0">@Model.AvailableBalance.ToString("N2") <small style="font-size:14px;">EGP</small></h4>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="p-3 border rounded bg-light">
+                        <div class="text-muted small mb-1">الرصيد المعلق (قيد الانتظار)</div>
+                        <h4 class="fw-bold text-warning mb-0">@Model.PendingBalance.ToString("N2") <small style="font-size:14px;">EGP</small></h4>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="p-3 border rounded bg-light">
+                        <div class="text-muted small mb-1">إجمالي الأرباح التاريخية</div>
+                        <h4 class="fw-bold text-primary mb-0">@Model.TotalRevenue.ToString("N2") <small style="font-size:14px;">EGP</small></h4>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="p-3 border rounded bg-light">
+                        <div class="text-muted small mb-1">إجمالي ما تم سحبه</div>
+                        <h4 class="fw-bold text-dark mb-0">@Model.TotalWithdrawn.ToString("N2") <small style="font-size:14px;">EGP</small></h4>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    
     <div class="col-12 col-lg-4">
         <div class="card-box p-4 h-100 d-flex flex-column justify-content-center">
-            <h5 class="fw-bold mb-4 border-bottom pb-2" style="color:var(--color-text-primary);">ملخص عام</h5>
+            <h5 class="fw-bold mb-4 border-bottom pb-2" style="color:var(--color-text-primary);">ملخص الكورسات</h5>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-muted">إجمالي الكورسات</span>
                 <span class="fw-bold">@Model.TotalCourses</span>
@@ -96,9 +102,93 @@
                 <span class="fw-bold text-warning">@Model.UnpublishedCount</span>
             </div>
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-muted">نسبة إكمال الطلاب للكورسات</span>
-                <span class="fw-bold text-primary">@Model.CompletionRate.ToString("0.0")%</span>
+                <span class="text-muted">متوسط نسبة الإكمال</span>
+                <span class="fw-bold text-success">@Model.CompletionRateDisplay</span>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Course Statistics -->
+    <div class="col-12 col-lg-8">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4" style="color:var(--color-text-primary);">الأكثر مبيعاً</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr style="color:var(--color-text-primary); font-size:14px;">
+                            <th>الكورس</th>
+                            <th>الطلاب</th>
+                            <th>المبيعات</th>
+                            <th>نسبة الإكمال</th>
+                            <th>الأرباح</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(Model.CourseAnalytics.Any())
+                        {
+                            @foreach(var c in Model.CourseAnalytics.Take(5))
+                            {
+                                <tr>
+                                    <td class="fw-bold">@c.Title</td>
+                                    <td>@c.Students</td>
+                                    <td>@c.Sales</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if (c.CompletionRateDisplay != "-")
+                                            {
+                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                    <div class="progress-bar bg-success" style="width: @c.CompletionRateDisplay"></div>
+                                                </div>
+                                            }
+                                            <span style="font-size:12px;">@c.CompletionRateDisplay</span>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold text-success">@c.Revenue.ToString("N2") <small style="color:var(--color-muted);">EGP</small></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">لا توجد مبيعات حتى الآن.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Sales Timeline -->
+    <div class="col-12 col-lg-4">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4 border-bottom pb-2" style="color:var(--color-text-primary);">أحدث المبيعات</h5>
+            @if (Model.RecentSales.Any())
+            {
+                <div class="timeline" style="border-right: 2px solid var(--color-border); padding-right: 15px; margin-right: 5px;">
+                    @foreach(var sale in Model.RecentSales.Take(5))
+                    {
+                        <div class="position-relative mb-4">
+                            <div class="position-absolute bg-primary rounded-circle" style="width: 12px; height: 12px; right: -22px; top: 4px;"></div>
+                            <div class="fw-bold text-dark mb-1" style="font-size:14px;">@sale.CourseTitle</div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted" style="font-size:12px;"><i class="bi bi-person me-1"></i>@sale.StudentName</span>
+                                <span class="fw-bold text-success" style="font-size:13px;">+@sale.Amount.ToString("N2") EGP</span>
+                            </div>
+                            <div class="text-muted" style="font-size:11px; margin-top:2px;">@sale.Date.ToString("dd MMM yyyy, hh:mm tt")</div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-cart-x fs-1 mb-2 d-block"></i>
+                    <p class="mb-0">لا توجد مبيعات حديثة.</p>
+                </div>
+            }
         </div>
     </div>
 </div>

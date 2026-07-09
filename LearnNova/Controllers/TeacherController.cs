@@ -1,4 +1,4 @@
-﻿using LearnNova.Models.ViewModels.Teacher;
+using LearnNova.Models.ViewModels.Teacher;
 using LearnNova.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -50,25 +50,13 @@ public class TeacherController : Controller
 
     // ─── Wallet ────────────────────────────────────────────────────────────────
 
-    public async Task<IActionResult> Wallet()
+    public async Task<IActionResult> Wallet([Microsoft.AspNetCore.Mvc.FromQuery] LearnNova.Models.ViewModels.Teacher.Filters.TeacherWalletFilterParameters filters)
     {
         ViewData["Title"] = "المحفظة والأرباح";
         ViewBag.ActiveNav = "wallet";
 
         var teacherId = _userManager.GetUserId(User)!;
-        var wallet = await _walletService.GetWalletAsync(teacherId);
-        var summary = await _walletService.GetRevenueSummaryAsync(teacherId);
-        
-        var transactions = await _walletService.GetTransactionsAsync(wallet.Id);
-
-        var vm = new WalletViewModel
-        {
-            PendingBalance = summary.PendingBalance,
-            AvailableBalance = summary.AvailableBalance,
-            TotalEarned = summary.TotalEarnings,
-            TotalWithdrawn = wallet.TotalWithdrawn,
-            Transactions = transactions
-        };
+        var vm = await _walletService.GetTeacherWalletDashboardAsync(teacherId, filters);
 
         return View(vm);
     }
@@ -281,29 +269,94 @@ public class TeacherController : Controller
     // --- Revenue Analytics -----------------------------------------------------
 
     [HttpGet]
-    public async Task<IActionResult> Revenue(string dateFilter = "This Month")
+    public async Task<IActionResult> Revenue([Microsoft.AspNetCore.Mvc.FromQuery] LearnNova.Models.ViewModels.Teacher.Filters.TeacherRevenueFilterParameters filters)
     {
         ViewData["Title"] = "المالية والأرباح";
         ViewBag.ActiveNav = "revenue";
 
         var teacherId = _userManager.GetUserId(User)!;
-        var vm = await _financeAnalyticsService.GetTeacherRevenuePageAsync(teacherId, dateFilter);
+        var vm = await _financeAnalyticsService.GetTeacherRevenuePageAsync(teacherId, filters);
+        
+        // Populate Course options for the filter dropdown
+        var courses = await _courseService.GetTeacherCoursesAsync(teacherId);
+        ViewBag.Courses = courses.Select(c => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+        {
+            Value = c.Id.ToString(),
+            Text = c.Title,
+            Selected = filters.CourseId == c.Id
+        }).ToList();
+
         return View(vm);
     }
 
     [HttpGet]
-    public async Task<IActionResult> ExportRevenueReport(string format = "csv", string dateFilter = "This Month")
+    public async Task<IActionResult> ExportRevenueReport([Microsoft.AspNetCore.Mvc.FromQuery] LearnNova.Models.ViewModels.Teacher.Filters.TeacherRevenueFilterParameters filters)
     {
-        if (format.ToLower() == "csv")
+        var teacherId = _userManager.GetUserId(User)!;
+        var vm = await _financeAnalyticsService.GetTeacherRevenuePageAsync(teacherId, filters);
+
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Revenue Report");
+
+        // Headers
+        worksheet.Cell(1, 1).Value = "رقم الدفعة";
+        worksheet.Cell(1, 2).Value = "اسم الدورة";
+        worksheet.Cell(1, 3).Value = "اسم الطالب";
+        worksheet.Cell(1, 4).Value = "المبلغ";
+        worksheet.Cell(1, 5).Value = "التاريخ";
+
+        var headerRow = worksheet.Row(1);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
+        worksheet.SheetView.FreezeRows(1);
+
+        if (!vm.RecentSales.Any())
         {
-            // Note: Generating the full platform CSV requires admin rights usually, 
-            // but we can pass the TeacherId or implement a teacher-specific CSV method.
-            // For now we assume the service provides the correct scope or we adapt it.
-            // A dedicated GetTeacherRevenueCsvAsync would be better, but we can reuse logic.
-            // We'll return a simple response for now.
-            return Content("CSV export generated...", "text/csv");
+            worksheet.Cell(2, 1).Value = "لا توجد أرباح مسجلة.";
+            worksheet.Range(2, 1, 2, 5).Merge();
+            worksheet.Cell(2, 1).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
         }
-        return BadRequest("Unsupported format.");
+        else
+        {
+            int row = 2;
+            decimal totalAmount = 0;
+
+            foreach (var sale in vm.RecentSales)
+            {
+                worksheet.Cell(row, 1).Value = sale.PaymentId;
+                worksheet.Cell(row, 2).Value = sale.CourseTitle;
+                worksheet.Cell(row, 3).Value = sale.StudentName;
+                
+                worksheet.Cell(row, 4).Value = sale.Amount;
+                worksheet.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00 EGP";
+                
+                worksheet.Cell(row, 5).Value = sale.Date;
+                worksheet.Cell(row, 5).Style.DateFormat.Format = "yyyy-MM-dd hh:mm AM/PM";
+
+                totalAmount += sale.Amount;
+                row++;
+            }
+
+            // Totals Row
+            worksheet.Cell(row, 1).Value = "الإجمالي";
+            worksheet.Cell(row, 1).Style.Font.Bold = true;
+            
+            worksheet.Cell(row, 2).Value = $"العدد: {vm.RecentSales.Count}";
+            worksheet.Cell(row, 2).Style.Font.Bold = true;
+
+            worksheet.Cell(row, 4).Value = totalAmount;
+            worksheet.Cell(row, 4).Style.Font.Bold = true;
+            worksheet.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00 EGP";
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new System.IO.MemoryStream();
+        workbook.SaveAs(stream);
+        var content = stream.ToArray();
+
+        string filename = $"Teacher_Revenue_Report_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
     }
 
     // --- Coupons Management --------------------------------------------------

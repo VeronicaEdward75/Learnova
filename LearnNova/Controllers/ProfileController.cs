@@ -14,8 +14,8 @@ using System.Threading.Tasks;
 
 namespace LearnNova.Controllers;
 
-[Authorize(Roles = "Student")]
-public class StudentProfileController : Controller
+[Authorize]
+public class ProfileController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -23,14 +23,16 @@ public class StudentProfileController : Controller
     private readonly IWalletService _walletService;
     private readonly IEnrollmentService _enrollmentService;
     private readonly IGenericRepository<Certificate> _certRepo;
+    private readonly LearnNova.Data.ApplicationDbContext _context;
 
-    public StudentProfileController(
+    public ProfileController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IWebHostEnvironment env,
         IWalletService walletService,
         IEnrollmentService enrollmentService,
-        IGenericRepository<Certificate> certRepo)
+        IGenericRepository<Certificate> certRepo,
+        LearnNova.Data.ApplicationDbContext context)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -38,6 +40,7 @@ public class StudentProfileController : Controller
         _walletService = walletService;
         _enrollmentService = enrollmentService;
         _certRepo = certRepo;
+        _context = context;
     }
 
     [HttpGet]
@@ -68,11 +71,28 @@ public class StudentProfileController : Controller
             ProfileImagePath = user.ProfileImagePath,
             RegistrationDate = user.CreatedAt,
             LastLoginDate = user.LastLoginDate,
-            EnrolledCourses = enrollments.Count,
-            CompletedCourses = certs.Count, // Assuming 1 cert = 1 completed course
-            CertificatesEarned = certs.Count,
             WalletBalance = wallet?.AvailableBalance ?? 0
         };
+
+        if (User.IsInRole("Admin"))
+        {
+            vm.TotalUsers = await _context.Users.CountAsync();
+            vm.TotalPlatformCourses = await _context.Courses.CountAsync();
+            var platformStats = await _walletService.GetPlatformRevenueStatsAsync();
+            vm.PlatformRevenue = platformStats.PlatformRevenue;
+        }
+        else if (User.IsInRole("Teacher"))
+        {
+            vm.PublishedCourses = await _context.Courses.CountAsync(c => c.TeacherId == user.Id && c.IsPublished);
+            vm.TotalStudents = await _context.Enrollments.Include(e => e.Course).Where(e => e.Course.TeacherId == user.Id).Select(e => e.StudentId).Distinct().CountAsync();
+            vm.TotalEarnings = wallet?.TotalEarned ?? 0;
+        }
+        else // Student
+        {
+            vm.EnrolledCourses = enrollments.Count;
+            vm.CompletedCourses = certs.Count; // Assuming 1 cert = 1 completed course
+            vm.CertificatesEarned = certs.Count;
+        }
 
         return View(vm);
     }
@@ -97,11 +117,28 @@ public class StudentProfileController : Controller
         vm.StudentId = user.Id;
         vm.RegistrationDate = user.CreatedAt;
         vm.LastLoginDate = user.LastLoginDate;
-        vm.EnrolledCourses = enrollments.Count;
-        vm.CompletedCourses = certs.Count;
-        vm.CertificatesEarned = certs.Count;
         vm.WalletBalance = wallet?.AvailableBalance ?? 0;
         vm.ProfileImagePath = user.ProfileImagePath; // Keep current path by default
+
+        if (User.IsInRole("Admin"))
+        {
+            vm.TotalUsers = await _context.Users.CountAsync();
+            vm.TotalPlatformCourses = await _context.Courses.CountAsync();
+            var platformStats = await _walletService.GetPlatformRevenueStatsAsync();
+            vm.PlatformRevenue = platformStats.PlatformRevenue;
+        }
+        else if (User.IsInRole("Teacher"))
+        {
+            vm.PublishedCourses = await _context.Courses.CountAsync(c => c.TeacherId == user.Id && c.IsPublished);
+            vm.TotalStudents = await _context.Enrollments.Include(e => e.Course).Where(e => e.Course.TeacherId == user.Id).Select(e => e.StudentId).Distinct().CountAsync();
+            vm.TotalEarnings = wallet?.TotalEarned ?? 0;
+        }
+        else
+        {
+            vm.EnrolledCourses = enrollments.Count;
+            vm.CompletedCourses = certs.Count;
+            vm.CertificatesEarned = certs.Count;
+        }
 
         if (!ModelState.IsValid)
         {

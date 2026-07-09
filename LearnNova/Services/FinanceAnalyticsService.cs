@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using LearnNova.Models.Entities;
 using LearnNova.Models.Enums;
 using LearnNova.Models.ViewModels.Analytics;
@@ -16,19 +17,22 @@ public class FinanceAnalyticsService : IFinanceAnalyticsService
     private readonly IWalletService _walletService;
     private readonly ICourseRepository _courseRepository;
     private readonly IUserService _userService;
+    private readonly LearnNova.Data.ApplicationDbContext _context;
 
     public FinanceAnalyticsService(
         IPaymentRepository paymentRepository,
         IGenericRepository<WithdrawalRequest> withdrawalRepository,
         IWalletService walletService,
         ICourseRepository courseRepository,
-        IUserService userService)
+        IUserService userService,
+        LearnNova.Data.ApplicationDbContext context)
     {
         _paymentRepository = paymentRepository;
         _withdrawalRepository = withdrawalRepository;
         _walletService = walletService;
         _courseRepository = courseRepository;
         _userService = userService;
+        _context = context;
     }
 
     private (DateTime Start, DateTime End) ParseDateFilter(string filter)
@@ -118,15 +122,119 @@ public class FinanceAnalyticsService : IFinanceAnalyticsService
         return vm;
     }
 
+    private string CalculateOverallCompletion(Dictionary<int, string> completionRates)
+    {
+        var validRates = completionRates.Values.Where(v => v != "-").Select(v => double.Parse(v.TrimEnd('%'))).ToList();
+        if (!validRates.Any()) return "-";
+        return validRates.Average().ToString("0.0") + "%";
+    }
+
+    private async Task<Dictionary<int, string>> CalculateTeacherCoursesCompletionRatesAsync(List<int> courseIds)
+    {
+        var result = new Dictionary<int, string>();
+        if (!courseIds.Any()) return result;
+
+        var enrollments = await _context.Enrollments.AsNoTracking()
+            .Where(e => courseIds.Contains(e.CourseId))
+            .GroupBy(e => e.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CourseId, x => x.Count);
+
+        var lessonsCount = await _context.CourseContents.AsNoTracking()
+            .Where(c => courseIds.Contains(c.CourseId))
+            .GroupBy(c => c.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CourseId, x => x.Count);
+
+        var quizzesCount = await _context.Quizzes.AsNoTracking()
+            .Where(q => courseIds.Contains(q.CourseId))
+            .GroupBy(q => q.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CourseId, x => x.Count);
+
+        var assignmentsCount = await _context.Assignments.AsNoTracking()
+            .Where(a => courseIds.Contains(a.CourseId))
+            .GroupBy(a => a.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CourseId, x => x.Count);
+
+        var completedLessons = await _context.ContentProgressRecords.AsNoTracking()
+            .Where(p => courseIds.Contains(p.Content.CourseId) && p.IsCompleted)
+            .GroupBy(p => p.Content.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CourseId, x => x.Count);
+
+        var completedQuizzes = await _context.QuizAttempts.AsNoTracking()
+            .Where(qa => courseIds.Contains(qa.Quiz.CourseId))
+            .Select(qa => new { qa.StudentId, qa.QuizId, qa.Quiz.CourseId })
+            .Distinct()
+            .GroupBy(x => x.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CourseId, x => x.Count);
+
+        var completedAssignments = await _context.AssignmentSubmissions.AsNoTracking()
+            .Where(s => courseIds.Contains(s.Assignment.CourseId))
+            .Select(s => new { s.StudentId, s.AssignmentId, s.Assignment.CourseId })
+            .Distinct()
+            .GroupBy(x => x.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CourseId, x => x.Count);
+
+        foreach (var cid in courseIds)
+        {
+            if (!enrollments.TryGetValue(cid, out int enrolledCount) || enrolledCount == 0)
+            {
+                result[cid] = "-";
+                continue;
+            }
+
+            int tL = lessonsCount.GetValueOrDefault(cid);
+            int tQ = quizzesCount.GetValueOrDefault(cid);
+            int tA = assignmentsCount.GetValueOrDefault(cid);
+            int totalComponents = tL + tQ + tA;
+
+            if (totalComponents == 0)
+            {
+                result[cid] = "0.0%";
+                continue;
+            }
+
+            int cL = completedLessons.GetValueOrDefault(cid);
+            int cQ = completedQuizzes.GetValueOrDefault(cid);
+            int cA = completedAssignments.GetValueOrDefault(cid);
+            int totalCompleted = cL + cQ + cA;
+
+            int maxPossibleCompletions = totalComponents * enrolledCount;
+            double avg = ((double)totalCompleted / maxPossibleCompletions) * 100;
+            result[cid] = avg.ToString("0.0") + "%";
+        }
+
+        return result;
+    }
+
     public async Task<TeacherFinanceDashboardViewModel> GetTeacherFinanceDashboardAsync(string teacherId)
     {
-        var allPayments = await _paymentRepository.GetAllAsync();
-        var teacherPayments = allPayments.Where(p => p.Status == PaymentStatus.Succeeded && p.Course != null && p.Course.TeacherId == teacherId).ToList();
-
         var wallet = await _walletService.GetWalletAsync(teacherId);
         
-        var courses = await _courseRepository.GetAllAsync();
-        var teacherCourses = courses.Where(c => c.TeacherId == teacherId).ToList();
+        var today = DateTime.UtcNow.Date;
+        var startOfMonth = new DateTime(today.Year, today.Month, 1);
+
+        var paymentsQuery = _paymentRepository.GetQueryable().AsNoTracking()
+            .Where(p => p.Status == PaymentStatus.Succeeded && p.Course != null && p.Course.TeacherId == teacherId);
+
+        var teacherPayments = await paymentsQuery
+            .Select(p => new { p.Id, p.CourseId, p.StudentId, p.TeacherAmount, p.CreatedAt, CourseTitle = p.Course.Title, StudentName = p.Student.FullName })
+            .ToListAsync();
+
+        var coursesQuery = _courseRepository.GetQueryable().AsNoTracking()
+            .Where(c => c.TeacherId == teacherId);
+
+        var teacherCourses = await coursesQuery
+            .Select(c => new { c.Id, c.Title, c.IsPublished })
+            .ToListAsync();
+
+        var courseIds = teacherCourses.Select(c => c.Id).ToList();
+        var completionRates = await CalculateTeacherCoursesCompletionRatesAsync(courseIds);
 
         var vm = new TeacherFinanceDashboardViewModel
         {
@@ -135,13 +243,12 @@ public class FinanceAnalyticsService : IFinanceAnalyticsService
             AvailableBalance = wallet.AvailableBalance,
             TotalWithdrawn = wallet.TotalWithdrawn,
 
-            TodayRevenue = teacherPayments.Where(p => p.CreatedAt >= DateTime.UtcNow.Date).Sum(p => p.TeacherAmount),
-            MonthlyRevenue = teacherPayments.Where(p => p.CreatedAt >= new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1)).Sum(p => p.TeacherAmount),
+            TodayRevenue = teacherPayments.Where(p => p.CreatedAt >= today).Sum(p => p.TeacherAmount),
+            MonthlyRevenue = teacherPayments.Where(p => p.CreatedAt >= startOfMonth).Sum(p => p.TeacherAmount),
 
             StudentsCount = teacherPayments.Select(p => p.StudentId).Distinct().Count(),
             CoursesSold = teacherPayments.Count,
-            AverageRating = 4.8, // Placeholder
-            CompletionRate = 65.5, // Placeholder
+            CompletionRateDisplay = CalculateOverallCompletion(completionRates),
 
             TotalCourses = teacherCourses.Count,
             PublishedCount = teacherCourses.Count(c => c.IsPublished),
@@ -158,52 +265,127 @@ public class FinanceAnalyticsService : IFinanceAnalyticsService
                 Sales = courseSales.Count,
                 Revenue = courseSales.Sum(p => p.TeacherAmount),
                 Students = courseSales.Select(p => p.StudentId).Distinct().Count(),
-                CompletionRate = 0, // Need enrollment tracking for real
-                AverageRating = 0,
-                QuizAverage = 0,
-                AssignmentCompletion = 0
+                CompletionRateDisplay = completionRates.GetValueOrDefault(course.Id, "-")
             });
         }
 
-        return vm;
-    }
+        vm.CourseAnalytics = vm.CourseAnalytics.OrderByDescending(c => c.Revenue).ToList();
 
-    public async Task<TeacherRevenuePageViewModel> GetTeacherRevenuePageAsync(string teacherId, string dateFilter)
-    {
-        var (start, end) = ParseDateFilter(dateFilter);
-        var wallet = await _walletService.GetWalletAsync(teacherId);
-        
-        var allPayments = await _paymentRepository.GetAllAsync();
-        var teacherSales = allPayments.Where(p => p.Status == PaymentStatus.Succeeded && p.Course != null && p.Course.TeacherId == teacherId).ToList();
-        var filteredSales = teacherSales.Where(p => p.CreatedAt >= start && p.CreatedAt <= end).ToList();
-
-        var vm = new TeacherRevenuePageViewModel
-        {
-            DateFilter = dateFilter,
-            TotalRevenue = wallet.TotalEarned,
-            MonthlyRevenue = teacherSales.Where(p => p.CreatedAt >= new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1)).Sum(p => p.TeacherAmount),
-            PendingBalance = wallet.PendingBalance,
-            AvailableBalance = wallet.AvailableBalance
-        };
-
-        vm.RecentSales = filteredSales.OrderByDescending(p => p.CreatedAt).Select(p => new TeacherSaleViewModel
+        vm.RecentSales = teacherPayments.OrderByDescending(p => p.CreatedAt).Take(10).Select(p => new TeacherSaleViewModel
         {
             PaymentId = p.Id,
-            CourseTitle = p.Course?.Title ?? "N/A",
-            StudentName = p.Student?.FullName ?? "N/A",
+            CourseTitle = p.CourseTitle,
+            StudentName = p.StudentName,
             Amount = p.TeacherAmount,
             Date = p.CreatedAt
         }).ToList();
 
-        // Chart Data (7 Days)
-        var dates = Enumerable.Range(0, 7).Select(i => DateTime.UtcNow.Date.AddDays(-6 + i)).ToList();
-        vm.ChartLabels = dates.Select(d => d.ToString("MM/dd")).ToList();
-        
-        foreach (var d in dates)
+        return vm;
+    }
+
+    public async Task<TeacherRevenuePageViewModel> GetTeacherRevenuePageAsync(string teacherId, LearnNova.Models.ViewModels.Teacher.Filters.TeacherRevenueFilterParameters filters)
+    {
+        var (start, end) = ParseDateFilter(filters.DateRange ?? "This Month");
+        if (filters.StartDate.HasValue) start = filters.StartDate.Value;
+        if (filters.EndDate.HasValue) end = filters.EndDate.Value;
+
+        var wallet = await _walletService.GetWalletAsync(teacherId);
+
+        var paymentsQuery = _paymentRepository.GetQueryable().AsNoTracking()
+            .Where(p => p.Course != null && p.Course.TeacherId == teacherId);
+
+        if (!string.IsNullOrWhiteSpace(filters.Status) && filters.Status != "All")
         {
-            var daySales = teacherSales.Where(p => p.CreatedAt >= d && p.CreatedAt < d.AddDays(1)).ToList();
-            vm.RevenueChartData.Add(daySales.Sum(p => p.TeacherAmount));
-            vm.SalesChartData.Add(daySales.Count);
+            if (Enum.TryParse<PaymentStatus>(filters.Status, true, out var statusEnum))
+            {
+                paymentsQuery = paymentsQuery.Where(p => p.Status == statusEnum);
+            }
+        }
+        else
+        {
+            // Default to successful if no filter or 'All' (wait, if 'All', maybe show all? The prompt says Status: All, Successful, Refunded, Pending. So we should include all if All. 
+            // Previous code hardcoded p.Status == PaymentStatus.Succeeded. Let's make it filterable but default to Succeeded if not specified.
+            if (string.IsNullOrWhiteSpace(filters.Status))
+            {
+                paymentsQuery = paymentsQuery.Where(p => p.Status == PaymentStatus.Succeeded);
+            }
+        }
+
+        if (filters.CourseId.HasValue && filters.CourseId.Value > 0)
+        {
+            paymentsQuery = paymentsQuery.Where(p => p.CourseId == filters.CourseId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filters.SearchTerm))
+        {
+            var search = filters.SearchTerm.ToLower();
+            paymentsQuery = paymentsQuery.Where(p => 
+                p.Student != null && p.Student.FullName.ToLower().Contains(search)
+            );
+        }
+
+        // Apply date filter
+        paymentsQuery = paymentsQuery.Where(p => p.CreatedAt >= start && p.CreatedAt <= end);
+
+        // Sorting
+        paymentsQuery = filters.SortBy switch
+        {
+            "Oldest" => paymentsQuery.OrderBy(p => p.CreatedAt),
+            "Highest Revenue" => paymentsQuery.OrderByDescending(p => p.TeacherAmount),
+            "Most Sales" => paymentsQuery.OrderByDescending(p => p.CreatedAt), // doesn't make sense for individual payments to have most sales, sort by date as fallback
+            _ => paymentsQuery.OrderByDescending(p => p.CreatedAt) // Newest
+        };
+
+        var filteredSales = await paymentsQuery
+            .Select(p => new { p.Id, p.TeacherAmount, p.CreatedAt, CourseTitle = p.Course.Title, StudentName = p.Student.FullName })
+            .ToListAsync();
+
+        var vm = new TeacherRevenuePageViewModel
+        {
+            Filters = filters,
+            TotalRevenue = wallet.TotalEarned,
+            MonthlyRevenue = filteredSales.Sum(p => p.TeacherAmount),
+            PendingBalance = wallet.PendingBalance,
+            AvailableBalance = wallet.AvailableBalance
+        };
+
+        vm.RecentSales = filteredSales.Take(20).Select(p => new TeacherSaleViewModel
+        {
+            PaymentId = p.Id,
+            CourseTitle = p.CourseTitle,
+            StudentName = p.StudentName,
+            Amount = p.TeacherAmount,
+            Date = p.CreatedAt
+        }).ToList();
+
+        // Dynamic Chart Data based on DateFilter
+        if ((filters.DateRange ?? "This Month") == "This Year")
+        {
+            for (int i = 1; i <= 12; i++)
+            {
+                var monthStart = new DateTime(start.Year, i, 1);
+                var monthEnd = monthStart.AddMonths(1);
+                var monthSales = filteredSales.Where(p => p.CreatedAt >= monthStart && p.CreatedAt < monthEnd).ToList();
+                vm.ChartLabels.Add(monthStart.ToString("MMMM"));
+                vm.RevenueChartData.Add(monthSales.Sum(p => p.TeacherAmount));
+                vm.SalesChartData.Add(monthSales.Count);
+            }
+        }
+        else
+        {
+            var totalDays = (end - start).Days;
+            totalDays = totalDays == 0 ? 1 : totalDays + 1;
+
+            if (totalDays > 31) totalDays = 31; // cap at 31 to avoid massive charts
+
+            for (int i = 0; i < totalDays; i++)
+            {
+                var d = start.AddDays(i).Date;
+                var daySales = filteredSales.Where(p => p.CreatedAt >= d && p.CreatedAt < d.AddDays(1)).ToList();
+                vm.ChartLabels.Add(d.ToString("MM/dd"));
+                vm.RevenueChartData.Add(daySales.Sum(p => p.TeacherAmount));
+                vm.SalesChartData.Add(daySales.Count);
+            }
         }
 
         return vm;

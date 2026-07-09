@@ -1,4 +1,4 @@
-﻿@model LearnNova.Models.ViewModels.Analytics.TeacherRevenuePageViewModel
+@model LearnNova.Models.ViewModels.Analytics.TeacherRevenuePageViewModel
 @{
     ViewData["Title"] = "تقرير الأرباح والمبيعات";
 }
@@ -8,25 +8,83 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">تقرير الأرباح</h2>
     <div class="d-flex gap-2">
-        <form method="get" class="d-flex gap-2">
-            <select name="dateFilter" class="form-select" onchange="this.form.submit()">
-                <option value="Today" selected="@(Model.DateFilter == "Today")">اليوم</option>
-                <option value="Last 7 Days" selected="@(Model.DateFilter == "Last 7 Days")">آخر 7 أيام</option>
-                <option value="This Month" selected="@(Model.DateFilter == "This Month")">هذا الشهر</option>
-                <option value="Last 30 Days" selected="@(Model.DateFilter == "Last 30 Days")">آخر 30 يوم</option>
-                <option value="This Year" selected="@(Model.DateFilter == "This Year")">هذا العام</option>
-            </select>
-        </form>
-        <a href="@Url.Action("ExportRevenueReport", new { format = "csv", dateFilter = Model.DateFilter })" class="btn btn-outline-custom">
-            <i class="bi bi-download me-2"></i>تحميل التقرير
+        <a href="@Url.Action("ExportRevenueReport", new { 
+            SearchTerm = Model.Filters.SearchTerm, 
+            DateRange = Model.Filters.DateRange, 
+            CourseId = Model.Filters.CourseId, 
+            SortBy = Model.Filters.SortBy 
+        })" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-excel me-2"></i>تصدير (Excel)
         </a>
     </div>
+</div>
+
+<div class="card-box p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label text-muted small fw-bold mb-1">بحث عن طالب</label>
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="SearchTerm" class="form-control border-start-0 ps-0" placeholder="اسم الطالب..." value="@Model.Filters.SearchTerm">
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label text-muted small fw-bold mb-1">الكورس</label>
+            <select name="CourseId" class="form-select">
+                <option value="">كل الكورسات</option>
+                @if (ViewBag.Courses != null)
+                {
+                    foreach (var c in ViewBag.Courses)
+                    {
+                        <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label text-muted small fw-bold mb-1">حالة الدفع</label>
+            <select name="Status" class="form-select">
+                <option value="All" selected="@(string.IsNullOrEmpty(Model.Filters.Status) || Model.Filters.Status == "All")">الكل</option>
+                <option value="Succeeded" selected="@(Model.Filters.Status == "Succeeded")">ناجح</option>
+                <option value="Refunded" selected="@(Model.Filters.Status == "Refunded")">مسترد</option>
+                <option value="Pending" selected="@(Model.Filters.Status == "Pending")">معلق</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label text-muted small fw-bold mb-1">الفترة الزمنية</label>
+            <select name="DateRange" class="form-select">
+                <option value="Today" selected="@(Model.Filters.DateRange == "Today")">اليوم</option>
+                <option value="This Week" selected="@(Model.Filters.DateRange == "This Week")">هذا الأسبوع</option>
+                <option value="This Month" selected="@(string.IsNullOrEmpty(Model.Filters.DateRange) || Model.Filters.DateRange == "This Month")">هذا الشهر</option>
+                <option value="This Year" selected="@(Model.Filters.DateRange == "This Year")">هذا العام</option>
+                <option value="All Time" selected="@(Model.Filters.DateRange == "All Time")">كل الوقت</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label text-muted small fw-bold mb-1">الترتيب</label>
+            <select name="SortBy" class="form-select">
+                <option value="Newest" selected="@(string.IsNullOrEmpty(Model.Filters.SortBy) || Model.Filters.SortBy == "Newest")">الأحدث</option>
+                <option value="Oldest" selected="@(Model.Filters.SortBy == "Oldest")">الأقدم</option>
+                <option value="Highest Revenue" selected="@(Model.Filters.SortBy == "Highest Revenue")">الأعلى إيراداً</option>
+                <option value="Most Sales" selected="@(Model.Filters.SortBy == "Most Sales")">الأكثر مبيعاً</option>
+            </select>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+            <button type="submit" class="btn btn-primary-custom px-4" style="height: 38px;">تطبيق الفلاتر</button>
+            <a href="@Url.Action("Revenue")" class="btn btn-light border px-4" style="height: 38px;">إلغاء</a>
+        </div>
+    </form>
 </div>
 
 <div class="row g-4 mb-4">
     <div class="col-12 col-md-3">
         <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(79,70,229,0.1), transparent);">
-            <div class="text-muted fw-bold mb-2">الإيرادات (@Model.DateFilter)</div>
+            <div class="text-muted fw-bold mb-2">الإيرادات (@(Model.Filters.DateRange ?? "This Month"))</div>
             <h3 class="fw-bold mb-0" style="color:var(--color-text-primary);">@Model.MonthlyRevenue.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
         </div>
     </div>
@@ -62,7 +120,7 @@
 <div class="row g-4">
     <div class="col-12">
         <div class="card-box p-4 h-100">
-            <h5 class="fw-bold mb-4">المبيعات الأخيرة (@Model.DateFilter)</h5>
+            <h5 class="fw-bold mb-4">المبيعات الأخيرة (@(Model.Filters.DateRange ?? "This Month"))</h5>
             <div class="table-responsive">
                 <table class="table align-middle">
                     <thead>

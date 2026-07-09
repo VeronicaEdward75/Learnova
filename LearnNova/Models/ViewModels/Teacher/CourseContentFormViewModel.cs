@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace LearnNova.Models.ViewModels.Teacher;
 
-public class CourseContentFormViewModel
+public class CourseContentFormViewModel : IValidatableObject
 {
     public int Id { get; set; }
     
@@ -12,13 +12,11 @@ public class CourseContentFormViewModel
     [Display(Name = "العنوان")]
     public string Title { get; set; } = string.Empty;
     
-
-    
     [Display(Name = "نوع المصدر")]
     public string SourceType { get; set; } = "URL";
 
     [Display(Name = "الرابط (فيديو أو ملف خارجي)")]
-    public string FileUrl { get; set; } = string.Empty;
+    public string? FileUrl { get; set; }
 
     [Display(Name = "رفع ملف")]
     public IFormFile? UploadFile { get; set; }
@@ -28,4 +26,15 @@ public class CourseContentFormViewModel
     
     public int CourseId { get; set; }
     
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (SourceType == "URL" && string.IsNullOrWhiteSpace(FileUrl))
+        {
+            yield return new ValidationResult("يرجى إدخال الرابط الخارجي.", new[] { nameof(FileUrl) });
+        }
+        else if (SourceType == "UPLOAD" && UploadFile == null && Id == 0)
+        {
+            yield return new ValidationResult("يرجى رفع الملف.", new[] { nameof(UploadFile) });
+        }
+    }
 }

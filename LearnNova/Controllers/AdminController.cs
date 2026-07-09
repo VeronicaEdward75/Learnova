@@ -239,6 +239,104 @@ public class AdminController : Controller
         return RedirectToAction(nameof(Withdrawals));
     }
 
+    [HttpGet]
+    public async Task<IActionResult> ExportWithdrawalsExcel(WithdrawalStatus? status)
+    {
+        var requests = await _withdrawalService.GetAllWithdrawalsAsync(status);
+
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Withdrawal Declaration");
+
+        // Headers
+        worksheet.Cell(1, 1).Value = "Withdrawal ID";
+        worksheet.Cell(1, 2).Value = "Teacher Name";
+        worksheet.Cell(1, 3).Value = "Email";
+        worksheet.Cell(1, 4).Value = "Bank Name";
+        worksheet.Cell(1, 5).Value = "Account Holder";
+        worksheet.Cell(1, 6).Value = "IBAN / Account Number";
+        worksheet.Cell(1, 7).Value = "Requested Amount";
+        worksheet.Cell(1, 8).Value = "Approved Amount";
+        worksheet.Cell(1, 9).Value = "Request Date";
+        worksheet.Cell(1, 10).Value = "Approval Date";
+        worksheet.Cell(1, 11).Value = "Status";
+        worksheet.Cell(1, 12).Value = "Admin Notes";
+
+        var headerRow = worksheet.Row(1);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
+        worksheet.SheetView.FreezeRows(1);
+
+        if (!requests.Any())
+        {
+            worksheet.Cell(2, 1).Value = "No withdrawal records found.";
+            worksheet.Range(2, 1, 2, 12).Merge();
+            worksheet.Cell(2, 1).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+        }
+        else
+        {
+            int row = 2;
+            decimal totalRequested = 0;
+            decimal totalApproved = 0;
+
+            foreach (var r in requests)
+            {
+                worksheet.Cell(row, 1).Value = r.Id;
+                worksheet.Cell(row, 2).Value = r.TeacherName;
+                worksheet.Cell(row, 3).Value = r.TeacherEmail;
+                worksheet.Cell(row, 4).Value = r.BankName ?? "";
+                worksheet.Cell(row, 5).Value = r.AccountName ?? "";
+                worksheet.Cell(row, 6).Value = !string.IsNullOrEmpty(r.IBAN) ? r.IBAN : r.AccountNumber ?? "";
+                worksheet.Cell(row, 7).Value = r.Amount;
+                worksheet.Cell(row, 7).Style.NumberFormat.Format = "#,##0.00 EGP";
+                
+                decimal approvedAmount = r.Status == "Approved" ? r.Amount : 0;
+                worksheet.Cell(row, 8).Value = approvedAmount;
+                worksheet.Cell(row, 8).Style.NumberFormat.Format = "#,##0.00 EGP";
+
+                worksheet.Cell(row, 9).Value = r.RequestedAt;
+                worksheet.Cell(row, 9).Style.DateFormat.Format = "yyyy-MM-dd hh:mm AM/PM";
+                
+                if (r.Status == "Approved")
+                {
+                    worksheet.Cell(row, 10).Value = r.RequestedAt; 
+                    worksheet.Cell(row, 10).Style.DateFormat.Format = "yyyy-MM-dd hh:mm AM/PM";
+                }
+
+                worksheet.Cell(row, 11).Value = r.Status;
+                worksheet.Cell(row, 12).Value = r.AdminNotes ?? "";
+
+                totalRequested += r.Amount;
+                totalApproved += approvedAmount;
+
+                row++;
+            }
+
+            // Totals Row
+            worksheet.Cell(row, 1).Value = "Totals";
+            worksheet.Cell(row, 1).Style.Font.Bold = true;
+            
+            worksheet.Cell(row, 2).Value = $"Count: {requests.Count}";
+            worksheet.Cell(row, 2).Style.Font.Bold = true;
+
+            worksheet.Cell(row, 7).Value = totalRequested;
+            worksheet.Cell(row, 7).Style.Font.Bold = true;
+            worksheet.Cell(row, 7).Style.NumberFormat.Format = "#,##0.00 EGP";
+
+            worksheet.Cell(row, 8).Value = totalApproved;
+            worksheet.Cell(row, 8).Style.Font.Bold = true;
+            worksheet.Cell(row, 8).Style.NumberFormat.Format = "#,##0.00 EGP";
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new System.IO.MemoryStream();
+        workbook.SaveAs(stream);
+        var content = stream.ToArray();
+
+        string filename = $"Withdrawal_Declaration_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename);
+    }
+
     // --- Finance Analytics ----------------------------------------------------
 
     [HttpGet]

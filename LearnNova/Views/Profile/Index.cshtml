@@ -1,0 +1,308 @@
+@model LearnNova.Models.ViewModels.Student.ProfileViewModel
+@{
+    ViewData["Title"] = "الملف الشخصي";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="fw-bold mb-0" style="color: var(--color-primary);"><i class="bi bi-person-circle me-2"></i>الملف الشخصي</h4>
+            <p class="text-muted" style="color: var(--color-text-muted);">إدارة بياناتك الشخصية وحسابك في المنصة.</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">إجمالي المستخدمين</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.TotalUsers</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-people" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, #10b981 0%, var(--color-success-dark) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">إجمالي الكورسات</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.TotalPlatformCourses</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-journal-album" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, #fbbf24 0%, var(--color-warning-dark) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">أرباح المنصة</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.PlatformRevenue.ToString("N2") <span class="fs-6">ج.م</span></h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-graph-up-arrow" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">الدور</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">مدير نظام</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-shield-lock" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (User.IsInRole("Teacher"))
+        {
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">الكورسات المنشورة</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.PublishedCourses</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-easel" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, #10b981 0%, var(--color-success-dark) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">إجمالي الطلاب</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.TotalStudents</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-people" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, #fbbf24 0%, var(--color-warning-dark) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">إجمالي الأرباح</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.TotalEarnings.ToString("N2") <span class="fs-6">ج.م</span></h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-cash-stack" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">الرصيد المتاح</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.WalletBalance.ToString("N2") <span class="fs-6">ج.م</span></h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-wallet2" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else // Student
+        {
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">الكورسات المسجلة</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.EnrolledCourses</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-book" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, #10b981 0%, var(--color-success-dark) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">الكورسات المكتملة</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.CompletedCourses</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-check2-circle" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, #fbbf24 0%, var(--color-warning-dark) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">الشهادات المكتسبة</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.CertificatesEarned</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-award" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-box hoverable h-100 p-4" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0" style="opacity: 0.85;">رصيد المحفظة</h6>
+                            <h2 class="mb-0 mt-2 fw-bold">@Model.WalletBalance.ToString("N2") <span class="fs-6">ج.م</span></h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-wallet2" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Edit Profile Form -->
+    <div class="card-box p-4">
+        <form asp-action="UpdateProfile" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row">
+                <!-- Left Column: Picture and non-editable fields -->
+                <div class="col-lg-4 mb-4 mb-lg-0 text-center border-end">
+                    <div class="position-relative d-inline-block mb-3">
+                        @if (!string.IsNullOrEmpty(Model.ProfileImagePath))
+                        {
+                            <img src="@Model.ProfileImagePath" alt="Profile Picture" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid var(--color-surface-muted); box-shadow: 0 4px 15px var(--color-primary-glow);" />
+                        }
+                        else
+                        {
+                            <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px; font-size: 60px; background: var(--color-surface-muted); color: var(--color-primary); border: 4px solid var(--color-primary-ghost); box-shadow: 0 4px 15px var(--color-primary-glow);">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="ProfilePicture" class="form-label btn btn-outline-custom btn-sm rounded-pill px-4">
+                            <i class="bi bi-camera me-2"></i> تغيير الصورة
+                        </label>
+                        <input asp-for="ProfilePicture" class="d-none" type="file" accept="image/jpeg,image/png,image/webp" onchange="this.form.submit()" />
+                        <div class="form-text mt-1 text-muted">الحد الأقصى 5 ميجابايت (jpg, png, webp)</div>
+                        <span asp-validation-for="ProfilePicture" class="text-danger d-block"></span>
+                    </div>
+
+                    <div class="text-start mt-4 px-3">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold mb-1" style="color: var(--color-text-primary);">اسم المستخدم</label>
+                            <input class="form-control form-control-custom" value="@Model.Username" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold mb-1" style="color: var(--color-text-primary);">البريد الإلكتروني</label>
+                            <input class="form-control form-control-custom" value="@Model.Email" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold mb-1" style="color: var(--color-text-primary);">رقم الطالب (ID)</label>
+                            <input class="form-control form-control-custom font-monospace" value="@Model.StudentId" disabled />
+                        </div>
+                        <hr />
+                        <div class="small" style="color: var(--color-text-muted);">
+                            <div class="mb-1"><i class="bi bi-calendar-check me-2" style="color: var(--color-primary);"></i> مسجل منذ: @Model.RegistrationDate.ToString("yyyy-MM-dd")</div>
+                            <div><i class="bi bi-clock-history me-2" style="color: var(--color-primary);"></i> آخر دخول: @(Model.LastLoginDate?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Editable fields -->
+                <div class="col-lg-8 px-lg-4">
+                    <h5 class="fw-bold mb-4" style="color: var(--color-text-primary);">تحديث البيانات الأساسية</h5>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label fw-bold" style="color: var(--color-text-primary);"></label>
+                            <input asp-for="FullName" class="form-control form-control-custom" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label fw-bold" style="color: var(--color-text-primary);"></label>
+                            <input asp-for="PhoneNumber" class="form-control form-control-custom" dir="ltr" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Gender" class="form-label fw-bold" style="color: var(--color-text-primary);"></label>
+                            <select asp-for="Gender" class="form-select form-control-custom">
+                                <option value="">-- اختر --</option>
+                                <option value="Male">ذكر</option>
+                                <option value="Female">أنثى</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DateOfBirth" class="form-label fw-bold" style="color: var(--color-text-primary);"></label>
+                            <input asp-for="DateOfBirth" class="form-control form-control-custom" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Country" class="form-label fw-bold" style="color: var(--color-text-primary);"></label>
+                            <input asp-for="Country" class="form-control form-control-custom" />
+                            <span asp-validation-for="Country" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="City" class="form-label fw-bold" style="color: var(--color-text-primary);"></label>
+                            <input asp-for="City" class="form-control form-control-custom" />
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Biography" class="form-label fw-bold" style="color: var(--color-text-primary);"></label>
+                        <textarea asp-for="Biography" class="form-control form-control-custom" rows="4" placeholder="اكتب نبذة مختصرة عنك..."></textarea>
+                        <span asp-validation-for="Biography" class="text-danger"></span>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary-custom px-4 py-2 fw-bold">
+                            <i class="bi bi-save me-2"></i> حفظ التغييرات
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace LearnNova.Models.ViewModels.Analytics;
@@ -10,7 +10,8 @@ public class TeacherRevenuePageViewModel
     public decimal PendingBalance { get; set; }
     public decimal AvailableBalance { get; set; }
 
-    public string DateFilter { get; set; } = "This Month";
+    // Replaced DateFilter with comprehensive filter parameters
+    public LearnNova.Models.ViewModels.Teacher.Filters.TeacherRevenueFilterParameters Filters { get; set; } = new();
 
     // Charts
     public List<string> ChartLabels { get; set; } = new();

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<LearnNova.Models.ViewModels.Admin.AdminWithdrawalListViewModel>
+@model IEnumerable<LearnNova.Models.ViewModels.Admin.AdminWithdrawalListViewModel>
 @{
     ViewData["Title"] = "طلبات السحب";
 }
@@ -10,6 +10,9 @@
         <a asp-action="Withdrawals" asp-route-status="0" class="btn @(ViewBag.CurrentStatusFilter?.ToString() == "0" ? "btn-primary-custom" : "btn-outline-custom")">قيد المراجعة</a>
         <a asp-action="Withdrawals" asp-route-status="1" class="btn @(ViewBag.CurrentStatusFilter?.ToString() == "1" ? "btn-primary-custom" : "btn-outline-custom")">موافق عليها</a>
         <a asp-action="Withdrawals" asp-route-status="2" class="btn @(ViewBag.CurrentStatusFilter?.ToString() == "2" ? "btn-primary-custom" : "btn-outline-custom")">مرفوضة</a>
+        <a asp-action="ExportWithdrawalsExcel" asp-route-status="@ViewBag.CurrentStatusFilter" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-excel me-1"></i> تحميل إقرار السحب (Excel)
+        </a>
     </div>
 </div>
 

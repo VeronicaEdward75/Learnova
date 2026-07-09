@@ -48,4 +48,14 @@ public class ProfileViewModel
     public int CompletedCourses { get; set; }
     public int CertificatesEarned { get; set; }
     public decimal WalletBalance { get; set; }
+    
+    // Teacher Statistics
+    public int PublishedCourses { get; set; }
+    public int TotalStudents { get; set; }
+    public decimal TotalEarnings { get; set; }
+    
+    // Admin Statistics
+    public int TotalUsers { get; set; }
+    public int TotalPlatformCourses { get; set; }
+    public decimal PlatformRevenue { get; set; }
 }

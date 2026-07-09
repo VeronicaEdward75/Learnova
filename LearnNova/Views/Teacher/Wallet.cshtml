@@ -64,6 +64,82 @@
     </div>
 </div>
 
+<div class="card-box p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label text-muted small fw-bold mb-1">بحث</label>
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="SearchTerm" class="form-control border-start-0 ps-0" placeholder="وصف، طالب، كورس..." value="@Model.Filters.SearchTerm">
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label text-muted small fw-bold mb-1">النوع</label>
+            <select name="Type" class="form-select">
+                <option value="All" selected="@(string.IsNullOrEmpty(Model.Filters.Type) || Model.Filters.Type == "All")">الكل</option>
+                <option value="Sale" selected="@(Model.Filters.Type == "Sale")">بيع كورس</option>
+                <option value="Refund" selected="@(Model.Filters.Type == "Refund")">استرداد</option>
+                <option value="Withdrawal" selected="@(Model.Filters.Type == "Withdrawal")">سحب</option>
+                <option value="WalletPurchase" selected="@(Model.Filters.Type == "WalletPurchase")">شراء محفظة</option>
+                <option value="WalletRefund" selected="@(Model.Filters.Type == "WalletRefund")">استرداد محفظة</option>
+                <option value="Adjustment" selected="@(Model.Filters.Type == "Adjustment")">تعديل</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label text-muted small fw-bold mb-1">الحالة</label>
+            <select name="Status" class="form-select">
+                <option value="All" selected="@(string.IsNullOrEmpty(Model.Filters.Status) || Model.Filters.Status == "All")">الكل</option>
+                <option value="Completed" selected="@(Model.Filters.Status == "Completed")">مكتمل</option>
+                <option value="Pending" selected="@(Model.Filters.Status == "Pending")">معلق</option>
+                <option value="Failed" selected="@(Model.Filters.Status == "Failed")">فشل</option>
+                <option value="Cancelled" selected="@(Model.Filters.Status == "Cancelled")">ملغي</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label text-muted small fw-bold mb-1">التاريخ</label>
+            <select name="DateRange" class="form-select">
+                <option value="All" selected="@(string.IsNullOrEmpty(Model.Filters.DateRange) || Model.Filters.DateRange == "All")">كل الوقت</option>
+                <option value="Today" selected="@(Model.Filters.DateRange == "Today")">اليوم</option>
+                <option value="Last 7 Days" selected="@(Model.Filters.DateRange == "Last 7 Days")">آخر 7 أيام</option>
+                <option value="Last 30 Days" selected="@(Model.Filters.DateRange == "Last 30 Days")">آخر 30 يوم</option>
+                <option value="This Month" selected="@(Model.Filters.DateRange == "This Month")">هذا الشهر</option>
+                <option value="Last Month" selected="@(Model.Filters.DateRange == "Last Month")">الشهر الماضي</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label text-muted small fw-bold mb-1">الترتيب</label>
+            <select name="SortBy" class="form-select">
+                <option value="Newest" selected="@(string.IsNullOrEmpty(Model.Filters.SortBy) || Model.Filters.SortBy == "Newest")">الأحدث</option>
+                <option value="Oldest" selected="@(Model.Filters.SortBy == "Oldest")">الأقدم</option>
+                <option value="Highest Amount" selected="@(Model.Filters.SortBy == "Highest Amount")">الأعلى مبلغاً</option>
+                <option value="Lowest Amount" selected="@(Model.Filters.SortBy == "Lowest Amount")">الأقل مبلغاً</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="form-label text-muted small fw-bold mb-1">الحد الأدنى</label>
+                    <input type="number" name="MinAmount" class="form-control" placeholder="0" value="@Model.Filters.MinAmount">
+                </div>
+                <div class="col-6">
+                    <label class="form-label text-muted small fw-bold mb-1">الحد الأقصى</label>
+                    <input type="number" name="MaxAmount" class="form-control" placeholder="1000" value="@Model.Filters.MaxAmount">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary-custom flex-grow-1" style="height: 38px;">تطبيق</button>
+            <a href="@Url.Action("Wallet")" class="btn btn-light border" style="height: 38px;">إلغاء</a>
+        </div>
+    </form>
+</div>
+
 <div class="card-box p-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="fw-bold mb-0" style="color:var(--color-text-primary);">سجل المعاملات</h5>
