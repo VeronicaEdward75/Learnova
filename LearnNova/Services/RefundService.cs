@@ -18,8 +18,9 @@ public class RefundService : IRefundService
     private readonly ISystemSettingsRepository _settingsRepo;
     private readonly IEnrollmentService _enrollmentService;
     private readonly IWalletService _walletService;
-    private readonly IGenericRepository<WalletTransaction> _transactionRepo; // Assuming we need to insert direct refund log or WalletService handles it.
+    private readonly IGenericRepository<WalletTransaction> _transactionRepo;
     private readonly IGenericRepository<CouponUsage> _couponUsageRepo;
+    private readonly LearnNova.Data.ApplicationDbContext _dbContext;
 
     public RefundService(
         IGenericRepository<RefundRequest> refundRepo,
@@ -28,7 +29,8 @@ public class RefundService : IRefundService
         IEnrollmentService enrollmentService,
         IWalletService walletService,
         IGenericRepository<WalletTransaction> transactionRepo,
-        IGenericRepository<CouponUsage> couponUsageRepo)
+        IGenericRepository<CouponUsage> couponUsageRepo,
+        LearnNova.Data.ApplicationDbContext dbContext)
     {
         _refundRepo = refundRepo;
         _paymentRepo = paymentRepo;
@@ -37,6 +39,7 @@ public class RefundService : IRefundService
         _walletService = walletService;
         _transactionRepo = transactionRepo;
         _couponUsageRepo = couponUsageRepo;
+        _dbContext = dbContext;
     }
 
     public async Task<(bool Success, string Message)> CanRequestRefundAsync(int paymentId, string studentId)
@@ -87,45 +90,62 @@ public class RefundService : IRefundService
 
     public async Task<(bool Success, string Message)> ApproveRefundAsync(int refundId, string? adminNotes)
     {
-        var refund = await _refundRepo.GetByIdAsync(refundId);
-        if (refund == null) return (false, "الطلب غير موجود");
-        if (refund.Status != RefundStatus.Pending) return (false, "الطلب ليس قيد المراجعة");
-
-        var payment = await _paymentRepo.GetQueryable()
-            .Include(p => p.Course)
-            .FirstOrDefaultAsync(p => p.Id == refund.PaymentId);
-        if (payment == null) return (false, "عملية الدفع غير موجودة");
-
-        // 1. Update Payment Status
-        payment.Status = PaymentStatus.Refunded;
-        payment.RefundedAt = DateTime.UtcNow;
-        _paymentRepo.Update(payment);
-        await _paymentRepo.SaveChangesAsync();
-
-        // 2. Remove Enrollment
-        await _enrollmentService.UnenrollAsync(payment.StudentId, payment.CourseId);
-
-        // 3. Deduct Teacher Wallet
-        if (payment.TeacherAmount > 0)
+        using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        try
         {
-            var wallet = await _walletService.GetWalletAsync(payment.Course.TeacherId);
-            await _walletService.ProcessRefundDeductionAsync(payment.Course.TeacherId, payment.TeacherAmount);
-            
-            // Log negative transaction
-            if (payment.TeacherAmount > 0 && wallet != null)
+            var refund = await _refundRepo.GetByIdAsync(refundId);
+            if (refund == null) return (false, "الطلب غير موجود");
+            if (refund.Status != RefundStatus.Pending) return (false, "الطلب ليس قيد المراجعة");
+
+            var payment = await _paymentRepo.GetQueryable()
+                .Include(p => p.Course)
+                .FirstOrDefaultAsync(p => p.Id == refund.PaymentId);
+            if (payment == null) return (false, "عملية الدفع غير موجودة");
+
+            if (payment.Status == PaymentStatus.Refunded) return (false, "تم استرداد هذا الطلب مسبقاً");
+
+            // 1. Update Payment Status
+            payment.Status = PaymentStatus.Refunded;
+            payment.RefundedAt = DateTime.UtcNow;
+            _paymentRepo.Update(payment);
+            await _paymentRepo.SaveChangesAsync();
+
+            // 2. Remove Enrollment
+            await _enrollmentService.UnenrollAsync(payment.StudentId, payment.CourseId);
+
+            // 3. Deduct Teacher Wallet
+            if (payment.TeacherAmount > 0)
             {
-                await _walletService.CreateTransactionAsync(wallet.Id, -payment.TeacherAmount, TransactionType.Refund, $"استرداد للطالب عن كورس: {payment.Course.Title}", payment.Id);
+                var wallet = await _walletService.GetWalletAsync(payment.Course.TeacherId);
+                await _walletService.ProcessRefundDeductionAsync(payment.Course.TeacherId, payment.TeacherAmount);
+                
+                if (wallet != null)
+                {
+                    await _walletService.CreateTransactionAsync(wallet.Id, -payment.TeacherAmount, TransactionType.Refund, $"استرداد للطالب عن كورس: {payment.Course.Title}", payment.Id);
+                }
             }
+
+            // 4. Credit Student Wallet
+            if (payment.StudentPaid > 0)
+            {
+                await _walletService.CreditAvailableBalanceAsync(payment.StudentId, payment.StudentPaid, payment.Id);
+            }
+
+            // 5. Update Refund Request
+            refund.Status = RefundStatus.Approved;
+            refund.AdminNotes = adminNotes;
+            refund.ResolvedAt = DateTime.UtcNow;
+            _refundRepo.Update(refund);
+            await _refundRepo.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+            return (true, "تم الموافقة على الاسترداد بنجاح");
         }
-
-        // 4. Update Refund Request
-        refund.Status = RefundStatus.Approved;
-        refund.AdminNotes = adminNotes;
-        refund.ResolvedAt = DateTime.UtcNow;
-        _refundRepo.Update(refund);
-        await _refundRepo.SaveChangesAsync();
-
-        return (true, "تم الموافقة على الاسترداد بنجاح");
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return (false, $"حدث خطأ أثناء معالجة الاسترداد: {ex.Message}");
+        }
     }
 
     public async Task<(bool Success, string Message)> RejectRefundAsync(int refundId, string? adminNotes)
@@ -160,41 +180,40 @@ public class RefundService : IRefundService
             RequestDate = r.RequestedAt,
             RefundAmount = r.Payment?.StudentPaid ?? 0,
             Reason = r.Reason,
-            Status = r.Status,
-            AdminNotes = r.AdminNotes
+            AdminNotes = r.AdminNotes,
+            Status = r.Status
         }).ToList();
     }
 
     public async Task<List<OrderHistoryViewModel>> GetStudentOrdersAsync(string studentId)
     {
-        var payments = await _paymentRepo.GetQueryable().Include(p => p.Course).Include(p => p.Invoice).Where(p => p.StudentId == studentId).ToListAsync();
-        var allRefunds = await _refundRepo.FindAsync(r => r.StudentId == studentId);
-        var allCoupons = await _couponUsageRepo.FindAsync(u => u.StudentId == studentId);
-        
-        var list = new List<OrderHistoryViewModel>();
+        var payments = await _paymentRepo.GetQueryable()
+            .Include(p => p.Course)
+            .Include(p => p.Invoice)
+            .Where(p => p.StudentId == studentId)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
 
-        foreach (var p in payments.OrderByDescending(x => x.CreatedAt))
+        var list = new List<OrderHistoryViewModel>();
+        foreach (var p in payments)
         {
-            var refund = allRefunds.FirstOrDefault(r => r.PaymentId == p.Id);
-            var coupon = allCoupons.FirstOrDefault(c => c.PaymentId == p.Id)?.Coupon?.Code;
-            
             var vm = new OrderHistoryViewModel
             {
                 PaymentId = p.Id,
+                CourseId = p.CourseId,
                 CourseTitle = p.Course?.Title ?? "N/A",
-                InvoiceNumber = p.Invoice?.InvoiceNumber,
                 PurchaseDate = p.CreatedAt,
-                AmountPaid = p.StudentPaid, // Since Phase 13.6, StudentPaid is the final total
-                Currency = p.Currency,
+                AmountPaid = p.StudentPaid,
                 Status = p.Status,
-                CouponCode = coupon,
-                TransactionId = p.TransactionId,
-                PaymentMethod = p.PaymentMethod,
-                CanRequestRefund = false
+                InvoiceNumber = p.Invoice?.InvoiceNumber
             };
 
+            var existingRefunds = await _refundRepo.FindAsync(r => r.PaymentId == p.Id);
+            var refund = existingRefunds.FirstOrDefault(r => r.Status == RefundStatus.Pending || r.Status == RefundStatus.Approved || r.Status == RefundStatus.Rejected);
+            
             if (refund != null)
             {
+                
                 vm.RefundStatusMessage = refund.Status switch
                 {
                     RefundStatus.Pending => "طلب استرداد قيد المراجعة",
@@ -241,32 +260,36 @@ public class RefundService : IRefundService
             PurchaseDate = payment.CreatedAt,
             PaymentMethod = payment.PaymentMethod ?? "N/A",
             TransactionId = payment.TransactionId,
-            OriginalPrice = payment.TeacherAmount + payment.PlatformFee, // Approximation based on logic
-            DiscountAmount = 0, // Since we didn't store discount directly on Payment, we'll leave it 0 or calculate it
-            PlatformFee = payment.PlatformFee,
-            VatAmount = 0, // Not stored directly
-            TotalPaid = payment.StudentPaid,
-            Currency = payment.Currency,
-            CouponCode = coupon,
+            
             PaymentStatus = payment.Status,
-            HasRefundRequest = refund != null,
-            RefundStatus = refund?.Status,
-            RefundReason = refund?.Reason,
-            RefundAdminNotes = refund?.AdminNotes,
-            RefundRequestedAt = refund?.RequestedAt,
-            CanRequestRefund = canRequestRefund.Success
+            OriginalPrice = payment.Course?.Price ?? 0,
+            DiscountAmount = (payment.Course?.Price ?? 0) - payment.TeacherAmount - payment.PlatformFee, 
+            TotalPaid = payment.StudentPaid,
+            
+            CouponCode = coupon,
+            
+            CanRequestRefund = canRequestRefund.Success,
+            RefundStatus = refund?.Status
         };
     }
 
     public async Task<List<AdminRefundViewModel>> GetAllRefundsAsync(RefundStatus? statusFilter = null)
     {
-        var refunds = await _refundRepo.GetAllAsync();
+        var query = _refundRepo.GetQueryable()
+            .Include(r => r.Payment)
+                .ThenInclude(p => p.Course)
+                    .ThenInclude(c => c.Teacher)
+            .Include(r => r.Student)
+            .AsQueryable();
+            
         if (statusFilter.HasValue)
         {
-            refunds = refunds.Where(r => r.Status == statusFilter.Value);
+            query = query.Where(r => r.Status == statusFilter.Value);
         }
 
-        return refunds.OrderByDescending(r => r.RequestedAt).Select(r => new AdminRefundViewModel
+        var refunds = await query.OrderByDescending(r => r.RequestedAt).ToListAsync();
+
+        return refunds.Select(r => new AdminRefundViewModel
         {
             RefundId = r.Id,
             PaymentId = r.PaymentId,
@@ -274,6 +297,9 @@ public class RefundService : IRefundService
             CourseTitle = r.Payment?.Course?.Title ?? "N/A",
             TeacherName = r.Payment?.Course?.Teacher?.FullName ?? "N/A",
             Amount = r.Payment?.StudentPaid ?? 0,
+            TeacherLoss = r.Payment?.TeacherAmount ?? 0,
+            PlatformLoss = r.Payment?.PlatformFee ?? 0,
+            StudentRefund = r.Payment?.StudentPaid ?? 0,
             Reason = r.Reason,
             Description = r.Description,
             AdminNotes = r.AdminNotes,
@@ -283,6 +309,4 @@ public class RefundService : IRefundService
         }).ToList();
     }
 }
-
-
 

@@ -125,6 +125,18 @@ public class WalletService : IWalletService
         return true;
     }
 
+    public async Task<bool> CreditAvailableBalanceAsync(string userId, decimal amount, int? paymentId = null)
+    {
+        if (amount < 0) throw new ArgumentException("Amount cannot be negative");
+        var wallet = await GetWalletAsync(userId);
+        wallet.AvailableBalance += amount;
+        _walletRepository.Update(wallet);
+        await _walletRepository.SaveChangesAsync();
+
+        await CreateTransactionAsync(wallet.Id, amount, TransactionType.Refund, "استرداد مدفوعات الدورة", paymentId);
+        return true;
+    }
+
     public async Task<bool> MovePendingToAvailableAsync(string userId, decimal amount)
     {
         var wallet = await GetWalletAsync(userId);

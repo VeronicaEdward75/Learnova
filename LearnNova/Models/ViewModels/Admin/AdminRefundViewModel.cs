@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using LearnNova.Models.Enums;
 
 namespace LearnNova.Models.ViewModels.Admin;
@@ -12,6 +12,9 @@ public class AdminRefundViewModel
     public string TeacherName { get; set; } = string.Empty;
     
     public decimal Amount { get; set; }
+    public decimal TeacherLoss { get; set; }
+    public decimal PlatformLoss { get; set; }
+    public decimal StudentRefund { get; set; }
     public string Reason { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? AdminNotes { get; set; }

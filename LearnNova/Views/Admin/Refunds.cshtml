@@ -1,4 +1,4 @@
-﻿@model IEnumerable<LearnNova.Models.ViewModels.Admin.AdminRefundViewModel>
+@model IEnumerable<LearnNova.Models.ViewModels.Admin.AdminRefundViewModel>
 @{
     ViewData["Title"] = "إدارة المرتجعات والمنازعات";
     var currentFilter = ViewBag.CurrentFilter as LearnNova.Models.Enums.RefundStatus?;
@@ -79,59 +79,6 @@
                             <i class="bi bi-x-lg me-1"></i> رفض
                         </button>
                     </div>
-
-                    <!-- Approve Modal -->
-                    <div class="modal fade" id="approveModal-@r.RefundId" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content border-0 shadow">
-                                <div class="modal-header border-bottom-0 bg-success text-white">
-                                    <h5 class="modal-title fw-bold">تأكيد الموافقة على الاسترداد</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form asp-action="ApproveRefund" method="post">
-                                    <input type="hidden" name="id" value="@r.RefundId" />
-                                    <div class="modal-body p-4">
-                                        <div class="alert alert-warning">
-                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> الموافقة ستؤدي إلى سحب <strong>@r.Amount.ToString("N2")</strong> من أرباح المدرس وإلغاء تسجيل الطالب.
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">ملاحظات الإدارة (للطالب)</label>
-                                            <textarea name="adminNotes" class="form-control" rows="3"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer border-top-0">
-                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
-                                        <button type="submit" class="btn btn-success px-4">تأكيد الاسترداد</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Reject Modal -->
-                    <div class="modal fade" id="rejectModal-@r.RefundId" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content border-0 shadow">
-                                <div class="modal-header border-bottom-0 bg-danger text-white">
-                                    <h5 class="modal-title fw-bold">رفض طلب الاسترداد</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form asp-action="RejectRefund" method="post">
-                                    <input type="hidden" name="id" value="@r.RefundId" />
-                                    <div class="modal-body p-4">
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">سبب الرفض (سيظهر للطالب)</label>
-                                            <textarea name="adminNotes" class="form-control" rows="3" required></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer border-top-0">
-                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
-                                        <button type="submit" class="btn btn-danger px-4">تأكيد الرفض</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
                 }
                 else
                 {
@@ -148,3 +95,98 @@
         </div>
     }
 </div>
+
+@* Render all Modals outside the nested grid/flex layout to prevent stacking context bugs with Bootstrap backdrop *@
+@section Modals {
+@foreach (var r in Model.Where(m => m.Status == LearnNova.Models.Enums.RefundStatus.Pending))
+{
+    <!-- Approve Modal -->
+    <div class="modal fade" id="approveModal-@r.RefundId" tabindex="-1" aria-labelledby="approveModalLabel-@r.RefundId" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+                <div class="modal-header bg-success text-white px-4 py-3">
+                    <h5 class="modal-title fw-bold d-flex align-items-center" id="approveModalLabel-@r.RefundId">
+                        <i class="bi bi-shield-check me-2 fs-4"></i>
+                        تأكيد الموافقة على الاسترداد المالي
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="ApproveRefund" method="post">
+                    <input type="hidden" name="id" value="@r.RefundId" />
+                    <div class="modal-body p-4 p-md-5">
+                        <p class="text-muted mb-4 fs-5">
+                            الموافقة على هذا الاسترداد هي عملية مالية نهائية ولا يمكن التراجع عنها. سيتم تنفيذ القيود المالية التالية فوراً:
+                        </p>
+                        
+                        <div class="row g-4 mb-4">
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 rounded text-center" style="background-color: var(--color-primary-light); border: 1px solid var(--color-primary);">
+                                    <div class="text-muted small fw-bold mb-1">مبلغ الاسترداد</div>
+                                    <div class="fw-bold text-primary fs-4">@r.Amount.ToString("N2")</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 rounded text-center" style="background-color: #fff3cd; border: 1px solid #ffecb5;">
+                                    <div class="text-muted small fw-bold mb-1">خسارة المعلم</div>
+                                    <div class="fw-bold text-warning fs-4">-@r.TeacherLoss.ToString("N2")</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 rounded text-center" style="background-color: #f8d7da; border: 1px solid #f5c2c7;">
+                                    <div class="text-muted small fw-bold mb-1">خسارة المنصة</div>
+                                    <div class="fw-bold text-danger fs-4">-@r.PlatformLoss.ToString("N2")</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 rounded text-center" style="background-color: #d1e7dd; border: 1px solid #badbcc;">
+                                    <div class="text-muted small fw-bold mb-1">يعود للطالب</div>
+                                    <div class="fw-bold text-success fs-4">+@r.StudentRefund.ToString("N2")</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning d-flex align-items-center mb-4">
+                            <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i> 
+                            <div>سيتم إلغاء تسجيل الطالب من الكورس بشكل تلقائي فور تأكيد العملية.</div>
+                        </div>
+                        
+                        <div class="mb-0">
+                            <label class="form-label fw-bold text-dark">ملاحظات الإدارة (اختياري - سيظهر للطالب)</label>
+                            <textarea name="adminNotes" class="form-control bg-light border-0" rows="3" placeholder="أضف أي ملاحظات تود توجيهها للطالب..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 border-top-0 d-flex justify-content-end gap-3">
+                        <button type="button" class="btn btn-outline-secondary px-4 fw-bold" data-bs-dismiss="modal">إلغاء الأمر</button>
+                        <button type="submit" class="btn btn-success px-5 fw-bold">تأكيد وتنفيذ الاسترداد</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal fade" id="rejectModal-@r.RefundId" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+                <div class="modal-header bg-danger text-white px-4 py-3">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-x-circle me-2"></i>رفض طلب الاسترداد</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-action="RejectRefund" method="post">
+                    <input type="hidden" name="id" value="@r.RefundId" />
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">سبب الرفض (إلزامي - سيظهر للطالب)</label>
+                            <textarea name="adminNotes" class="form-control bg-light border-0" rows="4" required placeholder="يرجى توضيح سبب رفض طلب الاسترداد..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 border-top-0 d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary px-4 fw-bold" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-danger px-4 fw-bold">تأكيد الرفض</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+}

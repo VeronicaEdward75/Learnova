@@ -16,6 +16,7 @@ public interface IWalletService
     Task<(decimal PlatformRevenue, decimal TeacherEarnings, decimal PendingRevenue)> GetPlatformRevenueStatsAsync();
     
     Task<bool> CreditPendingAsync(string userId, decimal amount, int paymentId);
+    Task<bool> CreditAvailableBalanceAsync(string userId, decimal amount, int? paymentId = null);
     Task<bool> MovePendingToAvailableAsync(string userId, decimal amount);
     Task<bool> WithdrawAsync(string userId, decimal amount);
     Task<bool> ProcessRefundDeductionAsync(string userId, decimal amount);
