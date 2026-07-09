@@ -126,8 +126,17 @@ public class RefundService : IRefundService
             }
 
             // 4. Credit Student Wallet
-            if (payment.StudentPaid > 0)
+            if (payment.WalletUsedAmount > 0)
             {
+                await _walletService.CreditWalletRefundAsync(payment.StudentId, payment.WalletUsedAmount, payment.Id);
+            }
+            if (payment.GatewayUsedAmount > 0)
+            {
+                await _walletService.CreditAvailableBalanceAsync(payment.StudentId, payment.GatewayUsedAmount, payment.Id);
+            }
+            if (payment.WalletUsedAmount == 0 && payment.GatewayUsedAmount == 0 && payment.StudentPaid > 0)
+            {
+                // Fallback for older payments before hybrid payment tracking
                 await _walletService.CreditAvailableBalanceAsync(payment.StudentId, payment.StudentPaid, payment.Id);
             }
 

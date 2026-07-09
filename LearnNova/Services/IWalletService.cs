@@ -19,6 +19,7 @@ public interface IWalletService
     Task<bool> CreditAvailableBalanceAsync(string userId, decimal amount, int? paymentId = null);
     Task<bool> MovePendingToAvailableAsync(string userId, decimal amount);
     Task<bool> WithdrawAsync(string userId, decimal amount);
+    Task<bool> PayWithWalletAsync(string userId, decimal amount, int paymentId);
+    Task<bool> CreditWalletRefundAsync(string userId, decimal amount, int paymentId);
     Task<bool> ProcessRefundDeductionAsync(string userId, decimal amount);
 }
-

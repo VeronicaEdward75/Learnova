@@ -5,6 +5,7 @@ using LearnNova.Models.Entities;
 using LearnNova.Models.Enums;
 using LearnNova.Models.ViewModels.Student;
 using LearnNova.Repositories;
+using LearnNova.Data;
 
 namespace LearnNova.Services;
 
@@ -25,6 +26,7 @@ public class CheckoutService : ICheckoutService
     private readonly IWalletService _walletService;
     private readonly IPaymentRepository _paymentRepository;
     private readonly ICouponService _couponService;
+    private readonly ApplicationDbContext _dbContext;
 
     public CheckoutService(
         ICourseRepository courseRepository,
@@ -35,7 +37,8 @@ public class CheckoutService : ICheckoutService
         IInvoiceService invoiceService,
         IWalletService walletService,
         IPaymentRepository paymentRepository,
-        ICouponService couponService)
+        ICouponService couponService,
+        ApplicationDbContext dbContext)
     {
         _courseRepository = courseRepository;
         _enrollmentService = enrollmentService;
@@ -46,6 +49,7 @@ public class CheckoutService : ICheckoutService
         _walletService = walletService;
         _paymentRepository = paymentRepository;
         _couponService = couponService;
+        _dbContext = dbContext;
     }
 
     public async Task<CheckoutViewModel> PrepareCheckoutAsync(int courseId, string studentId, string? couponCode = null)
@@ -105,6 +109,8 @@ public class CheckoutService : ICheckoutService
             remainingUsage = appliedCoupon.UsageLimit.Value - usageCount;
         }
 
+        var wallet = await _walletService.GetWalletAsync(studentId);
+
         return new CheckoutViewModel
         {
             CourseId = courseId,
@@ -118,7 +124,8 @@ public class CheckoutService : ICheckoutService
             VatAmount = vatAmount,
             CouponCode = appliedCoupon?.Code,
             CouponError = couponError,
-            RemainingUsage = remainingUsage
+            RemainingUsage = remainingUsage,
+            WalletBalance = wallet.AvailableBalance
         };
     }
 
@@ -140,93 +147,146 @@ public class CheckoutService : ICheckoutService
             return (false, "", vm.CouponError, 0);
         }
 
-        // Create Payment
-        var payment = await _paymentService.CreatePaymentAsync(courseId, studentId);
+        // Validate Wallet logic before creating payment
+        decimal walletUsed = 0;
+        decimal gatewayUsed = 0;
         
-        // Use repo directly to populate full properties
-        var paymentEntity = await _paymentRepository.GetByIdAsync(payment.Id);
-        if (paymentEntity != null)
+        if (paymentMethod == "Wallet" || paymentMethod == "Hybrid")
         {
-            paymentEntity.StudentPaid = vm.FinalTotal; // The actual money student pays
-            paymentEntity.TeacherAmount = vm.Price - vm.DiscountAmount; // Teacher's cut is based on discounted course price
-            paymentEntity.PlatformFee = vm.PlatformFee;
-            paymentEntity.GatewayFee = 0; // Simulated
-            paymentEntity.Currency = vm.Currency;
-            paymentEntity.Gateway = "FakeGateway";
-            paymentEntity.PaymentMethod = paymentMethod;
-            _paymentRepository.Update(paymentEntity);
-            await _paymentRepository.SaveChangesAsync();
-        }
-
-        // Bypassing payment gateway if total is 0.00
-        if (vm.FinalTotal == 0)
-        {
-            var freeTransactionId = $"FREE-{Guid.NewGuid().ToString().Substring(0, 8)}";
-            await _paymentService.MarkSucceededAsync(payment.Id, freeTransactionId);
-            await _enrollmentService.EnrollAsync(studentId, courseId);
-            await _invoiceService.CreateInvoiceAsync(payment.Id);
-            
-            // Teacher gets 0 if it was a free coupon, but if the platform covers it, 
-            // maybe we'd still add something. Assuming the coupon just discounts it:
-            decimal teacherEarnings = vm.Price - vm.DiscountAmount;
-            if (teacherEarnings > 0)
+            var wallet = await _walletService.GetWalletAsync(studentId);
+            if (paymentMethod == "Wallet" && wallet.AvailableBalance < vm.FinalTotal)
             {
-                await _walletService.AddPendingBalanceAsync(course.TeacherId, teacherEarnings);
-                var wallet = await _walletService.GetWalletAsync(course.TeacherId);
-                await _walletService.CreateTransactionAsync(wallet.Id, teacherEarnings, TransactionType.Sale, $"Course Sale (Discounted): {course.Title}", payment.Id);
+                return (false, "", "رصيد المحفظة غير كافٍ.", 0);
             }
-
-            // Record Coupon Usage
-            if (!string.IsNullOrEmpty(vm.CouponCode))
+            if (wallet.AvailableBalance > 0)
             {
-                var couponObj = await _couponService.GetCouponByCodeAsync(vm.CouponCode);
-                if (couponObj != null)
-                {
-                    await _couponService.RecordCouponUsageAsync(couponObj.Id, studentId, payment.Id);
-                }
+                walletUsed = Math.Min(wallet.AvailableBalance, vm.FinalTotal);
+                gatewayUsed = vm.FinalTotal - walletUsed;
             }
-
-            return (true, freeTransactionId, "", payment.Id);
-        }
-
-        // Call Gateway
-        var gatewayResult = await _paymentGateway.ProcessPaymentAsync(paymentEntity!);
-
-        if (gatewayResult.IsSuccess)
-        {
-            await _paymentService.MarkSucceededAsync(payment.Id, gatewayResult.TransactionId);
-
-            // Create Enrollment
-            await _enrollmentService.EnrollAsync(studentId, courseId);
-
-            // Generate Invoice
-            await _invoiceService.CreateInvoiceAsync(payment.Id);
-
-            // Update Teacher Wallet
-            decimal teacherEarnings = vm.Price - vm.DiscountAmount;
-            if (teacherEarnings > 0)
+            else
             {
-                await _walletService.AddPendingBalanceAsync(course.TeacherId, teacherEarnings);
-                var wallet = await _walletService.GetWalletAsync(course.TeacherId);
-                await _walletService.CreateTransactionAsync(wallet.Id, teacherEarnings, TransactionType.Sale, $"Course Sale: {course.Title}", payment.Id);
+                gatewayUsed = vm.FinalTotal; // Fallback
             }
-
-            // Record Coupon Usage
-            if (!string.IsNullOrEmpty(vm.CouponCode))
-            {
-                var couponObj = await _couponService.GetCouponByCodeAsync(vm.CouponCode);
-                if (couponObj != null)
-                {
-                    await _couponService.RecordCouponUsageAsync(couponObj.Id, studentId, payment.Id);
-                }
-            }
-
-            return (true, gatewayResult.TransactionId, "", payment.Id);
         }
         else
         {
-            await _paymentService.MarkFailedAsync(payment.Id, gatewayResult.GatewayResponse);
-            return (false, "", gatewayResult.GatewayResponse, payment.Id);
+            gatewayUsed = vm.FinalTotal;
+        }
+
+        // Create Payment
+        var payment = await _paymentService.CreatePaymentAsync(courseId, studentId);
+        
+        using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        try
+        {
+            // Use repo directly to populate full properties
+            var paymentEntity = await _paymentRepository.GetByIdAsync(payment.Id);
+            if (paymentEntity != null)
+            {
+                paymentEntity.StudentPaid = vm.FinalTotal; // The actual money student pays
+                paymentEntity.TeacherAmount = vm.Price - vm.DiscountAmount; // Teacher's cut is based on discounted course price
+                paymentEntity.PlatformFee = vm.PlatformFee;
+                paymentEntity.GatewayFee = 0; // Simulated
+                paymentEntity.WalletUsedAmount = walletUsed;
+                paymentEntity.GatewayUsedAmount = gatewayUsed;
+                paymentEntity.Currency = vm.Currency;
+                paymentEntity.Gateway = paymentMethod == "Wallet" ? "Wallet" : "FakeGateway";
+                paymentEntity.PaymentMethod = paymentMethod;
+                _paymentRepository.Update(paymentEntity);
+                await _paymentRepository.SaveChangesAsync();
+            }
+
+            // Pay with wallet if applicable
+            if (walletUsed > 0)
+            {
+                var walletSuccess = await _walletService.PayWithWalletAsync(studentId, walletUsed, payment.Id);
+                if (!walletSuccess)
+                {
+                    throw new Exception("حدث خطأ أثناء خصم المبلغ من المحفظة.");
+                }
+            }
+
+            // Bypassing payment gateway if total is 0.00 OR if Wallet covered it fully (gatewayUsed == 0)
+            if (gatewayUsed == 0)
+            {
+                var freeTransactionId = paymentMethod == "Wallet" ? $"WALLET-{Guid.NewGuid().ToString().Substring(0, 8)}" : $"FREE-{Guid.NewGuid().ToString().Substring(0, 8)}";
+                await _paymentService.MarkSucceededAsync(payment.Id, freeTransactionId);
+                await _enrollmentService.EnrollAsync(studentId, courseId);
+                await _invoiceService.CreateInvoiceAsync(payment.Id);
+                
+                decimal teacherEarnings = vm.Price - vm.DiscountAmount;
+                if (teacherEarnings > 0)
+                {
+                    await _walletService.AddPendingBalanceAsync(course.TeacherId, teacherEarnings);
+                    var teacherWallet = await _walletService.GetWalletAsync(course.TeacherId);
+                    await _walletService.CreateTransactionAsync(teacherWallet.Id, teacherEarnings, TransactionType.Sale, $"Course Sale: {course.Title}", payment.Id);
+                }
+
+                if (!string.IsNullOrEmpty(vm.CouponCode))
+                {
+                    var couponObj = await _couponService.GetCouponByCodeAsync(vm.CouponCode);
+                    if (couponObj != null)
+                    {
+                        await _couponService.RecordCouponUsageAsync(couponObj.Id, studentId, payment.Id);
+                    }
+                }
+
+                await transaction.CommitAsync();
+                return (true, freeTransactionId, "", payment.Id);
+            }
+
+            // Call Gateway for the remaining balance (or full balance if CreditCard)
+            if (paymentEntity != null) paymentEntity.StudentPaid = gatewayUsed; // Temporarily trick gateway if needed? Actually Gateway just looks at StudentPaid?
+            // Wait, FakeGateway doesn't really care, it just returns Success.
+            // If it were a real gateway, we'd pass gatewayUsed.
+            
+            var gatewayResult = await _paymentGateway.ProcessPaymentAsync(paymentEntity!);
+
+            // Reset StudentPaid back to full total for invoice
+            if (paymentEntity != null) 
+            {
+                paymentEntity.StudentPaid = vm.FinalTotal;
+                _paymentRepository.Update(paymentEntity);
+                await _paymentRepository.SaveChangesAsync();
+            }
+
+            if (gatewayResult.IsSuccess)
+            {
+                await _paymentService.MarkSucceededAsync(payment.Id, gatewayResult.TransactionId);
+                await _enrollmentService.EnrollAsync(studentId, courseId);
+                await _invoiceService.CreateInvoiceAsync(payment.Id);
+
+                decimal teacherEarnings = vm.Price - vm.DiscountAmount;
+                if (teacherEarnings > 0)
+                {
+                    await _walletService.AddPendingBalanceAsync(course.TeacherId, teacherEarnings);
+                    var teacherWallet = await _walletService.GetWalletAsync(course.TeacherId);
+                    await _walletService.CreateTransactionAsync(teacherWallet.Id, teacherEarnings, TransactionType.Sale, $"Course Sale: {course.Title}", payment.Id);
+                }
+
+                if (!string.IsNullOrEmpty(vm.CouponCode))
+                {
+                    var couponObj = await _couponService.GetCouponByCodeAsync(vm.CouponCode);
+                    if (couponObj != null)
+                    {
+                        await _couponService.RecordCouponUsageAsync(couponObj.Id, studentId, payment.Id);
+                    }
+                }
+
+                await transaction.CommitAsync();
+                return (true, gatewayResult.TransactionId, "", payment.Id);
+            }
+            else
+            {
+                await _paymentService.MarkFailedAsync(payment.Id, gatewayResult.GatewayResponse);
+                await transaction.RollbackAsync();
+                return (false, "", gatewayResult.GatewayResponse, payment.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return (false, "", ex.Message, payment.Id);
         }
     }
 }

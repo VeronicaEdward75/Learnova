@@ -165,6 +165,33 @@ public class WalletService : IWalletService
         return true;
     }
 
+    public async Task<bool> PayWithWalletAsync(string userId, decimal amount, int paymentId)
+    {
+        var wallet = await GetWalletAsync(userId);
+        if (wallet.AvailableBalance < amount) return false;
+
+        wallet.AvailableBalance -= amount;
+        wallet.UpdatedAt = DateTime.UtcNow;
+        _walletRepository.Update(wallet);
+        await _walletRepository.SaveChangesAsync();
+
+        await CreateTransactionAsync(wallet.Id, amount, TransactionType.WalletPurchase, "دفع تكلفة الكورس من المحفظة", paymentId);
+        return true;
+    }
+
+    public async Task<bool> CreditWalletRefundAsync(string userId, decimal amount, int paymentId)
+    {
+        if (amount <= 0) return false;
+        var wallet = await GetWalletAsync(userId);
+        wallet.AvailableBalance += amount;
+        wallet.UpdatedAt = DateTime.UtcNow;
+        _walletRepository.Update(wallet);
+        await _walletRepository.SaveChangesAsync();
+
+        await CreateTransactionAsync(wallet.Id, amount, TransactionType.WalletRefund, "استرداد مدفوعات المحفظة", paymentId);
+        return true;
+    }
+
     public async Task<bool> ProcessRefundDeductionAsync(string userId, decimal amount)
     {
         var wallet = await GetWalletAsync(userId);

@@ -6,5 +6,8 @@ public enum TransactionType
     Commission,
     Refund,
     Withdrawal,
-    Adjustment
+    Adjustment,
+    WalletPurchase,
+    WalletRefund,
+    WalletAdjustment
 }

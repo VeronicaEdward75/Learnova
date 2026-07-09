@@ -17,6 +17,8 @@ public class Payment
     public decimal TeacherAmount { get; set; }
     public decimal PlatformFee { get; set; }
     public decimal GatewayFee { get; set; }
+    public decimal WalletUsedAmount { get; set; }
+    public decimal GatewayUsedAmount { get; set; }
     public string Currency { get; set; } = string.Empty;
 
     public string Gateway { get; set; } = string.Empty;

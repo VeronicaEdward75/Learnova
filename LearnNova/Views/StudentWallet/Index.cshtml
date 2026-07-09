@@ -1,0 +1,75 @@
+@model LearnNova.Models.ViewModels.Student.StudentWalletViewModel
+@{
+    ViewData["Title"] = "محفظتي";
+}
+
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="card-box p-4" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: white;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold mb-1 opacity-75">رصيد المحفظة المتاح</h5>
+                    <h2 class="fw-bold mb-0">@Model.AvailableBalance.ToString("N2") ج.م</h2>
+                </div>
+                <div>
+                    <i class="bi bi-wallet2" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card-box p-4">
+            <h4 class="fw-bold mb-4" style="color:var(--color-text-primary);">سجل المعاملات</h4>
+            
+            @if (Model.Transactions.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الوصف</th>
+                                <th>النوع</th>
+                                <th>المبلغ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in Model.Transactions)
+                            {
+                                <tr>
+                                    <td>@t.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@t.Description</td>
+                                    <td>
+                                        @if (t.Type.Contains("Refund"))
+                                        {
+                                            <span class="badge bg-success">استرداد</span>
+                                        }
+                                        else if (t.Type.Contains("Purchase"))
+                                        {
+                                            <span class="badge bg-danger">شراء</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@t.Type</span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold" style="color: @(t.Type.Contains("Refund") ? "var(--bs-success)" : "var(--bs-danger)")">
+                                        @(t.Type.Contains("Refund") ? "+" : "-") @t.Amount.ToString("N2") ج.م
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+                    <p>لا توجد معاملات في محفظتك حتى الآن.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

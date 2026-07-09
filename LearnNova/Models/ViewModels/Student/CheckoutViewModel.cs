@@ -21,4 +21,5 @@ public class CheckoutViewModel
     public string Currency { get; set; } = "EGP";
 
     public string PaymentMethod { get; set; } = "CreditCard";
+    public decimal WalletBalance { get; set; }
 }
