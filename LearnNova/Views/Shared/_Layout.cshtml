@@ -165,6 +165,12 @@
             }
 
             <div class="nav-section-title" style="margin-top: 12px;">الحساب</div>
+            <a class="nav-link-item @(activeNav == "profile" ? "active" : "")" asp-controller="StudentProfile" asp-action="Index">
+                <i class="bi bi-person-circle"></i><span>الملف الشخصي</span>
+            </a>
+            <a class="nav-link-item @(activeNav == "security" ? "active" : "")" asp-controller="StudentProfile" asp-action="Security">
+                <i class="bi bi-shield-lock"></i><span>الأمان وكلمة المرور</span>
+            </a>
             <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
                 <button type="submit" class="nav-link-item" style="color:var(--color-danger)!important">
                     <i class="bi bi-box-arrow-right" aria-hidden="true"></i>

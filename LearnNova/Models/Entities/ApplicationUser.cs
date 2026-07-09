@@ -9,6 +9,15 @@ public class ApplicationUser : IdentityUser
     public UserRole Role { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    // Profile Fields
+    public string? Gender { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public string? Country { get; set; }
+    public string? City { get; set; }
+    public string? Biography { get; set; }
+    public string? ProfileImagePath { get; set; }
+    public DateTime? LastLoginDate { get; set; }
 
     // Student-only fields
     public string? Stage { get; set; }
