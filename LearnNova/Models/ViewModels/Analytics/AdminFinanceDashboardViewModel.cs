@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using LearnNova.Models.ViewModels.Admin;
 
 namespace LearnNova.Models.ViewModels.Analytics;
 
@@ -37,7 +39,13 @@ public class AdminFinanceDashboardViewModel
     public List<TopTeacherViewModel> MostStudentsTeachers { get; set; } = new();
     public List<TopTeacherViewModel> HighestRatedTeachers { get; set; } = new();
 
-    public string DateFilter { get; set; } = "Last 30 Days";
+    public AdminFinanceFilterParameters Filters { get; set; } = new();
+
+    // Select Lists for Filters
+    public SelectList? TeachersList { get; set; }
+    public SelectList? CoursesList { get; set; }
+    public SelectList? SubjectsList { get; set; }
+    public SelectList? StagesList { get; set; }
     
     // Chart Data
     public List<string> ChartLabels { get; set; } = new();
@@ -46,6 +54,14 @@ public class AdminFinanceDashboardViewModel
     public List<decimal> TeacherRevenueChartData { get; set; } = new();
     public List<decimal> PlatformRevenueChartData { get; set; } = new();
     public List<int> EnrollmentGrowthData { get; set; } = new();
+
+    public List<string> SubjectChartLabels { get; set; } = new();
+    public List<int> SubjectSalesData { get; set; } = new();
+
+    public List<string> StageChartLabels { get; set; } = new();
+    public List<int> StageSalesData { get; set; } = new();
+
+    public List<int> RefundTrendData { get; set; } = new();
 }
 
 public class TopCourseViewModel
@@ -57,6 +73,8 @@ public class TopCourseViewModel
     public int Sales { get; set; }
     public int Students { get; set; }
     public double AverageRating { get; set; }
+    public int RefundCount { get; set; }
+    public string CompletionRate { get; set; } = "-";
 }
 
 public class TopTeacherViewModel
@@ -67,5 +85,6 @@ public class TopTeacherViewModel
     public int Sales { get; set; }
     public int Students { get; set; }
     public double AverageRating { get; set; }
+    public int Courses { get; set; }
+    public int PendingWithdrawals { get; set; }
 }
-

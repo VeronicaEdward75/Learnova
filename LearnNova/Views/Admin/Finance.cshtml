@@ -1,4 +1,4 @@
-﻿@model LearnNova.Models.ViewModels.Analytics.AdminFinanceDashboardViewModel
+@model LearnNova.Models.ViewModels.Analytics.AdminFinanceDashboardViewModel
 @{
     ViewData["Title"] = "التقارير المالية والأعمال";
 }
@@ -8,25 +8,82 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0" style="color:var(--color-text-primary);">التقارير المالية والأعمال</h2>
     <div class="d-flex gap-2">
-        <form method="get" class="d-flex gap-2">
-            <select name="dateFilter" class="form-select" onchange="this.form.submit()">
-                <option value="Today" selected="@(Model.DateFilter == "Today")">اليوم</option>
-                <option value="Last 7 Days" selected="@(Model.DateFilter == "Last 7 Days")">آخر 7 أيام</option>
-                <option value="This Month" selected="@(Model.DateFilter == "This Month")">هذا الشهر</option>
-                <option value="Last 30 Days" selected="@(Model.DateFilter == "Last 30 Days")">آخر 30 يوم</option>
-                <option value="This Year" selected="@(Model.DateFilter == "This Year")">هذا العام</option>
-            </select>
-        </form>
-        <a href="@Url.Action("ExportFinanceReport", new { format = "csv", dateFilter = Model.DateFilter })" class="btn btn-outline-custom">
-            <i class="bi bi-file-earmark-excel me-2"></i>تصدير CSV
+        <a href="@Url.Action("ExportFinanceReport", new { format = "csv", dateFilter = Model.Filters.DateFilter, startDate = Model.Filters.StartDate, endDate = Model.Filters.EndDate, teacherId = Model.Filters.TeacherId, courseId = Model.Filters.CourseId, subject = Model.Filters.Subject, stage = Model.Filters.Stage, paymentStatus = Model.Filters.PaymentStatus, searchTerm = Model.Filters.SearchTerm })" class="btn btn-outline-custom">
+            <i class="bi bi-filetype-csv me-2"></i>تصدير CSV
+        </a>
+        <a href="@Url.Action("ExportFinanceReport", new { format = "excel", dateFilter = Model.Filters.DateFilter, startDate = Model.Filters.StartDate, endDate = Model.Filters.EndDate, teacherId = Model.Filters.TeacherId, courseId = Model.Filters.CourseId, subject = Model.Filters.Subject, stage = Model.Filters.Stage, paymentStatus = Model.Filters.PaymentStatus, searchTerm = Model.Filters.SearchTerm })" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-excel me-2"></i>تصدير Excel
+        </a>
+        <a href="@Url.Action("ExportFinanceReport", new { format = "pdf", dateFilter = Model.Filters.DateFilter, startDate = Model.Filters.StartDate, endDate = Model.Filters.EndDate, teacherId = Model.Filters.TeacherId, courseId = Model.Filters.CourseId, subject = Model.Filters.Subject, stage = Model.Filters.Stage, paymentStatus = Model.Filters.PaymentStatus, searchTerm = Model.Filters.SearchTerm })" class="btn btn-outline-danger">
+            <i class="bi bi-file-earmark-pdf me-2"></i>تصدير PDF
         </a>
     </div>
+</div>
+
+<div class="card-box p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label text-muted small">بحث</label>
+            <input type="text" name="SearchTerm" value="@Model.Filters.SearchTerm" class="form-control" placeholder="اسم طالب، مدرس، كورس..." />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label text-muted small">الفترة</label>
+            <select name="DateFilter" class="form-select">
+                <option value="Today" selected="@(Model.Filters.DateFilter == "Today")">اليوم</option>
+                <option value="Last 7 Days" selected="@(Model.Filters.DateFilter == "Last 7 Days")">آخر 7 أيام</option>
+                <option value="This Month" selected="@(Model.Filters.DateFilter == "This Month")">هذا الشهر</option>
+                <option value="Last 30 Days" selected="@(Model.Filters.DateFilter == "Last 30 Days")">آخر 30 يوم</option>
+                <option value="This Year" selected="@(Model.Filters.DateFilter == "This Year")">هذا العام</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label text-muted small">تاريخ البدء</label>
+            <input type="date" name="StartDate" value="@Model.Filters.StartDate?.ToString("yyyy-MM-dd")" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label text-muted small">تاريخ الانتهاء</label>
+            <input type="date" name="EndDate" value="@Model.Filters.EndDate?.ToString("yyyy-MM-dd")" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label text-muted small">حالة الدفع</label>
+            <select name="PaymentStatus" asp-items="Html.GetEnumSelectList<LearnNova.Models.Enums.PaymentStatus>()" class="form-select">
+                <option value="">الكل</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label text-muted small">المدرس</label>
+            <select name="TeacherId" asp-items="Model.TeachersList" class="form-select">
+                <option value="">كل المدرسين</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label text-muted small">الكورس</label>
+            <select name="CourseId" asp-items="Model.CoursesList" class="form-select">
+                <option value="">كل الكورسات</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label text-muted small">المادة</label>
+            <select name="Subject" asp-items="Model.SubjectsList" class="form-select">
+                <option value="">كل المواد</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label text-muted small">المرحلة</label>
+            <select name="Stage" asp-items="Model.StagesList" class="form-select">
+                <option value="">كل المراحل</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">تصفية</button>
+        </div>
+    </form>
 </div>
 
 <div class="row g-4 mb-4">
     <div class="col-12 col-md-4">
         <div class="card-box p-4 h-100" style="background: linear-gradient(135deg, rgba(79,70,229,0.1), transparent);">
-            <div class="text-muted fw-bold mb-2">إجمالي المبيعات (@Model.DateFilter)</div>
+            <div class="text-muted fw-bold mb-2">إجمالي المبيعات (@Model.Filters.DateFilter)</div>
             <h3 class="fw-bold mb-1" style="color:var(--color-text-primary);">@Model.TotalRevenue.ToString("N2") <small style="font-size:16px;">EGP</small></h3>
             <div class="text-muted small">@Model.NumberOfSales عملية ناجحة</div>
         </div>
@@ -48,7 +105,7 @@
 <div class="row g-4 mb-4">
     <div class="col-12 col-lg-8">
         <div class="card-box p-4 h-100">
-            <h5 class="fw-bold mb-4">تحليل الإيرادات</h5>
+            <h5 class="fw-bold mb-4">تحليل الإيرادات عبر الزمن</h5>
             <canvas id="revenueChart" height="100"></canvas>
         </div>
     </div>
@@ -78,6 +135,27 @@
     </div>
 </div>
 
+<div class="row g-4 mb-4">
+    <div class="col-12 col-lg-4">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4">المبيعات حسب المادة</h5>
+            <canvas id="subjectChart" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4">المبيعات حسب المرحلة</h5>
+            <canvas id="stageChart" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card-box p-4 h-100">
+            <h5 class="fw-bold mb-4">اتجاه المرتجعات</h5>
+            <canvas id="refundChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4">
     <div class="col-12 col-xl-6">
         <div class="card-box p-4 h-100">
@@ -88,8 +166,11 @@
                         <tr class="text-muted small">
                             <th>الكورس</th>
                             <th>المدرس</th>
+                            <th>الطلاب</th>
                             <th>المبيعات</th>
                             <th>الإيرادات</th>
+                            <th>مرتجعات</th>
+                            <th>الإكمال</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -98,8 +179,11 @@
                             <tr>
                                 <td class="fw-bold">@c.Title</td>
                                 <td class="text-muted small">@c.TeacherName</td>
+                                <td>@c.Students</td>
                                 <td>@c.Sales</td>
-                                <td class="fw-bold text-success">@c.Revenue.ToString("N2") <small>EGP</small></td>
+                                <td class="fw-bold text-success">@c.Revenue.ToString("N2")</td>
+                                <td class="text-danger">@c.RefundCount</td>
+                                <td>@c.CompletionRate</td>
                             </tr>
                         }
                     </tbody>
@@ -116,9 +200,11 @@
                     <thead>
                         <tr class="text-muted small">
                             <th>المدرس</th>
-                            <th>عدد الكورسات المباعة</th>
+                            <th>الكورسات</th>
                             <th>الطلاب</th>
-                            <th>الإيرادات الإجمالية</th>
+                            <th>المبيعات</th>
+                            <th>الإيرادات</th>
+                            <th>طلبات سحب</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,9 +212,11 @@
                         {
                             <tr>
                                 <td class="fw-bold">@t.Name</td>
-                                <td>@t.Sales</td>
+                                <td>@t.Courses</td>
                                 <td>@t.Students</td>
-                                <td class="fw-bold text-success">@t.Revenue.ToString("N2") <small>EGP</small></td>
+                                <td>@t.Sales</td>
+                                <td class="fw-bold text-success">@t.Revenue.ToString("N2")</td>
+                                <td class="text-warning">@t.PendingWithdrawals</td>
                             </tr>
                         }
                     </tbody>
@@ -140,8 +228,8 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        var ctx = document.getElementById('revenueChart').getContext('2d');
-        var myChart = new Chart(ctx, {
+        var ctxRev = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctxRev, {
             type: 'bar',
             data: {
                 labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartLabels)),
@@ -168,6 +256,47 @@
                 }
             }
         });
+
+        var ctxSub = document.getElementById('subjectChart').getContext('2d');
+        new Chart(ctxSub, {
+            type: 'pie',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SubjectChartLabels)),
+                datasets: [{
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SubjectSalesData)),
+                    backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                }]
+            }
+        });
+
+        var ctxStage = document.getElementById('stageChart').getContext('2d');
+        new Chart(ctxStage, {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StageChartLabels)),
+                datasets: [{
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StageSalesData)),
+                    backgroundColor: ['#3b82f6', '#ec4899', '#14b8a6', '#f97316', '#64748b']
+                }]
+            }
+        });
+
+        var ctxRefund = document.getElementById('refundChart').getContext('2d');
+        new Chart(ctxRefund, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartLabels)),
+                datasets: [{
+                    label: 'المرتجعات',
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RefundTrendData)),
+                    borderColor: '#ef4444',
+                    tension: 0.3,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true } }
+            }
+        });
     });
 </script>
-

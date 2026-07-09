@@ -6,11 +6,13 @@ namespace LearnNova.Services;
 
 public interface IFinanceAnalyticsService
 {
-    Task<AdminFinanceDashboardViewModel> GetAdminFinanceDashboardAsync(string dateFilter);
+    Task<AdminFinanceDashboardViewModel> GetAdminFinanceDashboardAsync(LearnNova.Models.ViewModels.Admin.AdminFinanceFilterParameters filters);
     Task<TeacherFinanceDashboardViewModel> GetTeacherFinanceDashboardAsync(string teacherId);
     Task<TeacherRevenuePageViewModel> GetTeacherRevenuePageAsync(string teacherId, LearnNova.Models.ViewModels.Teacher.Filters.TeacherRevenueFilterParameters filters);
     
     // Natively returns CSV bytes or string
-    Task<string> GenerateRevenueReportCsvAsync(string dateFilter);
+    Task<string> GenerateRevenueReportCsvAsync(LearnNova.Models.ViewModels.Admin.AdminFinanceFilterParameters filters);
+    Task<byte[]> GenerateRevenueReportExcelAsync(LearnNova.Models.ViewModels.Admin.AdminFinanceFilterParameters filters);
+    Task<byte[]> GenerateRevenueReportPdfAsync(LearnNova.Models.ViewModels.Admin.AdminFinanceFilterParameters filters);
     Task<string> GenerateTeacherReportCsvAsync(string dateFilter);
 }

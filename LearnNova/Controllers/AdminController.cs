@@ -6,7 +6,7 @@ using LearnNova.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.EntityFrameworkCore;
 namespace LearnNova.Controllers;
 
 [Authorize(Roles = "Admin")]
@@ -340,27 +340,52 @@ public class AdminController : Controller
     // --- Finance Analytics ----------------------------------------------------
 
     [HttpGet]
-    public async Task<IActionResult> Finance(string dateFilter = "This Month")
+    public async Task<IActionResult> Finance(LearnNova.Models.ViewModels.Admin.AdminFinanceFilterParameters filters)
     {
         ViewData["Title"] = "المالية والأرباح";
         ViewBag.ActiveNav = "finance";
 
-        var vm = await _financeAnalyticsService.GetAdminFinanceDashboardAsync(dateFilter);
+        var vm = await _financeAnalyticsService.GetAdminFinanceDashboardAsync(filters);
+
+        // Populate SelectLists
+        var dbContext = HttpContext.RequestServices.GetService(typeof(LearnNova.Data.ApplicationDbContext)) as LearnNova.Data.ApplicationDbContext;
+        if (dbContext != null)
+        {
+            var teachers = await dbContext.Users.Where(u => u.Role == UserRole.Teacher).OrderBy(u => u.FullName).Select(u => new { u.Id, u.FullName }).ToListAsync();
+            var courses = await dbContext.Courses.OrderBy(c => c.Title).Select(c => new { c.Id, c.Title }).ToListAsync();
+            var subjects = await dbContext.Courses.Select(c => c.Subject).Distinct().Where(s => !string.IsNullOrEmpty(s)).ToListAsync();
+            var stages = await dbContext.Courses.Select(c => c.Stage).Distinct().Where(s => !string.IsNullOrEmpty(s)).ToListAsync();
+
+            vm.TeachersList = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(teachers, "Id", "FullName", filters.TeacherId);
+            vm.CoursesList = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(courses, "Id", "Title", filters.CourseId);
+            vm.SubjectsList = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(subjects, filters.Subject);
+            vm.StagesList = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(stages, filters.Stage);
+        }
+
         return View(vm);
     }
 
     [HttpGet]
-    public async Task<IActionResult> ExportFinanceReport(string format = "csv", string dateFilter = "This Month")
+    public async Task<IActionResult> ExportFinanceReport(string format, LearnNova.Models.ViewModels.Admin.AdminFinanceFilterParameters filters)
     {
-        if (format.ToLower() == "csv")
+        if (format?.ToLower() == "csv")
         {
-            var csv = await _financeAnalyticsService.GenerateRevenueReportCsvAsync(dateFilter);
+            var csv = await _financeAnalyticsService.GenerateRevenueReportCsvAsync(filters);
             var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-            return File(bytes, "text/csv", $"Admin_Revenue_{dateFilter.Replace(" ", "")}.csv");
+            return File(bytes, "text/csv", $"Admin_Revenue_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        }
+        else if (format?.ToLower() == "excel")
+        {
+            var excelBytes = await _financeAnalyticsService.GenerateRevenueReportExcelAsync(filters);
+            return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Admin_Revenue_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+        }
+        else if (format?.ToLower() == "pdf")
+        {
+            var pdfBytes = await _financeAnalyticsService.GenerateRevenueReportPdfAsync(filters);
+            return File(pdfBytes, "application/pdf", $"Admin_Revenue_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
         }
         
-        // Fallback or JS handled
-        return BadRequest("Unsupported format from backend. Use CSV.");
+        return BadRequest("Unsupported format.");
     }
 
     // --- Coupons Management --------------------------------------------------
